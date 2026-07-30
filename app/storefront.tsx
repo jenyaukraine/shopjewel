@@ -438,23 +438,32 @@ function HomePage({
     <main>
       <section className="hero" aria-labelledby="hero-title">
         <div className="hero-copy">
-          <p className="eyebrow">Вишукані речі для життя зі змістом</p>
+          <p className="hero-kicker">Авторська колекція</p>
           <h1 id="hero-title">Де моменти стають спадщиною.</h1>
-          <p>
-            Сім знакових речей із довговічних матеріалів, створених для людини, яка нестиме їхню історію далі.
-          </p>
           <div className="hero-actions">
             <Link className="button button--dark" href="/collections">Переглянути колекцію</Link>
-            <Link className="text-link" href="/about">Наша філософія <span aria-hidden="true">→</span></Link>
+            <Link className="hero-learn" href="/about">
+              <span className="hero-learn-icon" aria-hidden="true">▶</span>
+              Дізнатися більше
+            </Link>
           </div>
+        </div>
+        <div className="hero-pagination" aria-hidden="true">
+          <span className="is-active" />
+          <span />
+          <span />
+        </div>
+        <div className="hero-controls" aria-hidden="true">
+          <span>›</span>
+          <span>‹</span>
         </div>
       </section>
 
       <section className="intro">
-        <p className="eyebrow">Шість моментів · одне спеціальне видання</p>
-        <h2>Оберіть деталі, що зроблять річ вашою.</h2>
+        <p className="intro-script" aria-hidden="true">Колекції</p>
+        <h2>Позачасові прикраси</h2>
         <p className="intro-copy">
-          Оберіть матеріал, розмір, оздоблення або практичну характеристику. Кожен вибір збережеться в кошику та замовленні.
+          Сучасні реліквії із золота та діамантів
         </p>
       </section>
 
@@ -679,17 +688,17 @@ function CatalogPage({
 }) {
   const highestPrice = Math.ceil(Math.max(...catalog.map((product) => product.price), 1000) / 100) * 100;
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("All");
-  const [moment, setMoment] = useState("All");
-  const [metal, setMetal] = useState("All");
-  const [stone, setStone] = useState("All");
-  const [availability, setAvailability] = useState("All");
-  const [delivery, setDelivery] = useState("All");
+  const [category, setCategory] = useState("Усі");
+  const [moment, setMoment] = useState("Усі");
+  const [metal, setMetal] = useState("Усі");
+  const [stone, setStone] = useState("Усі");
+  const [availability, setAvailability] = useState("Усі");
+  const [delivery, setDelivery] = useState("Усі");
   const [maxPrice, setMaxPrice] = useState(highestPrice);
   const [sort, setSort] = useState("popular");
   const [visibleCount, setVisibleCount] = useState(6);
 
-  const unique = (values: string[]) => ["All", ...Array.from(new Set(values))];
+  const unique = (values: string[]) => ["Усі", ...Array.from(new Set(values))];
   const categories = unique(catalog.map((product) => product.category));
   const moments = unique(catalog.map((product) => product.moment));
   const metals = unique(catalog.map((product) => product.metal));
@@ -704,12 +713,12 @@ function CatalogPage({
           || product.sku.toLowerCase().includes(normalizedQuery)
           || product.category.toLowerCase().includes(normalizedQuery)
           || product.moment.toLowerCase().includes(normalizedQuery))
-        && (category === "All" || product.category === category)
-        && (moment === "All" || product.moment === moment)
-        && (metal === "All" || product.metal === metal)
-        && (stone === "All" || product.stoneType === stone)
-        && (availability === "All" || product.availability === availability)
-        && (delivery === "All" || product.deliveryDays === Number(delivery))
+        && (category === "Усі" || product.category === category)
+        && (moment === "Усі" || product.moment === moment)
+        && (metal === "Усі" || product.metal === metal)
+        && (stone === "Усі" || product.stoneType === stone)
+        && (availability === "Усі" || product.availability === availability)
+        && (delivery === "Усі" || product.deliveryDays === Number(delivery))
         && product.price <= maxPrice
       ))
       .sort((a, b) => (
@@ -722,12 +731,12 @@ function CatalogPage({
 
   function resetFilters() {
     setQuery("");
-    setCategory("All");
-    setMoment("All");
-    setMetal("All");
-    setStone("All");
-    setAvailability("All");
-    setDelivery("All");
+    setCategory("Усі");
+    setMoment("Усі");
+    setMetal("Усі");
+    setStone("Усі");
+    setAvailability("Усі");
+    setDelivery("Усі");
     setMaxPrice(highestPrice);
     setSort("popular");
     setVisibleCount(6);
@@ -737,29 +746,29 @@ function CatalogPage({
     <section className="catalog-shell">
       <div className="catalog-toolbar">
         <label className="catalog-search">
-          <span className="sr-only">Search catalog</span>
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by name, SKU, category or moment" />
+          <span className="sr-only">Пошук у каталозі</span>
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Пошук за назвою, артикулом, категорією або моментом" />
         </label>
-        <label className="catalog-sort">Sort
+        <label className="catalog-sort">Сортування
           <select value={sort} onChange={(event) => setSort(event.target.value)}>
-            <option value="popular">Most popular</option>
-            <option value="price-asc">Price: low to high</option>
-            <option value="price-desc">Price: high to low</option>
-            <option value="new">Newest first</option>
+            <option value="popular">За популярністю</option>
+            <option value="price-asc">Ціна: від нижчої</option>
+            <option value="price-desc">Ціна: від вищої</option>
+            <option value="new">Спочатку новинки</option>
           </select>
         </label>
       </div>
       <div className="catalog-layout">
         <details className="catalog-filters" open>
-          <summary>Filters <span>{filtered.length} pieces</span></summary>
+          <summary>Фільтри <span>{filtered.length} виробів</span></summary>
           <div className="filter-fields">
             {[
-              ["Jewelry type", category, setCategory, categories],
-              ["Moment", moment, setMoment, moments],
-              ["Metal", metal, setMetal, metals],
-              ["Stone", stone, setStone, stones],
-              ["Availability", availability, setAvailability, ["All", "In stock", "Made to order"]],
-              ["Delivery", delivery, setDelivery, ["All", "3", "10"]],
+              ["Тип прикраси", category, setCategory, categories],
+              ["Момент", moment, setMoment, moments],
+              ["Метал", metal, setMetal, metals],
+              ["Камінь", stone, setStone, stones],
+              ["Наявність", availability, setAvailability, ["Усі", "В наявності", "Під замовлення"]],
+              ["Доставка", delivery, setDelivery, ["Усі", "3", "10"]],
             ].map(([label, value, setter, options]) => (
               <label key={label as string}>{label as string}
                 <select
@@ -768,13 +777,13 @@ function CatalogPage({
                 >
                   {(options as string[]).map((option) => (
                     <option value={option} key={option}>
-                      {label === "Delivery" && option !== "All" ? `${option} days` : option}
+                      {label === "Доставка" && option !== "Усі" ? `${option} днів` : option}
                     </option>
                   ))}
                 </select>
               </label>
             ))}
-            <label className="price-filter">Maximum price
+            <label className="price-filter">Максимальна ціна
               <strong>{formatMoney(maxPrice, currency)}</strong>
               <input
                 min="500"
@@ -785,28 +794,28 @@ function CatalogPage({
                 onChange={(event) => setMaxPrice(Number(event.target.value))}
               />
             </label>
-            <button className="reset-filters" type="button" onClick={resetFilters}>Reset all filters</button>
+            <button className="reset-filters" type="button" onClick={resetFilters}>Скинути всі фільтри</button>
           </div>
         </details>
         <div className="catalog-results">
           <div className="results-heading">
-            <p><strong>{filtered.length}</strong> pieces found</p>
-            <Link href="/admin/catalog">Import or manage catalog →</Link>
+            <p><strong>{filtered.length}</strong> виробів знайдено</p>
+            <Link href="/admin/catalog">Імпорт і керування каталогом →</Link>
           </div>
           {filtered.length ? (
             <>
               <ProductGrid products={filtered.slice(0, visibleCount)} currency={currency} onQuickAdd={onQuickAdd} />
               {visibleCount < filtered.length && (
                 <button className="button load-more" type="button" onClick={() => setVisibleCount((count) => count + 6)}>
-                  Show more
+                  Показати ще
                 </button>
               )}
             </>
           ) : (
             <div className="no-results">
-              <h2>No pieces match these filters.</h2>
-              <p>Try a different moment, material or price.</p>
-              <button className="button" type="button" onClick={resetFilters}>Clear filters</button>
+              <h2>За цими фільтрами нічого не знайдено.</h2>
+              <p>Спробуйте інший момент, матеріал або ціну.</p>
+              <button className="button" type="button" onClick={resetFilters}>Очистити фільтри</button>
             </div>
           )}
         </div>
@@ -869,7 +878,7 @@ function CatalogManager({
     const [headers, ...records] = rows;
     const missing = csvColumns.filter((column) => !headers.includes(column));
     if (missing.length) {
-      setMessage(`Missing columns: ${missing.join(", ")}`);
+      setMessage(`Відсутні стовпці: ${missing.join(", ")}`);
       setPreview([]);
       return;
     }
@@ -879,46 +888,47 @@ function CatalogManager({
       const title = read("title");
       const price = Number(read("price"));
       if (!title || !price) return [];
-      const category = read("category") || "Rings";
-      const metal = read("metal") || "Yellow gold";
+      const category = read("category") || "Кільця";
+      const metal = read("metal") || "Жовте золото";
+      const availabilityValue = read("availability").toLowerCase();
       const imported: Product = {
         id: read("id") || `csv-${Date.now()}-${position}`,
-        slug: read("slug") || title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
+        slug: read("slug") || title.toLowerCase().normalize("NFKD").replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, ""),
         sku: read("sku") || `CSV-${String(position + 1).padStart(3, "0")}`,
         title,
         category,
-        moment: read("moment") || "Moment 06 — The Legacy",
+        moment: read("moment") || "Момент 06 — Спадщина",
         price,
         oldPrice: Number(read("old_price")) || undefined,
         metal,
         fineness: read("fineness") || "750 / 18k",
-        stoneType: read("stone_type") || "Without stones",
-        availability: read("availability").toLowerCase().includes("order") ? "Made to order" : "In stock",
+        stoneType: read("stone_type") || "Без каменів",
+        availability: availabilityValue.includes("order") || availabilityValue.includes("замов") ? "Під замовлення" : "В наявності",
         deliveryDays: Number(read("delivery_days")) || 3,
         weight: Number(read("weight")) || 1,
         carat: Number(read("carat")) || 0,
         stoneCount: Number(read("stone_count")) || 0,
         image: read("image") || "/products/promise-solitaire.webp",
-        subtitle: read("subtitle") || `${metal} · ${read("stone_type") || "fine jewelry"}`,
-        description: read("description") || "A considered piece imported into the 6MOMENTS catalog.",
+        subtitle: read("subtitle") || `${metal} · ${read("stone_type") || "ювелірний виріб"}`,
+        description: read("description") || "Продуманий виріб, імпортований до каталогу 6MOMENTS.",
         popularity: 50,
         isNew: true,
         options: [
-          { name: "Metal", values: [metal] },
-          ...(category.includes("Ring") ? [{ name: "Ring size", values: ["48", "50", "52", "54", "56"] }] : []),
+          { name: "Метал", values: [metal] },
+          ...(["Кільця", "Обручки"].includes(category) ? [{ name: "Розмір каблучки", values: ["48", "50", "52", "54", "56"] }] : []),
         ],
-        details: [`SKU ${read("sku") || `CSV-${position + 1}`}`, `${read("availability") || "In stock"}`, `Delivery in ${Number(read("delivery_days")) || 3} days`],
+        details: [`Артикул ${read("sku") || `CSV-${position + 1}`}`, `${read("availability") || "В наявності"}`, `Доставка: ${Number(read("delivery_days")) || 3} днів`],
       };
       return [imported];
     });
     setPreview(parsed);
-    setMessage(parsed.length ? `${parsed.length} valid products are ready to import.` : "No valid products were found.");
+    setMessage(parsed.length ? `${parsed.length} коректних товарів готові до імпорту.` : "Коректних товарів не знайдено.");
   }
 
   function downloadTemplate() {
     const sample = [
       csvColumns.join(","),
-      'sample-ring,sample-ring,6M-RI-100,Sample Ring,Rings,Moment 01 — The Promise,1450,1650,Yellow gold,750 / 18k,Lab-grown diamond,In stock,3,2.4,0.3,1,/products/promise-solitaire.webp,18k gold · diamond,A refined sample product imported from CSV.',
+      'sample-ring,sample-ring,6M-RI-100,Зразок каблучки,Кільця,Момент 01 — Обіцянка,1450,1650,Жовте золото,750 / 18k,Лабораторний діамант,В наявності,3,2.4,0.3,1,/products/promise-solitaire.webp,Золото 18 каратів · діамант,Вишуканий зразок товару для імпорту з CSV.',
     ].join("\n");
     const url = window.URL.createObjectURL(new Blob([sample], { type: "text/csv;charset=utf-8" }));
     const anchor = document.createElement("a");
@@ -931,22 +941,22 @@ function CatalogManager({
   return (
     <main className="admin-page">
       <section className="admin-hero">
-        <p className="eyebrow">Catalog workspace</p>
-        <h1>Import products without touching code.</h1>
-        <p>Upload a structured CSV, verify every record, and publish it to this browser’s working catalog. The format is ready to connect to the production API.</p>
+        <p className="eyebrow">Робочий простір каталогу</p>
+        <h1>Імпортуйте товари без редагування коду.</h1>
+        <p>Завантажте структурований CSV, перевірте записи та опублікуйте їх у робочому каталозі цього браузера. Формат готовий до підключення виробничого API.</p>
       </section>
       <section className="admin-panel">
         <div className="admin-upload">
           <div>
-            <p className="eyebrow">Step 01</p>
-            <h2>Prepare the file</h2>
-            <p>Use UTF-8 CSV with comma-separated fields. Product slugs and IDs must be unique.</p>
+            <p className="eyebrow">Крок 01</p>
+            <h2>Підготуйте файл</h2>
+            <p>Використовуйте CSV у кодуванні UTF-8 із полями, розділеними комами. Slug та ID товарів мають бути унікальними.</p>
           </div>
-          <button className="button" type="button" onClick={downloadTemplate}>Download CSV template</button>
+          <button className="button" type="button" onClick={downloadTemplate}>Завантажити шаблон CSV</button>
         </div>
         <label className="csv-drop">
-          <span>Choose a CSV file</span>
-          <small>Required columns are checked before import.</small>
+          <span>Оберіть CSV-файл</span>
+          <small>Обов’язкові стовпці перевіряються перед імпортом.</small>
           <input type="file" accept=".csv,text/csv" onChange={readCsv} />
         </label>
         {message && <p className="import-message" role="status">{message}</p>}
@@ -954,7 +964,7 @@ function CatalogManager({
           <>
             <div className="import-preview">
               <table>
-                <thead><tr><th>SKU</th><th>Product</th><th>Category</th><th>Price</th><th>Status</th></tr></thead>
+                <thead><tr><th>Артикул</th><th>Товар</th><th>Категорія</th><th>Ціна</th><th>Статус</th></tr></thead>
                 <tbody>
                   {preview.slice(0, 8).map((product) => (
                     <tr key={product.id}>
@@ -970,18 +980,18 @@ function CatalogManager({
               type="button"
               onClick={() => {
                 onImport(preview);
-                setMessage(`${preview.length} products were added to the storefront catalog.`);
+                setMessage(`${preview.length} товарів додано до каталогу вітрини.`);
                 setPreview([]);
               }}
             >
-              Publish {preview.length} products
+              Опублікувати товарів: {preview.length}
             </button>
           </>
         )}
         <div className="imported-summary">
-          <div><strong>{importedProducts.length}</strong><span>CSV products currently stored</span></div>
-          <Link className="text-link" href="/collections">View storefront →</Link>
-          {importedProducts.length > 0 && <button type="button" onClick={onReset}>Remove imported products</button>}
+          <div><strong>{importedProducts.length}</strong><span>товарів із CSV збережено</span></div>
+          <Link className="text-link" href="/collections">Переглянути вітрину →</Link>
+          {importedProducts.length > 0 && <button type="button" onClick={onReset}>Видалити імпортовані товари</button>}
         </div>
       </section>
     </main>
@@ -1022,30 +1032,30 @@ function InteriorPage({
           <section className="story-panel">
             <p className="story-number">6</p>
             <div>
-              <p className="eyebrow">The idea</p>
-              <h2>One language. Many forms.</h2>
-              <p className="chapter-note">One language. Six chapters.</p>
+              <p className="eyebrow">Ідея</p>
+              <h2>Одна мова. Багато форм.</h2>
+              <p className="chapter-note">Одна мова. Шість розділів.</p>
               <p>
-                Our pieces begin with proportion and restraint. Their final meaning—and every detail chosen along the way—is yours to give.
+                Наші речі починаються з пропорції та стриманості. Їхній остаточний сенс — і кожна обрана деталь — належать вам.
               </p>
             </div>
           </section>
           <section className="values-grid">
-            <article><span>01</span><h3>Fewer, better</h3><p>We design a small permanent collection, not a stream of seasons.</p></article>
-            <article><span>02</span><h3>Honest materials</h3><p>Recycled gold, platinum and traceable stones chosen for a lifetime of wear.</p></article>
-            <article><span>03</span><h3>Made personal</h3><p>Scale, finish, engraving and proportion are resolved around the person.</p></article>
+            <article><span>01</span><h3>Менше, але краще</h3><p>Ми створюємо невелику постійну колекцію, а не нескінченну зміну сезонів.</p></article>
+            <article><span>02</span><h3>Чесні матеріали</h3><p>Перероблене золото, платина та камені з підтвердженим походженням — для носіння впродовж усього життя.</p></article>
+            <article><span>03</span><h3>Створено особистим</h3><p>Масштаб, оздоблення, гравіювання та пропорції підбираються під конкретну людину.</p></article>
           </section>
           <section className="about-quote">
-            <p>“The object is only the beginning.<br />The memory is what makes it precious.”</p>
-            <Link className="button button--light" href="/collections">Explore the collection</Link>
+            <p>«Річ — це лише початок.<br />Спогад робить її дорогоцінною».</p>
+            <Link className="button button--light" href="/collections">Переглянути колекцію</Link>
           </section>
         </>
       ) : path === "/journal" ? (
         <section className="journal-grid">
           {[
-            ["Field note 01", "The quiet architecture of a ring", "Why a low setting, softened edge and careful proportion matter long after the first impression.", "/editorial/journal-ring-architecture.webp"],
-            ["Field note 02", "Objects that gather a life", "A conversation about patina, repair and the marks that turn fine materials into personal ones.", "/editorial/journal-patina.webp"],
-            ["Field note 03", "A new language for heirlooms", "Tradition can hold many shapes. We look at the rituals people are choosing for themselves.", "/editorial/journal-heirlooms.webp"],
+            ["Польова нотатка 01", "Тиха архітектура каблучки", "Чому низька посадка, м’який край і точні пропорції важливі ще довго після першого враження.", "/editorial/journal-ring-architecture.webp"],
+            ["Польова нотатка 02", "Речі, що вбирають життя", "Розмова про патину, ремонт і сліди, які перетворюють благородні матеріали на особисті.", "/editorial/journal-patina.webp"],
+            ["Польова нотатка 03", "Нова мова сімейних реліквій", "Традиція може мати багато форм. Ми досліджуємо ритуали, які люди обирають для себе.", "/editorial/journal-heirlooms.webp"],
           ].map(([label, title, copy, image]) => (
             <article key={title}>
               <Image
@@ -1060,22 +1070,22 @@ function InteriorPage({
               <p className="eyebrow">{label}</p>
               <h2>{title}</h2>
               <p>{copy}</p>
-              <Link href="/contact">Request the full note <span aria-hidden="true">↗</span></Link>
+              <Link href="/contact">Отримати повну нотатку <span aria-hidden="true">↗</span></Link>
             </article>
           ))}
         </section>
       ) : (
         <section className="contact-layout">
           <div className="contact-details">
-            <p className="eyebrow">The atelier</p>
-            <h2>A private conversation,<br />at your pace.</h2>
+            <p className="eyebrow">Майстерня</p>
+            <h2>Особиста розмова<br />у вашому темпі.</h2>
             <p>
-              Tell us what you are marking, or simply where you would like to begin. We reply personally within two working days.
+              Розкажіть, яку подію ви хочете зберегти, або просто з чого бажаєте почати. Ми особисто відповімо протягом двох робочих днів.
             </p>
             <dl>
               <div><dt>Email</dt><dd><a href="mailto:atelier@6moments.store">atelier@6moments.store</a></dd></div>
-              <div><dt>Consultations</dt><dd>Online · Worldwide</dd></div>
-              <div><dt>Hours</dt><dd>Monday—Friday · 10:00—18:00</dd></div>
+              <div><dt>Консультації</dt><dd>Онлайн · у всьому світі</dd></div>
+              <div><dt>Години роботи</dt><dd>Понеділок—п’ятниця · 10:00—18:00</dd></div>
             </dl>
           </div>
           <form
@@ -1086,23 +1096,23 @@ function InteriorPage({
               event.currentTarget.reset();
             }}
           >
-            <label>Name<input name="name" autoComplete="name" required /></label>
+            <label>Ім’я<input name="name" autoComplete="name" required /></label>
             <label>Email<input name="email" type="email" autoComplete="email" required /></label>
-            <label>What can we help with?
-              <select name="subject" defaultValue="A private appointment">
-                <option>A private appointment</option>
-                <option>Product and sizing advice</option>
-                <option>Engraving and personalisation</option>
-                <option>Aftercare and repair</option>
+            <label>Чим ми можемо допомогти?
+              <select name="subject" defaultValue="Приватна консультація">
+                <option>Приватна консультація</option>
+                <option>Порада щодо товару та розміру</option>
+                <option>Гравіювання та персоналізація</option>
+                <option>Догляд і ремонт</option>
               </select>
             </label>
-            <label>Tell us about your moment<textarea name="message" rows={5} /></label>
+            <label>Розкажіть про свій момент<textarea name="message" rows={5} /></label>
             <button className="button button--dark" type="submit">
-              {contactSent ? "Message received" : "Write to the atelier"}
+              {contactSent ? "Повідомлення отримано" : "Написати майстерні"}
             </button>
             {contactSent && (
               <p className="form-success" role="status">
-                Thank you. The atelier will reply personally within two working days.
+                Дякуємо. Майстерня особисто відповість протягом двох робочих днів.
               </p>
             )}
           </form>
@@ -1155,60 +1165,60 @@ function CartDrawer({
 
   return (
     <>
-      <button className={`cart-overlay ${open ? "is-open" : ""}`} aria-label="Close shopping bag" onClick={closeDrawer} type="button" />
-      <aside className={`cart-drawer ${open ? "is-open" : ""}`} aria-hidden={!open} aria-label="Shopping bag">
+      <button className={`cart-overlay ${open ? "is-open" : ""}`} aria-label="Закрити кошик" onClick={closeDrawer} type="button" />
+      <aside className={`cart-drawer ${open ? "is-open" : ""}`} aria-hidden={!open} aria-label="Кошик">
         <div className="cart-header">
           <div>
-            <p className="eyebrow">{checkout ? "Secure checkout" : "Your selection"}</p>
-            <h2>{checkout ? "Delivery details" : "Shopping bag"}</h2>
+            <p className="eyebrow">{checkout ? "Безпечне оформлення" : "Ваш вибір"}</p>
+            <h2>{checkout ? "Дані для доставки" : "Кошик"}</h2>
           </div>
-          <button type="button" onClick={closeDrawer} aria-label="Close shopping bag">Close</button>
+          <button type="button" onClick={closeDrawer} aria-label="Закрити кошик">Закрити</button>
         </div>
 
         {orderNumber ? (
           <div className="order-success">
             <span aria-hidden="true">✓</span>
-            <p className="eyebrow">Order confirmed</p>
-            <h3>Thank you for your moment.</h3>
-            <p>Your order request <strong>{orderNumber}</strong> has been created. The atelier will confirm availability and payment details by email.</p>
-            <button className="button button--dark" type="button" onClick={closeDrawer}>Continue shopping</button>
+            <p className="eyebrow">Замовлення підтверджено</p>
+            <h3>Дякуємо за ваш момент.</h3>
+            <p>Заявку на замовлення <strong>{orderNumber}</strong> створено. Майстерня підтвердить наявність і деталі оплати електронною поштою.</p>
+            <button className="button button--dark" type="button" onClick={closeDrawer}>Продовжити покупки</button>
           </div>
         ) : checkout ? (
           <form className="checkout-form" onSubmit={placeOrder}>
-            <label>Full name<input name="name" autoComplete="name" required /></label>
+            <label>Ім’я та прізвище<input name="name" autoComplete="name" required /></label>
             <label>Email<input name="email" type="email" autoComplete="email" required /></label>
-            <label>Delivery address<input name="address" autoComplete="street-address" required /></label>
+            <label>Адреса доставки<input name="address" autoComplete="street-address" required /></label>
             <div className="checkout-row">
-              <label>City<input name="city" autoComplete="address-level2" required /></label>
-              <label>Postal code<input name="postal" autoComplete="postal-code" required /></label>
+              <label>Місто<input name="city" autoComplete="address-level2" required /></label>
+              <label>Поштовий індекс<input name="postal" autoComplete="postal-code" required /></label>
             </div>
-            <label>Country
-              <select name="country" defaultValue="European Union">
-                <option>European Union</option>
-                <option>Ukraine</option>
-                <option>United Kingdom</option>
-                <option>United States</option>
-                <option>Rest of world</option>
+            <label>Країна
+              <select name="country" defaultValue="Україна">
+                <option>Україна</option>
+                <option>Європейський Союз</option>
+                <option>Велика Британія</option>
+                <option>Сполучені Штати</option>
+                <option>Інші країни</option>
               </select>
             </label>
-            <label>Delivery service
-              <select name="delivery" defaultValue="DHL Express">
+            <label>Служба доставки
+              <select name="delivery" defaultValue="DHL Express · застраховано">
                 <option>DHL Express · insured</option>
                 <option>DPD Classic · insured</option>
               </select>
             </label>
             <label className="payment-choice">
               <input type="radio" name="payment" defaultChecked />
-              <span><strong>Secure card payment</strong><small>Stripe · Visa · Mastercard · Apple Pay · Google Pay</small></span>
+              <span><strong>Безпечна оплата карткою</strong><small>Stripe · Visa · Mastercard · Apple Pay · Google Pay</small></span>
             </label>
-            <div className="checkout-total"><span>Total</span><strong>{formatMoney(subtotal, currency)}</strong></div>
-            <button className="button button--dark checkout-button" type="submit">Confirm test order</button>
-            <button className="back-button" type="button" onClick={() => setCheckout(false)}>← Back to bag</button>
+            <div className="checkout-total"><span>Разом</span><strong>{formatMoney(subtotal, currency)}</strong></div>
+            <button className="button button--dark checkout-button" type="submit">Підтвердити тестове замовлення</button>
+            <button className="back-button" type="button" onClick={() => setCheckout(false)}>← Повернутися до кошика</button>
           </form>
         ) : items.length === 0 ? (
           <div className="empty-cart">
-            <p>Your bag is waiting for a piece with meaning.</p>
-            <Link className="button button--dark" href="/collections">Explore the collection</Link>
+            <p>Ваш кошик чекає на річ зі змістом.</p>
+            <Link className="button button--dark" href="/collections">Переглянути колекцію</Link>
           </div>
         ) : (
           <>
@@ -1233,21 +1243,21 @@ function CartDrawer({
                     </div>
                     <p>{Object.entries(item.options).map(([name, value]) => `${name}: ${value}`).join(" · ")}</p>
                     <div className="cart-item-actions">
-                      <div className="quantity" aria-label={`Quantity for ${item.product.title}`}>
-                        <button type="button" onClick={() => onQuantity(item.key, item.quantity - 1)} aria-label="Decrease quantity">−</button>
+                      <div className="quantity" aria-label={`Кількість товару ${item.product.title}`}>
+                        <button type="button" onClick={() => onQuantity(item.key, item.quantity - 1)} aria-label="Зменшити кількість">−</button>
                         <span>{item.quantity}</span>
-                        <button type="button" onClick={() => onQuantity(item.key, item.quantity + 1)} aria-label="Increase quantity">+</button>
+                        <button type="button" onClick={() => onQuantity(item.key, item.quantity + 1)} aria-label="Збільшити кількість">+</button>
                       </div>
-                      <button className="remove-item" type="button" onClick={() => onRemove(item.key)}>Remove</button>
+                      <button className="remove-item" type="button" onClick={() => onRemove(item.key)}>Видалити</button>
                     </div>
                   </div>
                 </article>
               ))}
             </div>
             <div className="cart-summary">
-              <div><span>Subtotal</span><strong>{formatMoney(subtotal, currency)}</strong></div>
-              <p>Insured delivery and returns are complimentary.</p>
-              <button className="button button--dark checkout-button" type="button" onClick={() => setCheckout(true)}>Continue to checkout</button>
+              <div><span>Проміжний підсумок</span><strong>{formatMoney(subtotal, currency)}</strong></div>
+              <p>Застрахована доставка та повернення — безкоштовні.</p>
+              <button className="button button--dark checkout-button" type="button" onClick={() => setCheckout(true)}>Перейти до оформлення</button>
             </div>
           </>
         )}
@@ -1262,8 +1272,8 @@ function Footer() {
   return (
     <footer className="site-footer">
       <div className="footer-signup">
-        <p className="eyebrow">Letters from the atelier</p>
-        <h2>For the moments ahead.</h2>
+        <p className="eyebrow">Листи з майстерні</p>
+        <h2>Для моментів, що попереду.</h2>
         <form
           onSubmit={(event) => {
             event.preventDefault();
@@ -1271,22 +1281,22 @@ function Footer() {
             event.currentTarget.reset();
           }}
         >
-          <label className="sr-only" htmlFor="email">Email address</label>
-          <input id="email" name="email" placeholder="Email address" type="email" required />
-          <button type="submit">{subscribed ? "Welcome to 6MOMENTS" : "Subscribe"}</button>
+          <label className="sr-only" htmlFor="email">Електронна адреса</label>
+          <input id="email" name="email" placeholder="Електронна адреса" type="email" required />
+          <button type="submit">{subscribed ? "Ласкаво просимо до 6MOMENTS" : "Підписатися"}</button>
         </form>
-        {subscribed && <p className="signup-success" role="status">Your private letters are confirmed.</p>}
+        {subscribed && <p className="signup-success" role="status">Вашу підписку підтверджено.</p>}
       </div>
       <div className="footer-bottom">
         <Link className="wordmark wordmark--footer" href="/">6MOMENTS</Link>
-        <nav aria-label="Footer navigation">
-          <Link href="/collections">Shop</Link>
-          <Link href="/about">Our story</Link>
-          <Link href="/journal">Journal</Link>
-          <Link href="/contact">Contact</Link>
-          <Link href="/admin/catalog">Catalog manager</Link>
+        <nav aria-label="Навігація у футері">
+          <Link href="/collections">Каталог</Link>
+          <Link href="/about">Про нас</Link>
+          <Link href="/journal">Журнал</Link>
+          <Link href="/contact">Контакти</Link>
+          <Link href="/admin/catalog">Керування каталогом</Link>
         </nav>
-        <p>Modern heirlooms · © {new Date().getFullYear()}</p>
+        <p>Сучасні реліквії · © {new Date().getFullYear()}</p>
       </div>
     </footer>
   );
