@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 
 type ProductOption = {
   name: string;
@@ -31,7 +32,7 @@ const products: Product[] = [
   {
     id: "promise-solitaire",
     slug: "promise-solitaire",
-    moment: "01 — The Promise",
+    moment: "Moment 01 — The Promise",
     title: "Promise Solitaire",
     subtitle: "18k gold · traceable diamond",
     description:
@@ -48,7 +49,7 @@ const products: Product[] = [
   {
     id: "union-band",
     slug: "union-band",
-    moment: "02 — The Union",
+    moment: "Moment 02 — The Union",
     title: "Union Band",
     subtitle: "18k gold · hand-finished",
     description:
@@ -65,7 +66,7 @@ const products: Product[] = [
   {
     id: "arrival-pendant",
     slug: "arrival-pendant",
-    moment: "03 — The Arrival",
+    moment: "Moment 03 — The Arrival",
     title: "Arrival Pendant",
     subtitle: "18k gold · brilliant diamond",
     description:
@@ -82,7 +83,7 @@ const products: Product[] = [
   {
     id: "becoming-hoops",
     slug: "becoming-hoops",
-    moment: "04 — The Becoming",
+    moment: "Moment 04 — The Becoming",
     title: "Becoming Hoops",
     subtitle: "18k gold · sold as a pair",
     description:
@@ -99,7 +100,7 @@ const products: Product[] = [
   {
     id: "gratitude-bracelet",
     slug: "gratitude-bracelet",
-    moment: "05 — The Gratitude",
+    moment: "Moment 05 — The Gratitude",
     title: "Gratitude Bracelet",
     subtitle: "18k gold · hand-set stone",
     description:
@@ -116,7 +117,7 @@ const products: Product[] = [
   {
     id: "legacy-signet",
     slug: "legacy-signet",
-    moment: "06 — The Legacy",
+    moment: "Moment 06 — The Legacy",
     title: "Legacy Signet",
     subtitle: "Platinum · made to order",
     description:
@@ -208,22 +209,22 @@ function Header({
     <>
       <div className="announcement">Complimentary insured delivery and returns</div>
       <header className="site-header">
-        <a className="wordmark" href="/" aria-label="6MOMENTS home">
+        <Link className="wordmark" href="/" aria-label="6MOMENTS home">
           6MOMENTS
-        </a>
+        </Link>
         <nav className="desktop-nav" aria-label="Primary navigation">
-          <a aria-current={path.startsWith("/collections") || path.startsWith("/products") ? "page" : undefined} href="/collections">
+          <Link aria-current={path.startsWith("/collections") || path.startsWith("/products") ? "page" : undefined} href="/collections">
             Shop
-          </a>
-          <a aria-current={path === "/about" ? "page" : undefined} href="/about">
+          </Link>
+          <Link aria-current={path === "/about" ? "page" : undefined} href="/about">
             Our story
-          </a>
-          <a aria-current={path === "/journal" ? "page" : undefined} href="/journal">
+          </Link>
+          <Link aria-current={path === "/journal" ? "page" : undefined} href="/journal">
             Journal
-          </a>
+          </Link>
         </nav>
         <div className="header-actions">
-          <a href="/contact">Private appointment</a>
+          <Link href="/contact">Private appointment</Link>
           <button className="bag" type="button" onClick={onOpenCart} aria-label={`Shopping bag, ${count} items`}>
             Bag <span>{count}</span>
           </button>
@@ -231,10 +232,10 @@ function Header({
         <details className="mobile-menu">
           <summary aria-label="Open navigation">Menu</summary>
           <nav aria-label="Mobile navigation">
-            <a href="/collections">Shop</a>
-            <a href="/about">Our story</a>
-            <a href="/journal">Journal</a>
-            <a href="/contact">Private appointment</a>
+            <Link href="/collections">Shop</Link>
+            <Link href="/about">Our story</Link>
+            <Link href="/journal">Journal</Link>
+            <Link href="/contact">Private appointment</Link>
             <button type="button" onClick={onOpenCart}>Bag ({count})</button>
           </nav>
         </details>
@@ -249,7 +250,7 @@ function ProductGrid({ limit }: { limit?: number }) {
   return (
     <div className="collection-grid product-grid">
       {visibleProducts.map((product) => (
-        <a className="moment-card product-card" href={`/products/${product.slug}`} key={product.id}>
+        <Link className="moment-card product-card" href={`/products/${product.slug}`} key={product.id}>
           <div className="moment-art">
             <span className="moment-number">{product.moment.split(" — ")[0]}</span>
             <ProductArt variant={product.art} />
@@ -261,7 +262,7 @@ function ProductGrid({ limit }: { limit?: number }) {
             <span>{money.format(product.price)}</span>
           </div>
           <p>{product.subtitle}</p>
-        </a>
+        </Link>
       ))}
     </div>
   );
@@ -278,14 +279,14 @@ function HomePage() {
             Seven defining keepsakes, made in enduring materials and configured for the person who will carry them forward.
           </p>
           <div className="hero-actions">
-            <a className="button button--dark" href="/collections">Shop the collection</a>
-            <a className="text-link" href="/about">Our philosophy <span aria-hidden="true">→</span></a>
+            <Link className="button button--dark" href="/collections">Shop the collection</Link>
+            <Link className="text-link" href="/about">Our philosophy <span aria-hidden="true">→</span></Link>
           </div>
         </div>
       </section>
 
       <section className="intro">
-        <p className="eyebrow">Made personal</p>
+        <p className="eyebrow">The six moments · one special edition</p>
         <h2>Choose the details that make it yours.</h2>
         <p className="intro-copy">
           Select the right material, size, finish or practical specification. Every choice follows the piece into your bag and order.
@@ -298,7 +299,7 @@ function HomePage() {
             <p className="eyebrow">The collection</p>
             <h2 id="products-title">Pieces to keep</h2>
           </div>
-          <a className="text-link" href="/collections">View all products <span aria-hidden="true">→</span></a>
+          <Link className="text-link" href="/collections">View all products <span aria-hidden="true">→</span></Link>
         </div>
         <ProductGrid limit={6} />
       </section>
@@ -313,7 +314,7 @@ function HomePage() {
           <p>
             Every piece is considered from every angle, finished by hand, and made to grow more personal with time.
           </p>
-          <a className="text-link" href="/about">Our materials and craft <span aria-hidden="true">→</span></a>
+          <Link className="text-link" href="/about">Our materials and craft <span aria-hidden="true">→</span></Link>
         </div>
       </section>
     </main>
@@ -341,7 +342,7 @@ function ProductDetail({
   return (
     <main>
       <div className="breadcrumbs">
-        <a href="/collections">Collection</a><span aria-hidden="true">/</span><span>{product.title}</span>
+        <Link href="/collections">Collection</Link><span aria-hidden="true">/</span><span>{product.title}</span>
       </div>
       <section className="product-detail">
         <div className="product-visual">
@@ -397,28 +398,92 @@ function InteriorPage({ path }: { path: string }) {
 
   return (
     <main>
-      <section className="interior-hero">
-        <p className="eyebrow">{page.eyebrow}</p>
-        <h1>{page.title}</h1>
-        <p>{page.copy}</p>
-        {path === "/contact" && (
-          <a className="button button--dark" href="mailto:atelier@6moments.store">Contact the atelier</a>
-        )}
+      <section className={`interior-hero interior-hero--${path.slice(1) || "collections"}`}>
+        <div>
+          <p className="eyebrow">{page.eyebrow}</p>
+          <h1>{page.title}</h1>
+          <p>{page.copy}</p>
+        </div>
+        <span className="interior-mark" aria-hidden="true">
+          {path === "/about" ? "06" : path === "/journal" ? "J" : path === "/contact" ? "C" : "∞"}
+        </span>
       </section>
 
-      {path === "/about" ? (
-        <section className="story-panel">
-          <p className="story-number">6</p>
-          <div>
-            <h2>One language. Many forms.</h2>
-            <p>
-              Our pieces begin with proportion and restraint. Their final meaning—and every detail chosen along the way—is yours to give.
-            </p>
+      {path === "/collections" ? (
+        <section className="moments-section interior-grid">
+          <div className="collection-intro">
+            <p>01—07</p>
+            <p>Recycled precious metals, traceable stones and considered objects for the chapters that matter.</p>
           </div>
+          <ProductGrid />
+        </section>
+      ) : path === "/about" ? (
+        <>
+          <section className="story-panel">
+            <p className="story-number">6</p>
+            <div>
+              <p className="eyebrow">The idea</p>
+              <h2>One language. Many forms.</h2>
+              <p className="chapter-note">One language. Six chapters.</p>
+              <p>
+                Our pieces begin with proportion and restraint. Their final meaning—and every detail chosen along the way—is yours to give.
+              </p>
+            </div>
+          </section>
+          <section className="values-grid">
+            <article><span>01</span><h3>Fewer, better</h3><p>We design a small permanent collection, not a stream of seasons.</p></article>
+            <article><span>02</span><h3>Honest materials</h3><p>Recycled gold, platinum and traceable stones chosen for a lifetime of wear.</p></article>
+            <article><span>03</span><h3>Made personal</h3><p>Scale, finish, engraving and proportion are resolved around the person.</p></article>
+          </section>
+          <section className="about-quote">
+            <p>“The object is only the beginning.<br />The memory is what makes it precious.”</p>
+            <Link className="button button--light" href="/collections">Explore the collection</Link>
+          </section>
+        </>
+      ) : path === "/journal" ? (
+        <section className="journal-grid">
+          {[
+            ["Field note 01", "The quiet architecture of a ring", "Why a low setting, softened edge and careful proportion matter long after the first impression."],
+            ["Field note 02", "Objects that gather a life", "A conversation about patina, repair and the marks that turn fine materials into personal ones."],
+            ["Field note 03", "A new language for heirlooms", "Tradition can hold many shapes. We look at the rituals people are choosing for themselves."],
+          ].map(([label, title, copy], index) => (
+            <article key={title}>
+              <div className={`journal-art journal-art--${index + 1}`}><span>{String(index + 1).padStart(2, "0")}</span></div>
+              <p className="eyebrow">{label}</p>
+              <h2>{title}</h2>
+              <p>{copy}</p>
+              <Link href="/contact">Request the full note <span aria-hidden="true">↗</span></Link>
+            </article>
+          ))}
         </section>
       ) : (
-        <section className="moments-section interior-grid">
-          <ProductGrid />
+        <section className="contact-layout">
+          <div className="contact-details">
+            <p className="eyebrow">The atelier</p>
+            <h2>A private conversation,<br />at your pace.</h2>
+            <p>
+              Tell us what you are marking, or simply where you would like to begin. We reply personally within two working days.
+            </p>
+            <dl>
+              <div><dt>Email</dt><dd><a href="mailto:atelier@6moments.store">atelier@6moments.store</a></dd></div>
+              <div><dt>Consultations</dt><dd>Online · Worldwide</dd></div>
+              <div><dt>Hours</dt><dd>Monday—Friday · 10:00—18:00</dd></div>
+            </dl>
+          </div>
+          <form className="contact-form" action="mailto:atelier@6moments.store" method="post">
+            <label>Name<input name="name" autoComplete="name" required /></label>
+            <label>Email<input name="email" type="email" autoComplete="email" required /></label>
+            <label>What can we help with?
+              <select name="subject" defaultValue="A private appointment">
+                <option>A private appointment</option>
+                <option>Product and sizing advice</option>
+                <option>Engraving and personalisation</option>
+                <option>Aftercare and repair</option>
+              </select>
+            </label>
+            <label>Tell us about your moment<textarea name="message" rows={5} /></label>
+            <button className="button button--dark" type="submit">Write to the atelier</button>
+          </form>
         </section>
       )}
     </main>
@@ -504,7 +569,7 @@ function CartDrawer({
         ) : items.length === 0 ? (
           <div className="empty-cart">
             <p>Your bag is waiting for a piece with meaning.</p>
-            <a className="button button--dark" href="/collections">Explore the collection</a>
+            <Link className="button button--dark" href="/collections">Explore the collection</Link>
           </div>
         ) : (
           <>
@@ -555,13 +620,14 @@ function Footer() {
         </form>
       </div>
       <div className="footer-bottom">
-        <a className="wordmark wordmark--footer" href="/">6MOMENTS</a>
+        <Link className="wordmark wordmark--footer" href="/">6MOMENTS</Link>
         <nav aria-label="Footer navigation">
-          <a href="/collections">Shop</a>
-          <a href="/about">Our story</a>
-          <a href="/contact">Contact</a>
+          <Link href="/collections">Shop</Link>
+          <Link href="/about">Our story</Link>
+          <Link href="/journal">Journal</Link>
+          <Link href="/contact">Contact</Link>
         </nav>
-        <p>© {new Date().getFullYear()} 6MOMENTS</p>
+        <p>Modern heirlooms · © {new Date().getFullYear()}</p>
       </div>
     </footer>
   );
@@ -570,19 +636,24 @@ function Footer() {
 export function Storefront({ path }: { path: string }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
+  const [cartLoaded, setCartLoaded] = useState(false);
 
   useEffect(() => {
-    try {
-      const saved = window.localStorage.getItem("6moments-cart");
-      if (saved) setCart(JSON.parse(saved) as CartItem[]);
-    } catch {
-      window.localStorage.removeItem("6moments-cart");
-    }
+    const timer = window.setTimeout(() => {
+      try {
+        const saved = window.localStorage.getItem("6moments-cart");
+        if (saved) setCart(JSON.parse(saved) as CartItem[]);
+      } catch {
+        window.localStorage.removeItem("6moments-cart");
+      }
+      setCartLoaded(true);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    window.localStorage.setItem("6moments-cart", JSON.stringify(cart));
-  }, [cart]);
+    if (cartLoaded) window.localStorage.setItem("6moments-cart", JSON.stringify(cart));
+  }, [cart, cartLoaded]);
 
   const detailedItems = useMemo(
     () =>
@@ -593,8 +664,19 @@ export function Storefront({ path }: { path: string }) {
     [cart],
   );
   const count = cart.reduce((total, item) => total + item.quantity, 0);
-  const product = path.startsWith("/products/")
-    ? products.find((candidate) => `/products/${candidate.slug}` === path)
+  const legacyProductPaths: Record<string, string> = {
+    "/collections/the-promise": "promise-solitaire",
+    "/collections/the-union": "union-band",
+    "/collections/the-arrival": "arrival-pendant",
+    "/collections/the-becoming": "becoming-hoops",
+    "/collections/the-gratitude": "gratitude-bracelet",
+    "/collections/the-legacy": "legacy-signet",
+  };
+  const requestedProductSlug = path.startsWith("/products/")
+    ? path.replace("/products/", "")
+    : legacyProductPaths[path];
+  const product = requestedProductSlug
+    ? products.find((candidate) => candidate.slug === requestedProductSlug)
     : undefined;
 
   function addToCart(selectedProduct: Product, options: Record<string, string>) {

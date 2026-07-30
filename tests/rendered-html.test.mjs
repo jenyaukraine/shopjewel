@@ -30,27 +30,29 @@ test("server-renders the finished storefront", async () => {
   const html = await response.text();
   assert.match(html, /<title>6MOMENTS — Where moments become legacy<\/title>/i);
   assert.match(html, /Where moments become legacy\./);
-  assert.match(html, /The six moments/);
+  assert.match(html, /Choose the details that make it yours\./);
+  assert.match(html, /Promise Solitaire/);
   assert.match(html, /Crafted slowly/);
-  assert.match(html, /https:\/\/katya-dev\.duckdns\.org\/og\.png/);
+  assert.match(html, /https:\/\/katya-dev\.duckdns\.org\/og-store\.png/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/i);
 });
 
-test("server-renders collection and story routes", async () => {
-  const [collectionResponse, storyResponse] = await Promise.all([
-    render("/collections/the-promise"),
+test("server-renders product attributes and story routes", async () => {
+  const [productResponse, storyResponse] = await Promise.all([
+    render("/products/first-ride"),
     render("/about"),
   ]);
 
-  assert.equal(collectionResponse.status, 200);
+  assert.equal(productResponse.status, 200);
   assert.equal(storyResponse.status, 200);
 
-  const [collectionHtml, storyHtml] = await Promise.all([
-    collectionResponse.text(),
+  const [productHtml, storyHtml] = await Promise.all([
+    productResponse.text(),
     storyResponse.text(),
   ]);
 
-  assert.match(collectionHtml, /Moment 01/);
-  assert.match(collectionHtml, /The Promise/);
+  assert.match(productHtml, /First Ride Balance Bike/);
+  assert.match(productHtml, /Wheel size/);
+  assert.match(productHtml, /Frame size/);
   assert.match(storyHtml, /One language\. Six chapters\./);
 });

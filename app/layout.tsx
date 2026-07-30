@@ -8,19 +8,19 @@ export const metadata: Metadata = {
     template: "%s | 6MOMENTS",
   },
   description:
-    "Fine jewelry in gold and diamonds, created to preserve the moments that define us.",
+    "Meaningful, configurable pieces made to preserve the moments that define us.",
   openGraph: {
     title: "6MOMENTS — Where moments become legacy",
     description:
-      "Timeless fine jewelry for the six moments that become your legacy.",
-    images: [{ url: "/og.png", width: 1680, height: 940 }],
+      "Meaningful pieces, configured for the person who will carry them forward.",
+    images: [{ url: "/og-store.png", width: 1680, height: 940 }],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "6MOMENTS — Where moments become legacy",
-    description: "Fine jewelry for moments worth keeping forever.",
-    images: ["/og.png"],
+    description: "Meaningful pieces for moments worth keeping forever.",
+    images: ["/og-store.png"],
   },
 };
 
