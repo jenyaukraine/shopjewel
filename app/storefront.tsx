@@ -1471,8 +1471,12 @@ function Footer() {
   return (
     <footer className="site-footer">
       <div className="footer-signup">
-        <p className="eyebrow">Листи з майстерні</p>
-        <h2>Для моментів, що попереду.</h2>
+        <span className="footer-mail-icon" aria-hidden="true">✉</span>
+        <p className="eyebrow">Приватний список 6MOMENTS</p>
+        <h2>Отримайте 15% на перше замовлення</h2>
+        <p className="footer-signup-copy">
+          Нові колекції, історії з майстерні та приватні пропозиції — без зайвих листів.
+        </p>
         <form
           onSubmit={(event) => {
             event.preventDefault();
@@ -1481,23 +1485,59 @@ function Footer() {
           }}
         >
           <label className="sr-only" htmlFor="email">Електронна адреса</label>
-          <input id="email" name="email" placeholder="Електронна адреса" type="email" required />
-          <button type="submit">{subscribed ? "Ласкаво просимо до 6MOMENTS" : "Підписатися"}</button>
+          <span aria-hidden="true">@</span>
+          <input id="email" name="email" placeholder="Ваша електронна адреса" type="email" required />
+          <button type="submit">{subscribed ? "Готово ✓" : "Підписатися ↗"}</button>
         </form>
-        {subscribed && <p className="signup-success" role="status">Вашу підписку підтверджено.</p>}
+        {subscribed && <p className="signup-success" role="status">Дякуємо. Ваш персональний код уже в дорозі.</p>}
       </div>
-      <div className="footer-bottom">
-        <Link className="wordmark wordmark--footer" href="/">6MOMENTS</Link>
-        <nav aria-label="Навігація у футері">
-          <Link href="/collections">Каталог</Link>
-          <Link href="/about">Про нас</Link>
+
+      <div className="footer-main">
+        <div className="footer-brand">
+          <Link className="wordmark wordmark--footer" href="/">6MOMENTS</Link>
+          <p>Сучасні реліквії із золота, платини та діамантів для моментів, які хочеться зберегти.</p>
+          <ul>
+            <li><span aria-hidden="true">◇</span> Приватні консультації онлайн</li>
+            <li><span aria-hidden="true">◎</span> Застрахована доставка по світу</li>
+            <li><span aria-hidden="true">✉</span> <Link href="/contact">Написати консьєржу</Link></li>
+          </ul>
+          <div className="footer-socials" aria-label="Соціальні мережі">
+            <a href="https://www.instagram.com/" target="_blank" rel="noreferrer" aria-label="Instagram">IG</a>
+            <a href="https://www.pinterest.com/" target="_blank" rel="noreferrer" aria-label="Pinterest">P</a>
+            <Link href="/journal" aria-label="Журнал 6MOMENTS">J</Link>
+          </div>
+        </div>
+
+        <nav className="footer-column" aria-label="Про 6MOMENTS">
+          <h3>Про 6MOMENTS</h3>
+          <Link href="/about">Наша історія</Link>
+          <Link href="/about">Матеріали й майстерність</Link>
           <Link href="/journal">Журнал</Link>
-          <Link href="/contact">Контакти</Link>
-          <Link href="/admin/catalog">Керування каталогом</Link>
+          <Link href="/contact">Приватна консультація</Link>
+        </nav>
+        <nav className="footer-column" aria-label="Допомога покупцям">
+          <h3>Допомога</h3>
+          <Link href="/contact">Доставка й повернення</Link>
+          <Link href="/contact">Розмір каблучки</Link>
+          <Link href="/contact">Догляд за прикрасами</Link>
+          <Link href="/contact">Поширені запитання</Link>
+        </nav>
+        <nav className="footer-column" aria-label="Каталог">
+          <h3>Каталог</h3>
+          <Link href="/collections">Каблучки</Link>
+          <Link href="/collections">Підвіски</Link>
+          <Link href="/collections">Сережки</Link>
+          <Link href="/collections">Усі прикраси</Link>
+        </nav>
+      </div>
+
+      <div className="footer-bottom">
+        <p>© {new Date().getFullYear()} 6MOMENTS. Усі права захищені.</p>
+        <nav aria-label="Юридична інформація">
           <Link href="/privacy">Конфіденційність</Link>
           <Link href="/imprint">Юридична інформація</Link>
         </nav>
-        <p>Сучасні реліквії · © {new Date().getFullYear()}</p>
+        <p>Створено для моментів, що залишаються</p>
       </div>
     </footer>
   );
