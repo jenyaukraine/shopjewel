@@ -1252,9 +1252,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .product-copy h1 { font-size: 52px; }
   .interior-hero { min-height: 480px; padding: 70px 22px; }
   .interior-hero h1 { font-size: clamp(55px,17vw,78px); }
-  .interior-hero--collections { min-height: 360px; padding: 48px 22px 54px; }
-  .interior-hero--collections h1 { margin: 12px 0 16px; font-size: clamp(44px,13.5vw,62px); line-height: .92; }
-  .interior-hero--collections > div > p:last-child { font-size: 16px; line-height: 1.5; }
+  .interior-hero--collections { min-height: 270px; padding: 32px 22px 36px; }
+  .interior-hero--collections h1 { max-width: 560px; margin: 9px 0 13px; font-size: clamp(36px,8.8vw,44px); line-height: .96; }
+  .interior-hero--collections > div > p:last-child { max-width: 560px; font-size: 14px; line-height: 1.45; }
   .interior-hero--contact { min-height: 360px; padding: 48px 22px 54px; }
   .interior-hero--contact h1 { margin: 12px 0 16px; font-size: clamp(44px,13.5vw,62px); line-height: .92; }
   .interior-hero--contact > div > p:last-child { font-size: 16px; line-height: 1.5; }

@@ -1447,6 +1447,7 @@ function CatalogPage({
 
   return (
     <section className="catalog-shell">
+      <h1 className="sr-only">Колекція прикрас 6MOMENTS</h1>
       <div className="catalog-toolbar">
         <label className="catalog-search">
           <span className="sr-only">Пошук у каталозі</span>
@@ -1739,16 +1740,18 @@ function InteriorPage({
 
   return (
     <main>
-      <section className={`interior-hero interior-hero--${path.slice(1) || "collections"}`}>
-        <div>
-          <p className="eyebrow">{page.eyebrow}</p>
-          <h1>{page.title}</h1>
-          <p>{page.copy}</p>
-        </div>
-        <span className="interior-mark" aria-hidden="true">
-          {path === "/about" ? "06" : path === "/journal" ? "J" : path === "/contact" ? "C" : "∞"}
-        </span>
-      </section>
+      {path !== "/collections" && (
+        <section className={`interior-hero interior-hero--${path.slice(1) || "collections"}`}>
+          <div>
+            <p className="eyebrow">{page.eyebrow}</p>
+            <h1>{page.title}</h1>
+            <p>{page.copy}</p>
+          </div>
+          <span className="interior-mark" aria-hidden="true">
+            {path === "/about" ? "06" : path === "/journal" ? "J" : path === "/contact" ? "C" : "∞"}
+          </span>
+        </section>
+      )}
 
       {path === "/collections" ? (
         <CatalogPage products={catalog} currency={currency} onQuickAdd={onQuickAdd} />
@@ -2492,9 +2495,10 @@ function WelcomeOverlays() {
     const cookieAccepted = window.localStorage.getItem("6moments-cookie-consent") === "accepted";
     const newsletterDismissed = window.localStorage.getItem("6moments-early-access-dismissed") === "true";
     const newsletterCompleted = window.localStorage.getItem("6moments-early-access-complete") === "true";
+    const newsletterDismissedThisVisit = window.sessionStorage.getItem("6moments-early-access-session-dismissed") === "true";
 
     const cookieTimer = window.setTimeout(() => setCookieOpen(!cookieAccepted), 0);
-    const newsletterTimer = !newsletterDismissed && !newsletterCompleted
+    const newsletterTimer = !newsletterDismissed && !newsletterCompleted && !newsletterDismissedThisVisit
       ? window.setTimeout(() => setNewsletterOpen(true), 350)
       : undefined;
     return () => {
@@ -2518,6 +2522,7 @@ function WelcomeOverlays() {
   });
 
   function closeNewsletter() {
+    window.sessionStorage.setItem("6moments-early-access-session-dismissed", "true");
     if (neverShowAgain) {
       window.localStorage.setItem("6moments-early-access-dismissed", "true");
     }
