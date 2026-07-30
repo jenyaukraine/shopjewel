@@ -375,8 +375,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   text-align: center;
   color: white;
   background:
-    linear-gradient(90deg, rgba(25,20,16,.18), rgba(25,20,16,.42) 35%, rgba(25,20,16,.52) 50%, rgba(25,20,16,.42) 65%, rgba(25,20,16,.18)),
-    #2b241f url("/about-quote-jewelry.webp") center / cover no-repeat;
+    linear-gradient(90deg, rgba(25,20,16,.04), rgba(25,20,16,.24) 34%, rgba(25,20,16,.42) 50%, rgba(25,20,16,.24) 66%, rgba(25,20,16,.04)),
+    #2b241f url("/about-quote-jewelry.webp") center 72% / cover no-repeat;
 }
 .about-quote p {
   margin: 0;
