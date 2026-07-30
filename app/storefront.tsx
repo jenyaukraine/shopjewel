@@ -606,6 +606,66 @@ function HomePage({
           <div><strong>100%</strong><span>застрахованих відправлень</span></div>
         </div>
       </section>
+
+      <section className="brand-story" aria-labelledby="brand-story-title">
+        <div className="brand-story-visual">
+          <Image
+            src="/editorial/journal-heirlooms.webp"
+            alt="Прикраси 6MOMENTS у світлій подарунковій композиції"
+            unoptimized
+            width={1200}
+            height={1200}
+            sizes="(max-width: 800px) 100vw, 52vw"
+          />
+          <span>01 · Наша історія</span>
+        </div>
+        <div className="brand-story-copy">
+          <p className="editorial-script" aria-hidden="true">Щоденник</p>
+          <h2 id="brand-story-title">Прикраси про те, що справді важливе</h2>
+          <p className="brand-story-lead">
+            Є моменти, які тихо змінюють усе: перше «так», новий початок,
+            особистий вибір або вдячність людині, яка завжди поруч.
+          </p>
+          <p>
+            6MOMENTS створює сучасні реліквії із золота, платини та діамантів.
+            Кожна прикраса задумана як частина вашої історії — для щоденного
+            носіння, майбутніх спогадів і передачі наступному поколінню.
+          </p>
+          <dl className="brand-story-values">
+            <div><dt>01</dt><dd><strong>Особистий сенс</strong><span>Розмір, метал і гравіювання обираєте ви</span></dd></div>
+            <div><dt>02</dt><dd><strong>Чесні матеріали</strong><span>Перероблене золото та камені з підтвердженим походженням</span></dd></div>
+            <div><dt>03</dt><dd><strong>Ручна робота</strong><span>Фінальне оздоблення й перевірка кожної прикраси в майстерні</span></dd></div>
+          </dl>
+          <Link className="button story-button" href="/about">Читати нашу історію <span aria-hidden="true">→</span></Link>
+        </div>
+      </section>
+
+      <section className="inspiration-gallery" aria-labelledby="gallery-title">
+        <div className="gallery-heading">
+          <p className="editorial-script" aria-hidden="true">Натхнення</p>
+          <h2 id="gallery-title">Галерея 6MOMENTS</h2>
+          <p>Матеріали, деталі та історії, з яких народжуються майбутні реліквії</p>
+        </div>
+        <div className="gallery-grid">
+          <Link className="gallery-tile gallery-tile--large" href="/journal" aria-label="Читати про архітектуру каблучки">
+            <Image src="/editorial/journal-ring-architecture.webp" alt="" unoptimized width={1200} height={1200} sizes="(max-width: 700px) 100vw, 40vw" />
+            <span>Архітектура світла</span>
+          </Link>
+          <Link className="gallery-tile" href="/collections" aria-label="Переглянути сережки">
+            <Image src="/products/becoming-hoops.webp" alt="" unoptimized width={1200} height={1200} sizes="(max-width: 700px) 50vw, 20vw" />
+            <span>Щоденний ритуал</span>
+          </Link>
+          <Link className="gallery-tile" href="/journal" aria-label="Читати про патину дорогоцінних металів">
+            <Image src="/editorial/journal-patina.webp" alt="" unoptimized width={1200} height={1200} sizes="(max-width: 700px) 50vw, 20vw" />
+            <span>Краса часу</span>
+          </Link>
+          <Link className="gallery-tile gallery-tile--wide" href="/products/arrival-pendant" aria-label="Переглянути підвіску Нова глава">
+            <Image src="/products/arrival-pendant.webp" alt="" unoptimized width={1200} height={1200} sizes="(max-width: 700px) 100vw, 40vw" />
+            <span>Нова глава</span>
+          </Link>
+        </div>
+        <Link className="gallery-link" href="/journal">Відкрити журнал <span aria-hidden="true">↗</span></Link>
+      </section>
     </main>
   );
 }

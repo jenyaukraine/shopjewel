@@ -152,6 +152,39 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .testimonial-facts strong { font: 30px var(--serif); white-space: nowrap; }
 .testimonial-facts span { max-width: 130px; color: var(--muted); font-size: 9px; line-height: 1.4; letter-spacing: .08em; text-transform: uppercase; }
 
+.brand-story { min-height: 720px; display: grid; grid-template-columns: 1.02fr .98fr; background: #f4f0ea; }
+.brand-story-visual { min-height: 720px; position: relative; overflow: hidden; }
+.brand-story-visual img { width: 100%; height: 100%; position: absolute; inset: 0; object-fit: cover; transition: transform .8s cubic-bezier(.2,.8,.2,1); }
+.brand-story:hover .brand-story-visual img { transform: scale(1.02); }
+.brand-story-visual > span { position: absolute; left: 28px; bottom: 24px; padding: 8px 10px; color: #625a51; background: rgba(255,255,255,.72); backdrop-filter: blur(10px); font-size: 8px; letter-spacing: .14em; text-transform: uppercase; }
+.brand-story-copy { padding: clamp(62px,7vw,115px); display: flex; flex-direction: column; justify-content: center; }
+.brand-story-copy .editorial-script { margin-left: -6px; }
+.brand-story-copy h2 { position: relative; max-width: 650px; margin: 0 0 26px; font: 600 clamp(42px,4.3vw,68px)/.94 var(--serif); letter-spacing: -.045em; }
+.brand-story-copy > p:not(.editorial-script) { max-width: 650px; margin: 0 0 15px; color: var(--muted); font: 16px/1.75 var(--serif); }
+.brand-story-copy .brand-story-lead { color: var(--ink) !important; font-size: 20px !important; }
+.brand-story-values { max-width: 680px; margin: 26px 0 32px; border-top: 1px solid var(--line); }
+.brand-story-values > div { display: grid; grid-template-columns: 48px 1fr; gap: 14px; padding: 15px 0; border-bottom: 1px solid var(--line); }
+.brand-story-values dt { padding-top: 3px; color: var(--gold); font: 12px var(--serif); }
+.brand-story-values dd { margin: 0; display: grid; gap: 3px; }
+.brand-story-values dd strong { font: 18px var(--serif); }
+.brand-story-values dd span { color: var(--muted); font-size: 11px; }
+.story-button { align-self: flex-start; gap: 18px; background: transparent; }
+
+.inspiration-gallery { padding: 92px 4vw 74px; color: #f4efe8; background: #252928; }
+.gallery-heading { max-width: 760px; margin: 0 auto 46px; text-align: center; }
+.gallery-heading .editorial-script { color: rgba(255,255,255,.18); }
+.gallery-heading h2 { position: relative; margin: 0; font: 600 clamp(42px,4vw,62px)/1 var(--serif); letter-spacing: -.035em; }
+.gallery-heading > p:not(.editorial-script) { margin: 17px 0 0; color: #a9aaa6; font-size: 14px; }
+.gallery-grid { max-width: 1500px; margin: auto; display: grid; grid-template-columns: 1.4fr .8fr .8fr; grid-template-rows: 260px 260px; gap: 12px; }
+.gallery-tile { min-width: 0; position: relative; overflow: hidden; }
+.gallery-tile--large { grid-row: 1 / 3; }
+.gallery-tile--wide { grid-column: 2 / 4; }
+.gallery-tile img { width: 100%; height: 100%; display: block; object-fit: cover; filter: saturate(.72) brightness(.82); transition: filter .45s, transform .65s cubic-bezier(.2,.8,.2,1); }
+.gallery-tile:hover img { filter: saturate(.95) brightness(.95); transform: scale(1.025); }
+.gallery-tile::after { content: ""; position: absolute; inset: 45% 0 0; background: linear-gradient(transparent,rgba(15,17,16,.72)); }
+.gallery-tile > span { position: absolute; z-index: 2; left: 20px; bottom: 17px; font: 21px var(--serif); }
+.gallery-link { display: table; margin: 34px auto 0; padding-bottom: 5px; border-bottom: 1px solid #777b78; color: #d9d9d5; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; }
+
 .breadcrumbs { max-width: 1500px; margin: auto; padding: 22px 4vw; display: flex; gap: 10px; color: #817a72; font-size: 9px; letter-spacing: .12em; text-transform: uppercase; }
 .product-detail { max-width: 1500px; margin: auto; padding: 10px 4vw 120px; display: grid; grid-template-columns: minmax(0,1.15fr) minmax(390px,.85fr); gap: 6vw; }
 .product-visual { min-height: 720px; position: sticky; top: 20px; display: grid; place-items: center; align-self: start; background: linear-gradient(145deg,#eee8e0,#d6c9ba); overflow: hidden; }
@@ -534,6 +567,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .testimonial-facts { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .testimonial-facts div:nth-child(3) { border-left: 0; border-top: 1px solid var(--line); }
   .testimonial-facts div:nth-child(4) { border-top: 1px solid var(--line); }
+  .brand-story { grid-template-columns: 1fr; }
+  .brand-story-visual { min-height: 620px; }
+  .brand-story-copy { padding: 80px 7vw; }
+  .gallery-grid { grid-template-columns: 1fr 1fr; grid-template-rows: 400px 240px 300px; }
+  .gallery-tile--large { grid-column: 1 / 3; grid-row: auto; }
+  .gallery-tile--wide { grid-column: 1 / 3; }
   .values-grid { grid-template-columns: 1fr; }
   .values-grid article { min-height: 0; padding: 45px 0; border-left: 0; border-top: 1px solid var(--line); }
   .values-grid article:first-child { border-top: 0; }
@@ -611,6 +650,17 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .testimonial-facts div { min-height: 78px; justify-content: flex-start; border-left: 0; border-top: 1px solid var(--line); }
   .testimonial-facts div:first-child { border-top: 0; }
   .testimonial-facts div:nth-child(3) { border-top: 1px solid var(--line); }
+  .brand-story-visual { min-height: 470px; }
+  .brand-story-copy { padding: 72px 22px; }
+  .brand-story-copy h2 { font-size: 45px; }
+  .brand-story-copy .brand-story-lead { font-size: 18px !important; }
+  .brand-story-values > div { grid-template-columns: 38px 1fr; }
+  .story-button { width: 100%; }
+  .inspiration-gallery { padding: 74px 18px 58px; }
+  .gallery-heading { margin-bottom: 34px; }
+  .gallery-heading h2 { font-size: 42px; }
+  .gallery-grid { grid-template-columns: 1fr 1fr; grid-template-rows: 330px 180px 240px; gap: 8px; }
+  .gallery-tile > span { left: 13px; bottom: 12px; font-size: 17px; }
   .breadcrumbs { min-height: 52px; padding: 4px 18px; align-items: center; }
   .breadcrumbs a { min-height: 44px; display: flex; align-items: center; }
   .option-values button, .add-button, .view-bag-link, .quantity button, .remove-item, .checkout-button, .back-button { min-height: 44px; }
