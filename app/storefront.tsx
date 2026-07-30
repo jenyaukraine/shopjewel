@@ -337,6 +337,42 @@ const routeCopy: Record<string, { eyebrow: string; title: string; copy: string }
   },
 };
 
+const heroSlides = [
+  {
+    id: "signature",
+    image: "/hero-6moments-v2.png",
+    imagePosition: "58% 48%",
+    kicker: "Авторська колекція",
+    title: "Де моменти стають спадщиною.",
+    primaryLabel: "Переглянути колекцію",
+    primaryHref: "/collections",
+    secondaryLabel: "Дізнатися більше",
+    secondaryHref: "/about",
+  },
+  {
+    id: "diamonds",
+    image: "/editorial/lab-grown-diamond.png",
+    imagePosition: "58% 50%",
+    kicker: "Освідомлена розкіш",
+    title: "Діамант, обраний із наміром.",
+    primaryLabel: "Переглянути прикраси",
+    primaryHref: "/products/promise-solitaire",
+    secondaryLabel: "Про наші діаманти",
+    secondaryHref: "/diamonds",
+  },
+  {
+    id: "craft",
+    image: "/editorial/craftsmanship.webp",
+    imagePosition: "64% 52%",
+    kicker: "Ручна майстерність",
+    title: "Створено неквапливо. Збережено назавжди.",
+    primaryLabel: "Обрати свою прикрасу",
+    primaryHref: "/collections",
+    secondaryLabel: "Наша майстерність",
+    secondaryHref: "/about",
+  },
+] as const;
+
 function Header({
   path,
   count,
@@ -542,29 +578,110 @@ function HomePage({
   currency: CurrencyCode;
   onQuickAdd: (product: Product, options: Record<string, string>) => void;
 }) {
+  const [heroSlideIndex, setHeroSlideIndex] = useState(0);
+  const [heroPaused, setHeroPaused] = useState(false);
+  const heroTouchStartX = useRef<number | null>(null);
+  const currentHeroSlide = heroSlides[heroSlideIndex];
+
+  const showHeroSlide = useCallback((index: number) => {
+    setHeroSlideIndex((index + heroSlides.length) % heroSlides.length);
+  }, []);
+
+  const showPreviousHeroSlide = useCallback(() => {
+    setHeroSlideIndex((current) => (current - 1 + heroSlides.length) % heroSlides.length);
+  }, []);
+
+  const showNextHeroSlide = useCallback(() => {
+    setHeroSlideIndex((current) => (current + 1) % heroSlides.length);
+  }, []);
+
+  useEffect(() => {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (heroPaused || reducedMotion.matches) return;
+
+    const interval = window.setInterval(showNextHeroSlide, 6500);
+    return () => window.clearInterval(interval);
+  }, [heroPaused, showNextHeroSlide]);
+
   return (
     <main>
-      <section className="hero" aria-labelledby="hero-title">
-        <div className="hero-copy">
-          <p className="hero-kicker">Авторська колекція</p>
-          <h1 id="hero-title">Де моменти стають спадщиною.</h1>
+      <section
+        className="hero"
+        aria-roledescription="карусель"
+        aria-label="Головні пропозиції"
+        onMouseEnter={() => setHeroPaused(true)}
+        onMouseLeave={() => setHeroPaused(false)}
+        onFocus={() => setHeroPaused(true)}
+        onBlur={() => setHeroPaused(false)}
+        onKeyDown={(event) => {
+          if (event.key === "ArrowLeft") {
+            event.preventDefault();
+            showPreviousHeroSlide();
+          }
+          if (event.key === "ArrowRight") {
+            event.preventDefault();
+            showNextHeroSlide();
+          }
+        }}
+        onTouchStart={(event) => {
+          heroTouchStartX.current = event.touches[0]?.clientX ?? null;
+          setHeroPaused(true);
+        }}
+        onTouchEnd={(event) => {
+          const startX = heroTouchStartX.current;
+          const endX = event.changedTouches[0]?.clientX;
+          heroTouchStartX.current = null;
+          setHeroPaused(false);
+
+          if (startX === null || endX === undefined || Math.abs(startX - endX) < 45) return;
+          if (startX > endX) showNextHeroSlide();
+          else showPreviousHeroSlide();
+        }}
+      >
+        <div className="hero-backgrounds" aria-hidden="true">
+          {heroSlides.map((slide, index) => (
+            <div
+              key={slide.id}
+              className={`hero-background ${index === heroSlideIndex ? "is-active" : ""}`}
+              style={{
+                backgroundImage: `url("${slide.image}")`,
+                backgroundPosition: slide.imagePosition,
+              }}
+            />
+          ))}
+        </div>
+        <div className="hero-copy" key={currentHeroSlide.id}>
+          <p className="hero-kicker">{currentHeroSlide.kicker}</p>
+          <h1>{currentHeroSlide.title}</h1>
           <div className="hero-actions">
-            <Link className="button button--dark" href="/collections">Переглянути колекцію</Link>
-            <Link className="hero-learn" href="/about">
+            <Link className="button button--dark" href={currentHeroSlide.primaryHref}>
+              {currentHeroSlide.primaryLabel}
+            </Link>
+            <Link className="hero-learn" href={currentHeroSlide.secondaryHref}>
               <span className="hero-learn-icon" aria-hidden="true">▶</span>
-              Дізнатися більше
+              {currentHeroSlide.secondaryLabel}
             </Link>
           </div>
         </div>
-        <div className="hero-pagination" aria-hidden="true">
-          <span className="is-active" />
-          <span />
-          <span />
+        <div className="hero-pagination" aria-label="Оберіть слайд">
+          {heroSlides.map((slide, index) => (
+            <button
+              key={slide.id}
+              className={index === heroSlideIndex ? "is-active" : ""}
+              type="button"
+              aria-label={`Показати слайд ${index + 1}`}
+              aria-current={index === heroSlideIndex ? "true" : undefined}
+              onClick={() => showHeroSlide(index)}
+            />
+          ))}
         </div>
-        <div className="hero-controls" aria-hidden="true">
-          <span>›</span>
-          <span>‹</span>
+        <div className="hero-controls">
+          <button type="button" aria-label="Наступний слайд" onClick={showNextHeroSlide}>›</button>
+          <button type="button" aria-label="Попередній слайд" onClick={showPreviousHeroSlide}>‹</button>
         </div>
+        <p className="sr-only" aria-live="polite">
+          Слайд {heroSlideIndex + 1} із {heroSlides.length}: {currentHeroSlide.title}
+        </p>
       </section>
 
       <section className="intro">
@@ -2132,25 +2249,49 @@ function Footer() {
   return (
     <footer className="site-footer">
       <div className="footer-signup">
-        <span className="footer-mail-icon" aria-hidden="true">✉</span>
-        <p className="eyebrow">Приватний список 6MOMENTS</p>
-        <h2>Отримайте 15% на перше замовлення</h2>
-        <p className="footer-signup-copy">
-          Нові колекції, історії з майстерні та приватні пропозиції — без зайвих листів.
-        </p>
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            setSubscribed(true);
-            event.currentTarget.reset();
-          }}
-        >
-          <label className="sr-only" htmlFor="email">Електронна адреса</label>
-          <span aria-hidden="true">@</span>
-          <input id="email" name="email" placeholder="Ваша електронна адреса" type="email" required />
-          <button type="submit">{subscribed ? "Готово ✓" : "Підписатися ↗"}</button>
-        </form>
-        {subscribed && <p className="signup-success" role="status">Дякуємо. Ваш персональний код уже в дорозі.</p>}
+        <div className="footer-signup-inner">
+          <div className="footer-signup-heading">
+            <p className="eyebrow">
+              <span aria-hidden="true" />
+              Приватний список 6MOMENTS
+            </p>
+            <h2>
+              Ваш перший момент — <em>особливий.</em>
+            </h2>
+            <p className="footer-signup-copy">
+              Приєднуйтеся до нашого приватного списку й отримайте 15% на перше замовлення.
+              Лише нові колекції, історії з майстерні та обрані пропозиції.
+            </p>
+          </div>
+
+          <div className="footer-signup-card">
+            <div className="footer-offer-heading">
+              <span className="footer-mail-icon" aria-hidden="true">✉</span>
+              <div>
+                <p>Привітальний подарунок</p>
+                <strong>−15%</strong>
+              </div>
+            </div>
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                setSubscribed(true);
+                event.currentTarget.reset();
+              }}
+            >
+              <label className="sr-only" htmlFor="email">Електронна адреса</label>
+              <input id="email" name="email" placeholder="Ваша електронна адреса" type="email" required />
+              <button type="submit">
+                <span>{subscribed ? "Готово" : "Приєднатися"}</span>
+                <span aria-hidden="true">{subscribed ? "✓" : "↗"}</span>
+              </button>
+            </form>
+            <p className="footer-signup-note">
+              Персональний код надійде на вашу пошту. Відписатися можна будь-коли.
+            </p>
+            {subscribed && <p className="signup-success" role="status">Дякуємо. Ваш персональний код уже в дорозі.</p>}
+          </div>
+        </div>
       </div>
 
       <div className="footer-main">
