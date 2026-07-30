@@ -24,7 +24,7 @@ type Product = {
   metal: string;
   fineness: string;
   stoneType: string;
-  availability: "In stock" | "Made to order";
+  availability: "В наявності" | "Під замовлення";
   deliveryDays: number;
   weight: number;
   carat: number;
@@ -45,7 +45,7 @@ const currencyRates: Record<CurrencyCode, number> = {
 };
 
 function formatMoney(price: number, currency: CurrencyCode) {
-  return new Intl.NumberFormat(currency === "CZK" ? "cs-CZ" : currency === "UAH" ? "uk-UA" : "en-US", {
+  return new Intl.NumberFormat("uk-UA", {
     style: "currency",
     currency,
     maximumFractionDigits: 0,
@@ -64,19 +64,19 @@ const products: Product[] = [
     id: "promise-solitaire",
     slug: "promise-solitaire",
     sku: "6M-RI-001",
-    category: "Rings",
-    moment: "Moment 01 — The Promise",
-    title: "Promise Solitaire",
-    subtitle: "18k gold · traceable diamond",
+    category: "Кільця",
+    moment: "Момент 01 — Обіцянка",
+    title: "Солітер «Обіцянка»",
+    subtitle: "Золото 18 каратів · діамант із підтвердженим походженням",
     description:
-      "A low-set solitaire with a softly rounded band, designed to sit close to the hand and wear beautifully every day.",
+      "Солітер із низькою посадкою та м’яко заокругленою шинкою, створений для зручності й щоденного носіння.",
     price: 2450,
     oldPrice: 2750,
     image: "/products/promise-solitaire.webp",
-    metal: "Yellow gold",
+    metal: "Жовте золото",
     fineness: "750 / 18k",
-    stoneType: "Lab-grown diamond",
-    availability: "In stock",
+    stoneType: "Лабораторний діамант",
+    availability: "В наявності",
     deliveryDays: 3,
     weight: 2.8,
     carat: 0.5,
@@ -84,85 +84,85 @@ const products: Product[] = [
     popularity: 100,
     isNew: true,
     options: [
-      { name: "Metal", values: ["Yellow gold", "White gold", "Rose gold"] },
-      { name: "Ring size", values: ["48", "50", "52", "54", "56"] },
-      { name: "Stone", values: ["0.30 ct", "0.50 ct", "0.75 ct"] },
+      { name: "Метал", values: ["Жовте золото", "Біле золото", "Рожеве золото"] },
+      { name: "Розмір каблучки", values: ["48", "50", "52", "54", "56"] },
+      { name: "Камінь", values: ["0,30 карата", "0,50 карата", "0,75 карата"] },
     ],
-    details: ["Solid recycled 18k gold", "VS clarity traceable diamond", "Complimentary resizing within 30 days"],
+    details: ["Цільне перероблене золото 18 каратів", "Діамант чистоти VS із підтвердженим походженням", "Безкоштовна зміна розміру протягом 30 днів"],
   },
   {
     id: "union-band",
     slug: "union-band",
     sku: "6M-WE-002",
-    category: "Wedding rings",
-    moment: "Moment 02 — The Union",
-    title: "Union Band",
-    subtitle: "18k gold · hand-finished",
+    category: "Обручки",
+    moment: "Момент 02 — Союз",
+    title: "Обручка «Союз»",
+    subtitle: "Золото 18 каратів · ручне оздоблення",
     description:
-      "A timeless band with a gently softened profile. Made alone or as a pair, and finished individually by hand.",
+      "Позачасова обручка з делікатно пом’якшеним профілем. Виготовляється окремо або парою та оздоблюється вручну.",
     price: 980,
     image: "/products/union-band.webp",
-    metal: "Yellow gold",
+    metal: "Жовте золото",
     fineness: "750 / 18k",
-    stoneType: "Without stones",
-    availability: "Made to order",
+    stoneType: "Без каменів",
+    availability: "Під замовлення",
     deliveryDays: 10,
     weight: 3.9,
     carat: 0,
     stoneCount: 0,
     popularity: 92,
     options: [
-      { name: "Metal", values: ["Yellow gold", "White gold", "Rose gold"] },
-      { name: "Ring size", values: ["48", "50", "52", "54", "56", "58"] },
-      { name: "Width", values: ["2 mm", "3 mm", "4 mm"] },
+      { name: "Метал", values: ["Жовте золото", "Біле золото", "Рожеве золото"] },
+      { name: "Розмір каблучки", values: ["48", "50", "52", "54", "56", "58"] },
+      { name: "Ширина", values: ["2 мм", "3 мм", "4 мм"] },
     ],
-    details: ["Solid recycled 18k gold", "Satin or polished edge", "Optional engraving included"],
+    details: ["Цільне перероблене золото 18 каратів", "Матова або полірована грань", "Додаткове гравіювання включено"],
   },
   {
     id: "arrival-pendant",
     slug: "arrival-pendant",
     sku: "6M-NE-003",
-    category: "Necklaces",
-    moment: "Moment 03 — The Arrival",
-    title: "Arrival Pendant",
-    subtitle: "18k gold · brilliant diamond",
+    category: "Підвіски",
+    moment: "Момент 03 — Нова глава",
+    title: "Підвіска «Нова глава»",
+    subtitle: "Золото 18 каратів · діамант круглого огранювання",
     description:
-      "A small point of light suspended on a fine chain—made to mark the day a new chapter entered the world.",
+      "Маленька точка світла на тонкому ланцюжку — створена, щоб зберегти день, коли у світі почалася нова глава.",
     price: 1320,
     oldPrice: 1480,
     image: "/products/arrival-pendant.webp",
-    metal: "Yellow gold",
+    metal: "Жовте золото",
     fineness: "750 / 18k",
-    stoneType: "Natural diamond",
-    availability: "In stock",
+    stoneType: "Натуральний діамант",
+    availability: "В наявності",
     deliveryDays: 3,
     weight: 2.1,
     carat: 0.1,
     stoneCount: 1,
     popularity: 96,
     options: [
-      { name: "Metal", values: ["Yellow gold", "White gold"] },
-      { name: "Chain length", values: ["40 cm", "45 cm", "50 cm"] },
-      { name: "Engraving", values: ["Without engraving", "Initial", "Date"] },
+      { name: "Метал", values: ["Жовте золото", "Біле золото"] },
+      { name: "Довжина ланцюжка", values: ["40 см", "45 см", "50 см"] },
+      { name: "Гравіювання", values: ["Без гравіювання", "Ініціал", "Дата"] },
     ],
-    details: ["Solid recycled 18k gold", "0.10 ct traceable diamond", "Adjustable chain fastening"],
+    details: ["Цільне перероблене золото 18 каратів", "Діамант 0,10 карата з підтвердженим походженням", "Регульована застібка ланцюжка"],
   },
   {
     id: "becoming-hoops",
     slug: "becoming-hoops",
     sku: "6M-EA-004",
-    category: "Earrings",
-    moment: "Moment 04 — The Becoming",
-    title: "Becoming Hoops",
-    subtitle: "18k gold · sold as a pair",
+    category: "Сережки",
+    moment: "Момент 04 — Становлення",
+    title: "Сережки «Становлення»",
+    subtitle: "Золото 18 каратів · продаються парою",
     description:
-      "Lightweight oval hoops with enough presence for every day and enough restraint to remain entirely your own.",
+      "Легкі овальні сережки з виразністю для кожного дня та стриманістю, що робить їх по-справжньому вашими.",
     price: 1180,
     image: "/products/becoming-hoops.webp",
-    metal: "Yellow gold",
+    metal: "Жовте золото",
     fineness: "750 / 18k",
-    stoneType: "Without stones",
-    availability: "In stock",
+    stoneType: "Без каменів",
+    availability: "В наявності",
     deliveryDays: 3,
     weight: 4.2,
     carat: 0,
@@ -170,85 +170,85 @@ const products: Product[] = [
     popularity: 88,
     isNew: true,
     options: [
-      { name: "Metal", values: ["Yellow gold", "White gold", "Rose gold"] },
-      { name: "Size", values: ["Small", "Medium", "Large"] },
-      { name: "Finish", values: ["Polished", "Soft satin"] },
+      { name: "Метал", values: ["Жовте золото", "Біле золото", "Рожеве золото"] },
+      { name: "Розмір", values: ["Малий", "Середній", "Великий"] },
+      { name: "Оздоблення", values: ["Поліроване", "М’яке матове"] },
     ],
-    details: ["Solid recycled 18k gold", "Secure hinged closure", "Comfort-weight construction"],
+    details: ["Цільне перероблене золото 18 каратів", "Надійна шарнірна застібка", "Комфортна легка конструкція"],
   },
   {
     id: "gratitude-bracelet",
     slug: "gratitude-bracelet",
     sku: "6M-BR-005",
-    category: "Bracelets",
-    moment: "Moment 05 — The Gratitude",
-    title: "Gratitude Bracelet",
-    subtitle: "18k gold · hand-set stone",
+    category: "Браслети",
+    moment: "Момент 05 — Вдячність",
+    title: "Браслет «Вдячність»",
+    subtitle: "Золото 18 каратів · камінь закріплений вручну",
     description:
-      "A delicate oval link bracelet punctuated by a single diamond—a quiet thank you that stays close.",
+      "Тонкий браслет з овальними ланками та одним діамантом — тихе «дякую», яке завжди поруч.",
     price: 1560,
     oldPrice: 1790,
     image: "/products/gratitude-bracelet.webp",
-    metal: "Yellow gold",
+    metal: "Жовте золото",
     fineness: "750 / 18k",
-    stoneType: "Natural diamond",
-    availability: "In stock",
+    stoneType: "Натуральний діамант",
+    availability: "В наявності",
     deliveryDays: 3,
     weight: 2.6,
     carat: 0.15,
     stoneCount: 1,
     popularity: 90,
     options: [
-      { name: "Metal", values: ["Yellow gold", "White gold"] },
-      { name: "Length", values: ["15 cm", "17 cm", "19 cm"] },
-      { name: "Stone", values: ["Diamond", "Sapphire", "Emerald"] },
+      { name: "Метал", values: ["Жовте золото", "Біле золото"] },
+      { name: "Довжина", values: ["15 см", "17 см", "19 см"] },
+      { name: "Камінь", values: ["Діамант", "Сапфір", "Смарагд"] },
     ],
-    details: ["Solid recycled 18k gold", "Traceable natural stone", "Hidden safety fastening"],
+    details: ["Цільне перероблене золото 18 каратів", "Натуральний камінь із підтвердженим походженням", "Прихована захисна застібка"],
   },
   {
     id: "legacy-signet",
     slug: "legacy-signet",
     sku: "6M-RI-006",
-    category: "Rings",
-    moment: "Moment 06 — The Legacy",
-    title: "Legacy Signet",
-    subtitle: "Platinum · made to order",
+    category: "Кільця",
+    moment: "Момент 06 — Спадщина",
+    title: "Перстень «Спадщина»",
+    subtitle: "Платина · виготовлення під замовлення",
     description:
-      "A weighty signet with a softened face, ready for a mark, monogram, date, or symbol that belongs only to you.",
+      "Вагомий перстень із пом’якшеною площиною для знака, монограми, дати або символу, що належить лише вам.",
     price: 2250,
     image: "/products/legacy-signet.webp",
-    metal: "Platinum",
+    metal: "Платина",
     fineness: "950",
-    stoneType: "Without stones",
-    availability: "Made to order",
+    stoneType: "Без каменів",
+    availability: "Під замовлення",
     deliveryDays: 10,
     weight: 8.4,
     carat: 0,
     stoneCount: 0,
     popularity: 82,
     options: [
-      { name: "Material", values: ["Platinum", "Yellow gold", "White gold"] },
-      { name: "Ring size", values: ["50", "52", "54", "56", "58", "60"] },
-      { name: "Face", values: ["Plain", "Monogram", "Symbol"] },
+      { name: "Матеріал", values: ["Платина", "Жовте золото", "Біле золото"] },
+      { name: "Розмір каблучки", values: ["50", "52", "54", "56", "58", "60"] },
+      { name: "Лицьова частина", values: ["Без оздоблення", "Монограма", "Символ"] },
     ],
-    details: ["Made individually to order", "Hand-engraving available", "Presented in a solid oak box"],
+    details: ["Індивідуальне виготовлення під замовлення", "Доступне ручне гравіювання", "Подається у коробці з цільного дуба"],
   },
   {
     id: "first-ride",
     slug: "first-ride",
     sku: "6M-SE-007",
-    category: "Special editions",
-    moment: "Special edition — The First Ride",
-    title: "First Ride Balance Bike",
-    subtitle: "Ash wood · leather · alloy",
+    category: "Спеціальні видання",
+    moment: "Спецсерія — Перша поїздка",
+    title: "Біговел «Перша поїздка»",
+    subtitle: "Ясен · шкіра · сплав",
     description:
-      "A lasting object for a very first adventure. The same product model supports practical attributes such as wheel diameter, frame size and colour.",
+      "Довговічна річ для найпершої пригоди. Модель товару підтримує практичні атрибути: діаметр коліс, розмір рами та колір.",
     price: 890,
     image: "/products/first-ride.webp",
-    metal: "Alloy",
-    fineness: "Not applicable",
-    stoneType: "Without stones",
-    availability: "In stock",
+    metal: "Сплав",
+    fineness: "Не застосовується",
+    stoneType: "Без каменів",
+    availability: "В наявності",
     deliveryDays: 3,
     weight: 3100,
     carat: 0,
@@ -256,34 +256,34 @@ const products: Product[] = [
     popularity: 76,
     isNew: true,
     options: [
-      { name: "Wheel size", values: ["12 inch", "14 inch", "16 inch"] },
-      { name: "Frame size", values: ["Small", "Medium"] },
-      { name: "Colour", values: ["Oat", "Forest", "Ink"] },
+      { name: "Розмір коліс", values: ["12 дюймів", "14 дюймів", "16 дюймів"] },
+      { name: "Розмір рами", values: ["Малий", "Середній"] },
+      { name: "Колір", values: ["Вівсяний", "Лісовий", "Графітовий"] },
     ],
-    details: ["Responsibly sourced ash frame", "Puncture-resistant tyres", "Adjustable leather saddle"],
+    details: ["Рама з відповідально заготовленого ясена", "Стійкі до проколів шини", "Регульоване шкіряне сідло"],
   },
 ];
 
 const routeCopy: Record<string, { eyebrow: string; title: string; copy: string }> = {
   "/collections": {
-    eyebrow: "The collection",
-    title: "Objects with a reason to remain.",
-    copy: "Seven made-to-keep pieces, each available in the size, material and finish that makes it yours.",
+    eyebrow: "Колекція",
+    title: "Речі, що мають причину залишитися.",
+    copy: "Сім речей, створених надовго. Оберіть розмір, матеріал і оздоблення, щоб кожна стала саме вашою.",
   },
   "/about": {
-    eyebrow: "Our philosophy",
-    title: "A life is remembered in moments.",
-    copy: "6MOMENTS creates modern heirlooms for the passages that shape us—not only the expected ones, but the deeply personal ones too.",
+    eyebrow: "Наша філософія",
+    title: "Життя запам’ятовується моментами.",
+    copy: "6MOMENTS створює сучасні реліквії для подій, що формують нас — не лише очікуваних, а й глибоко особистих.",
   },
   "/journal": {
-    eyebrow: "The journal",
-    title: "Stories worth carrying forward.",
-    copy: "Notes on ritual, craft, and the people who give objects their meaning.",
+    eyebrow: "Журнал",
+    title: "Історії, які варто нести далі.",
+    copy: "Нотатки про ритуали, майстерність і людей, які надають речам значення.",
   },
   "/contact": {
-    eyebrow: "Private appointments",
-    title: "We are here for your moment.",
-    copy: "Speak with our atelier about sizing, stones, engraving, or a piece made only for you.",
+    eyebrow: "Приватні консультації",
+    title: "Ми поруч у ваш особливий момент.",
+    copy: "Поговоріть із нашою майстернею про розмір, камені, гравіювання або прикрасу, створену лише для вас.",
   },
 };
 
@@ -302,25 +302,25 @@ function Header({
 }) {
   return (
     <>
-      <div className="announcement">Complimentary insured delivery and returns</div>
+      <div className="announcement">Безкоштовна застрахована доставка та повернення</div>
       <header className="site-header">
-        <Link className="wordmark" href="/" aria-label="6MOMENTS home">
+        <Link className="wordmark" href="/" aria-label="6MOMENTS — головна">
           6MOMENTS
         </Link>
-        <nav className="desktop-nav" aria-label="Primary navigation">
+        <nav className="desktop-nav" aria-label="Основна навігація">
           <Link aria-current={path.startsWith("/collections") || path.startsWith("/products") ? "page" : undefined} href="/collections">
-            Shop
+            Каталог
           </Link>
           <Link aria-current={path === "/about" ? "page" : undefined} href="/about">
-            Our story
+            Про нас
           </Link>
           <Link aria-current={path === "/journal" ? "page" : undefined} href="/journal">
-            Journal
+            Журнал
           </Link>
         </nav>
         <div className="header-actions">
           <label className="currency-control">
-            <span className="sr-only">Currency</span>
+            <span className="sr-only">Валюта</span>
             <select value={currency} onChange={(event) => onCurrency(event.target.value as CurrencyCode)}>
               <option value="USD">USD</option>
               <option value="EUR">EUR</option>
@@ -328,20 +328,20 @@ function Header({
               <option value="UAH">UAH</option>
             </select>
           </label>
-          <Link href="/contact">Private appointment</Link>
-          <button className="bag" type="button" onClick={onOpenCart} aria-label={`Shopping bag, ${count} items`}>
-            Bag <span>{count}</span>
+          <Link href="/contact">Приватна консультація</Link>
+          <button className="bag" type="button" onClick={onOpenCart} aria-label={`Кошик, товарів: ${count}`}>
+            Кошик <span>{count}</span>
           </button>
         </div>
         <details className="mobile-menu">
-          <summary aria-label="Open navigation">Menu</summary>
-          <nav aria-label="Mobile navigation">
-            <Link href="/collections">Shop</Link>
-            <Link href="/about">Our story</Link>
-            <Link href="/journal">Journal</Link>
-            <Link href="/admin/catalog">Catalog manager</Link>
-            <Link href="/contact">Private appointment</Link>
-            <label className="mobile-currency">Currency
+          <summary aria-label="Відкрити навігацію">Меню</summary>
+          <nav aria-label="Мобільна навігація">
+            <Link href="/collections">Каталог</Link>
+            <Link href="/about">Про нас</Link>
+            <Link href="/journal">Журнал</Link>
+            <Link href="/admin/catalog">Керування каталогом</Link>
+            <Link href="/contact">Приватна консультація</Link>
+            <label className="mobile-currency">Валюта
               <select value={currency} onChange={(event) => onCurrency(event.target.value as CurrencyCode)}>
                 <option value="USD">USD</option>
                 <option value="EUR">EUR</option>
@@ -349,7 +349,7 @@ function Header({
                 <option value="UAH">UAH</option>
               </select>
             </label>
-            <button type="button" onClick={onOpenCart}>Bag ({count})</button>
+            <button type="button" onClick={onOpenCart}>Кошик ({count})</button>
           </nav>
         </details>
       </header>
@@ -390,7 +390,7 @@ function ProductGrid({
                 sizes="(max-width: 720px) 50vw, 33vw"
               />
               <span className="moment-number">{product.moment.split(" — ")[0]}</span>
-              {product.isNew && <span className="product-badge">New</span>}
+              {product.isNew && <span className="product-badge">Новинка</span>}
               <span className="card-arrow" aria-hidden="true">↗</span>
             </div>
             <p className="product-kicker">{product.moment}</p>
@@ -403,19 +403,19 @@ function ProductGrid({
             </div>
             <p>{product.subtitle}</p>
             <dl className="card-specs">
-              <div><dt>SKU</dt><dd>{product.sku}</dd></div>
-              <div><dt>Weight</dt><dd>{product.weight >= 100 ? `${(product.weight / 1000).toFixed(1)} kg` : `${product.weight} g`}</dd></div>
-              <div><dt>Carat</dt><dd>{product.carat || "—"}</dd></div>
-              <div><dt>Stones</dt><dd>{product.stoneCount || "—"}</dd></div>
+              <div><dt>Артикул</dt><dd>{product.sku}</dd></div>
+              <div><dt>Вага</dt><dd>{product.weight >= 100 ? `${(product.weight / 1000).toFixed(1)} кг` : `${product.weight} г`}</dd></div>
+              <div><dt>Карати</dt><dd>{product.carat || "—"}</dd></div>
+              <div><dt>Камені</dt><dd>{product.stoneCount || "—"}</dd></div>
             </dl>
           </Link>
           <div className="card-footer">
-            <span className={`stock-status ${product.availability === "In stock" ? "is-stocked" : ""}`}>
-              {product.availability} · {product.deliveryDays} days
+            <span className={`stock-status ${product.availability === "В наявності" ? "is-stocked" : ""}`}>
+              {product.availability} · доставка {product.deliveryDays} днів
             </span>
             {onQuickAdd && (
               <button type="button" onClick={() => onQuickAdd(product, defaultOptions(product))}>
-                Quick add
+                Швидко додати
               </button>
             )}
           </div>
@@ -438,33 +438,33 @@ function HomePage({
     <main>
       <section className="hero" aria-labelledby="hero-title">
         <div className="hero-copy">
-          <p className="eyebrow">Fine pieces for a life well lived</p>
-          <h1 id="hero-title">Where moments become legacy.</h1>
+          <p className="eyebrow">Вишукані речі для життя зі змістом</p>
+          <h1 id="hero-title">Де моменти стають спадщиною.</h1>
           <p>
-            Seven defining keepsakes, made in enduring materials and configured for the person who will carry them forward.
+            Сім знакових речей із довговічних матеріалів, створених для людини, яка нестиме їхню історію далі.
           </p>
           <div className="hero-actions">
-            <Link className="button button--dark" href="/collections">Shop the collection</Link>
-            <Link className="text-link" href="/about">Our philosophy <span aria-hidden="true">→</span></Link>
+            <Link className="button button--dark" href="/collections">Переглянути колекцію</Link>
+            <Link className="text-link" href="/about">Наша філософія <span aria-hidden="true">→</span></Link>
           </div>
         </div>
       </section>
 
       <section className="intro">
-        <p className="eyebrow">The six moments · one special edition</p>
-        <h2>Choose the details that make it yours.</h2>
+        <p className="eyebrow">Шість моментів · одне спеціальне видання</p>
+        <h2>Оберіть деталі, що зроблять річ вашою.</h2>
         <p className="intro-copy">
-          Select the right material, size, finish or practical specification. Every choice follows the piece into your bag and order.
+          Оберіть матеріал, розмір, оздоблення або практичну характеристику. Кожен вибір збережеться в кошику та замовленні.
         </p>
       </section>
 
       <section className="moments-section" aria-labelledby="products-title">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">The collection</p>
-            <h2 id="products-title">Pieces to keep</h2>
+            <p className="eyebrow">Колекція</p>
+            <h2 id="products-title">Речі, які залишаються</h2>
           </div>
-          <Link className="text-link" href="/collections">View all products <span aria-hidden="true">→</span></Link>
+          <Link className="text-link" href="/collections">Переглянути всі товари <span aria-hidden="true">→</span></Link>
         </div>
         <ProductGrid products={catalog} currency={currency} limit={6} onQuickAdd={onQuickAdd} />
       </section>
@@ -473,19 +473,19 @@ function HomePage({
         <Image
           className="craft-image"
           src="/editorial/craftsmanship.webp"
-          alt="Goldsmith finishing a fine gold ring by hand"
+          alt="Ювелір вручну оздоблює золоту каблучку"
           unoptimized
           width={1200}
           height={1200}
           sizes="(max-width: 720px) 100vw, 58vw"
         />
         <div className="craft-copy">
-          <p className="eyebrow">Made to outlive the moment</p>
-          <h2>Crafted slowly.<br />Kept forever.</h2>
+          <p className="eyebrow">Створено пережити сам момент</p>
+          <h2>Створено неквапливо.<br />Збережено назавжди.</h2>
           <p>
-            Every piece is considered from every angle, finished by hand, and made to grow more personal with time.
+            Кожна річ продумана з усіх боків, оздоблена вручну й створена ставати дедалі особистішою з часом.
           </p>
-          <Link className="text-link" href="/about">Our materials and craft <span aria-hidden="true">→</span></Link>
+          <Link className="text-link" href="/about">Наші матеріали та майстерність <span aria-hidden="true">→</span></Link>
         </div>
       </section>
     </main>
@@ -512,14 +512,14 @@ function ProductDetail({
   const [hintSent, setHintSent] = useState(false);
 
   function addProduct() {
-    onAdd(product, engraving ? { ...selected, Engraving: engraving } : selected);
+    onAdd(product, engraving ? { ...selected, Гравіювання: engraving } : selected);
     setAdded(true);
   }
 
   return (
     <main>
       <div className="breadcrumbs">
-        <Link href="/collections">Collection</Link><span aria-hidden="true">/</span><span>{product.title}</span>
+        <Link href="/collections">Колекція</Link><span aria-hidden="true">/</span><span>{product.title}</span>
       </div>
       <section className="product-detail">
         <div className="product-visual">
@@ -539,9 +539,9 @@ function ProductDetail({
           <p className="eyebrow">{product.moment}</p>
           <h1>{product.title}</h1>
           <div className="product-status-line">
-            <strong className={product.availability === "In stock" ? "is-stocked" : ""}>{product.availability}</strong>
-            <span>Delivery in {product.deliveryDays} days</span>
-            <span>SKU {product.sku}</span>
+            <strong className={product.availability === "В наявності" ? "is-stocked" : ""}>{product.availability}</strong>
+            <span>Доставка: {product.deliveryDays} днів</span>
+            <span>Артикул {product.sku}</span>
           </div>
           <p className="product-price">
             {product.oldPrice && <del>{formatMoney(product.oldPrice, currency)}</del>}
@@ -573,48 +573,48 @@ function ProductDetail({
           </div>
 
           <label className="engraving-field">
-            Optional engraving
+            Додаткове гравіювання
             <input
               maxLength={24}
               onChange={(event) => {
                 setEngraving(event.target.value);
                 setAdded(false);
               }}
-              placeholder="Initials or a meaningful date"
+              placeholder="Ініціали або пам’ятна дата"
               value={engraving}
             />
-            <small>{engraving.length}/24 characters · confirmed by the atelier before production</small>
+            <small>{engraving.length}/24 символи · майстерня підтвердить напис перед виготовленням</small>
           </label>
 
           <button className="button button--dark add-button" type="button" onClick={addProduct}>
-            {added ? "Added to bag" : `Add to bag — ${formatMoney(product.price, currency)}`}
+            {added ? "Додано до кошика" : `Додати до кошика — ${formatMoney(product.price, currency)}`}
           </button>
           {added && (
-            <button className="view-bag-link" type="button" onClick={onOpenCart}>View bag →</button>
+            <button className="view-bag-link" type="button" onClick={onOpenCart}>Переглянути кошик →</button>
           )}
           <ul className="product-details-list">
             {product.details.map((detail) => <li key={detail}>{detail}</li>)}
           </ul>
           <div className="specification-block">
-            <h2>Product specifications</h2>
+            <h2>Характеристики товару</h2>
             <dl>
-              <div><dt>Category</dt><dd>{product.category}</dd></div>
-              <div><dt>Metal colour</dt><dd>{product.metal}</dd></div>
-              <div><dt>Fineness</dt><dd>{product.fineness}</dd></div>
-              <div><dt>Stone</dt><dd>{product.stoneType}</dd></div>
-              <div><dt>Weight</dt><dd>{product.weight >= 100 ? `${(product.weight / 1000).toFixed(1)} kg` : `${product.weight} g`}</dd></div>
-              <div><dt>Total carat</dt><dd>{product.carat ? `${product.carat} ct` : "Without stones"}</dd></div>
-              <div><dt>Stone count</dt><dd>{product.stoneCount}</dd></div>
+              <div><dt>Категорія</dt><dd>{product.category}</dd></div>
+              <div><dt>Колір металу</dt><dd>{product.metal}</dd></div>
+              <div><dt>Проба</dt><dd>{product.fineness}</dd></div>
+              <div><dt>Камінь</dt><dd>{product.stoneType}</dd></div>
+              <div><dt>Вага</dt><dd>{product.weight >= 100 ? `${(product.weight / 1000).toFixed(1)} кг` : `${product.weight} г`}</dd></div>
+              <div><dt>Загальна каратність</dt><dd>{product.carat ? `${product.carat} карата` : "Без каменів"}</dd></div>
+              <div><dt>Кількість каменів</dt><dd>{product.stoneCount}</dd></div>
             </dl>
           </div>
-          {product.category.includes("Ring") && (
+          {["Кільця", "Обручки"].includes(product.category) && (
             <details className="product-accordion">
-              <summary>Find your ring size</summary>
-              <p>Measure the inside diameter of a ring that already fits. 15.3 / 15.9 / 16.5 / 17.2 / 17.8 mm correspond to EU sizes 48 / 50 / 52 / 54 / 56.</p>
+              <summary>Як визначити розмір каблучки</summary>
+              <p>Виміряйте внутрішній діаметр каблучки, яка вам пасує. 15,3 / 15,9 / 16,5 / 17,2 / 17,8 мм відповідають європейським розмірам 48 / 50 / 52 / 54 / 56.</p>
             </details>
           )}
           <details className="product-accordion">
-            <summary>Hint about this gift</summary>
+            <summary>Натякнути про подарунок</summary>
             <form
               className="hint-form"
               onSubmit={(event) => {
@@ -623,11 +623,11 @@ function ProductDetail({
                 event.currentTarget.reset();
               }}
             >
-              <label>Your name<input name="sender" required /></label>
-              <label>Recipient email<input name="recipient" type="email" required /></label>
-              <label>Message<textarea name="message" rows={3} defaultValue={`I found ${product.title} and thought of you.`} /></label>
-              <button className="button button--dark" type="submit">Send a discreet hint</button>
-              {hintSent && <p className="form-success" role="status">Your hint is ready to make their day.</p>}
+              <label>Ваше ім’я<input name="sender" required /></label>
+              <label>Email отримувача<input name="recipient" type="email" required /></label>
+              <label>Повідомлення<textarea name="message" rows={3} defaultValue={`Я побачив(-ла) ${product.title} і подумав(-ла) про тебе.`} /></label>
+              <button className="button button--dark" type="submit">Надіслати делікатний натяк</button>
+              {hintSent && <p className="form-success" role="status">Натяк готовий подарувати приємну мить.</p>}
             </form>
           </details>
         </div>
@@ -635,9 +635,9 @@ function ProductDetail({
       {related[0] && (
         <section className="bundle-section">
           <div>
-            <p className="eyebrow">Better together</p>
-            <h2>A considered pair, 10% less.</h2>
-            <p>{product.title} and {related[0].title} arrive together in our signature presentation.</p>
+            <p className="eyebrow">Разом вигідніше</p>
+            <h2>Продуманий комплект зі знижкою 10%.</h2>
+            <p>{product.title} і {related[0].title} будуть оформлені разом у нашому фірмовому пакуванні.</p>
           </div>
           <div className="bundle-price">
             <del>{formatMoney(product.price + related[0].price, currency)}</del>
@@ -651,7 +651,7 @@ function ProductDetail({
                 onOpenCart();
               }}
             >
-              Add the set
+              Додати комплект
             </button>
           </div>
         </section>
@@ -659,7 +659,7 @@ function ProductDetail({
       {related.length > 0 && (
         <section className="moments-section recommendations">
           <div className="section-heading">
-            <div><p className="eyebrow">You may also like</p><h2>Chosen for your moment</h2></div>
+            <div><p className="eyebrow">Вам також може сподобатися</p><h2>Обрано для вашого моменту</h2></div>
           </div>
           <ProductGrid products={related} currency={currency} limit={3} onQuickAdd={onAdd} />
         </section>
@@ -1292,6 +1292,138 @@ function Footer() {
   );
 }
 
+function WelcomeOverlays() {
+  const [newsletterOpen, setNewsletterOpen] = useState(false);
+  const [cookieOpen, setCookieOpen] = useState(false);
+  const [neverShowAgain, setNeverShowAgain] = useState(false);
+  const [subscribed, setSubscribed] = useState(false);
+
+  useEffect(() => {
+    const cookieAccepted = window.localStorage.getItem("6moments-cookie-consent") === "accepted";
+    const newsletterDismissed = window.localStorage.getItem("6moments-early-access-dismissed") === "true";
+    const newsletterCompleted = window.localStorage.getItem("6moments-early-access-complete") === "true";
+
+    setCookieOpen(!cookieAccepted);
+    if (!newsletterDismissed && !newsletterCompleted) {
+      const timer = window.setTimeout(() => setNewsletterOpen(true), 350);
+      return () => window.clearTimeout(timer);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!newsletterOpen) return;
+
+    document.body.classList.add("welcome-open");
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeNewsletter();
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.classList.remove("welcome-open");
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  });
+
+  function closeNewsletter() {
+    if (neverShowAgain) {
+      window.localStorage.setItem("6moments-early-access-dismissed", "true");
+    }
+    setNewsletterOpen(false);
+  }
+
+  function submitNewsletter(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    window.localStorage.setItem("6moments-early-access-complete", "true");
+    setSubscribed(true);
+    window.setTimeout(() => setNewsletterOpen(false), 1200);
+  }
+
+  function acceptCookies() {
+    window.localStorage.setItem("6moments-cookie-consent", "accepted");
+    setCookieOpen(false);
+  }
+
+  return (
+    <>
+      {newsletterOpen && (
+        <div
+          className="welcome-overlay"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closeNewsletter();
+          }}
+        >
+          <section
+            className="welcome-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="welcome-title"
+          >
+            <button
+              className="welcome-close"
+              type="button"
+              onClick={closeNewsletter}
+              aria-label="Close early access invitation"
+            >
+              <span aria-hidden="true">×</span>
+            </button>
+            <div className="welcome-image" aria-hidden="true" />
+            <div className="welcome-copy">
+              <h2 id="welcome-title">Unlock early access</h2>
+              <p>
+                Be among the first to explore new collections, exclusive releases,
+                and private offers reserved for our community. Enjoy{" "}
+                <strong>complimentary shipping</strong> on your first purchase.
+              </p>
+              {subscribed ? (
+                <p className="welcome-success" role="status">
+                  Welcome to the inner circle.
+                </p>
+              ) : (
+                <form className="welcome-form" onSubmit={submitNewsletter}>
+                  <label className="sr-only" htmlFor="welcome-email">Email address</label>
+                  <input
+                    id="welcome-email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="Email address"
+                    autoFocus
+                    required
+                  />
+                  <button type="submit" aria-label="Join the early access list">
+                    <span aria-hidden="true">↗</span>
+                  </button>
+                </form>
+              )}
+            </div>
+            <label className="welcome-never">
+              <input
+                type="checkbox"
+                checked={neverShowAgain}
+                onChange={(event) => setNeverShowAgain(event.target.checked)}
+              />
+              <span>Don&apos;t show again</span>
+            </label>
+          </section>
+        </div>
+      )}
+
+      {cookieOpen && (
+        <aside className="cookie-banner" aria-label="Cookie notice">
+          <span className="cookie-icon" aria-hidden="true">●</span>
+          <p>
+            We use cookies and other similar technologies to improve your browsing
+            experience and the functionality of our site. Learn more in our{" "}
+            <Link href="/privacy">Privacy Policy</Link>.
+          </p>
+          <button type="button" onClick={acceptCookies} aria-label="Accept cookies">OK</button>
+        </aside>
+      )}
+    </>
+  );
+}
+
 export function Storefront({ path }: { path: string }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
@@ -1417,6 +1549,7 @@ export function Storefront({ path }: { path: string }) {
         onRemove={(key) => setCart((current) => current.filter((item) => item.key !== key))}
         onClear={() => setCart([])}
       />
+      <WelcomeOverlays />
     </div>
   );
 }
