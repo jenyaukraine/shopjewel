@@ -34,6 +34,9 @@ test("server-renders the finished storefront", async () => {
   assert.match(html, /Позачасові прикраси/);
   assert.match(html, /Солітер «Обіцянка»/);
   assert.match(html, /Створено неквапливо/);
+  assert.match(html, /Категорії товарів/);
+  assert.match(html, /Спецпропозиції/);
+  assert.match(html, /Онлайн-консультації/);
   assert.match(html, /https:\/\/katya-dev\.duckdns\.org\/og-store\.png/);
   assert.doesNotMatch(html, /_vinext\/image/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/i);

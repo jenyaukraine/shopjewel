@@ -315,6 +315,24 @@ function Header({
   onCurrency: (currency: CurrencyCode) => void;
   onOpenCart: () => void;
 }) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const mobileCategories = [
+    ["Каблучки", "/products/promise-solitaire.webp"],
+    ["Браслети", "/products/gratitude-bracelet.webp"],
+    ["Підвіски", "/products/arrival-pendant.webp"],
+    ["Сережки", "/products/becoming-hoops.webp"],
+    ["Спецпропозиції", "/products/legacy-signet.webp"],
+  ];
+
+  useEffect(() => {
+    document.body.classList.toggle("menu-open", mobileOpen);
+    return () => document.body.classList.remove("menu-open");
+  }, [mobileOpen]);
+
+  function closeMobileMenu() {
+    setMobileOpen(false);
+  }
+
   return (
     <>
       <div className="announcement">Безкоштовна застрахована доставка та повернення</div>
@@ -348,15 +366,43 @@ function Header({
             Кошик <span>{count}</span>
           </button>
         </div>
-        <details className="mobile-menu">
-          <summary aria-label="Відкрити навігацію">Меню</summary>
-          <nav aria-label="Мобільна навігація">
-            <Link href="/collections">Каталог</Link>
-            <Link href="/about">Про нас</Link>
-            <Link href="/journal">Журнал</Link>
-            <Link href="/admin/catalog">Керування каталогом</Link>
-            <Link href="/contact">Приватна консультація</Link>
-            <label className="mobile-currency">Валюта
+        <button
+          className="mobile-menu-trigger"
+          type="button"
+          aria-expanded={mobileOpen}
+          aria-controls="mobile-navigation"
+          onClick={() => setMobileOpen(true)}
+        >
+          <span aria-hidden="true">☰</span> Меню
+        </button>
+      </header>
+      <div className={`mobile-drawer-shell ${mobileOpen ? "is-open" : ""}`} aria-hidden={!mobileOpen}>
+        <button className="mobile-drawer-backdrop" type="button" aria-label="Закрити меню" onClick={closeMobileMenu} />
+        <aside className="mobile-drawer" id="mobile-navigation" aria-label="Мобільна навігація">
+          <div className="mobile-drawer-header">
+            <strong>Меню</strong>
+            <button type="button" onClick={closeMobileMenu} aria-label="Закрити меню">×</button>
+          </div>
+          <nav className="mobile-category-nav" aria-label="Категорії товарів">
+            {mobileCategories.map(([label, image]) => (
+              <Link href="/collections" key={label} onClick={closeMobileMenu}>
+                <span>
+                  <Image src={image} alt="" unoptimized width={92} height={92} sizes="46px" />
+                </span>
+                {label}
+              </Link>
+            ))}
+          </nav>
+          <nav className="mobile-main-nav" aria-label="Розділи сайту">
+            <Link href="/" onClick={closeMobileMenu}><span aria-hidden="true">⌂</span> Головна</Link>
+            <Link href="/collections" onClick={closeMobileMenu}><span aria-hidden="true">◇</span> Усі прикраси</Link>
+            <Link href="/about" onClick={closeMobileMenu}><span aria-hidden="true">○</span> Про нас</Link>
+            <Link href="/journal" onClick={closeMobileMenu}><span aria-hidden="true">▤</span> Журнал</Link>
+            <Link href="/diamonds" onClick={closeMobileMenu}><span aria-hidden="true">◆</span> Про діаманти</Link>
+            <Link href="/contact" onClick={closeMobileMenu}><span aria-hidden="true">✉</span> Контакти</Link>
+          </nav>
+          <div className="mobile-drawer-controls">
+            <label>Валюта
               <select value={currency} onChange={(event) => onCurrency(event.target.value as CurrencyCode)}>
                 <option value="USD">USD</option>
                 <option value="EUR">EUR</option>
@@ -364,10 +410,22 @@ function Header({
                 <option value="UAH">UAH</option>
               </select>
             </label>
-            <button type="button" onClick={onOpenCart}>Кошик ({count})</button>
-          </nav>
-        </details>
-      </header>
+            <button
+              type="button"
+              onClick={() => {
+                closeMobileMenu();
+                onOpenCart();
+              }}
+            >
+              Кошик <span>{count}</span>
+            </button>
+          </div>
+          <div className="mobile-drawer-contact">
+            <a href="mailto:atelier@6moments.store">atelier@6moments.store</a>
+            <small>Онлайн-консультації · Пн—Пт, 10:00—18:00</small>
+          </div>
+        </aside>
+      </div>
     </>
   );
 }
