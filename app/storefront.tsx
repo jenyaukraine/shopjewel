@@ -1386,7 +1386,10 @@ function CatalogPage({
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   useEffect(() => {
-    setFiltersOpen(!window.matchMedia("(max-width: 680px)").matches);
+    const frame = window.requestAnimationFrame(() => {
+      setFiltersOpen(!window.matchMedia("(max-width: 680px)").matches);
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   const unique = (values: string[]) => ["Усі", ...Array.from(new Set(values))];
