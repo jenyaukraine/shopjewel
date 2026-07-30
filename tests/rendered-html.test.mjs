@@ -31,7 +31,8 @@ test("server-renders the finished storefront", async () => {
   assert.match(html, /<html lang="uk"/i);
   assert.match(html, /<title>6MOMENTS — Де моменти стають спадщиною<\/title>/i);
   assert.match(html, /Де моменти стають спадщиною\./);
-  assert.match(html, /Позачасові прикраси/);
+  assert.match(html, /Найбажаніші/);
+  assert.doesNotMatch(html, /class="intro"/);
   assert.match(html, /Солітер «Обіцянка»/);
   assert.match(html, /Створено неквапливо/);
   assert.match(html, /Категорії товарів/);

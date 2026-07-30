@@ -718,14 +718,6 @@ function HomePage({
         </p>
       </section>
 
-      <section className="intro">
-        <p className="intro-script" aria-hidden="true">Колекції</p>
-        <h2>Позачасові прикраси</h2>
-        <p className="intro-copy">
-          Сучасні реліквії із золота та діамантів
-        </p>
-      </section>
-
       <section className="moments-section editorial-products signature-section" aria-labelledby="products-title">
         <div className="editorial-heading">
           <p className="editorial-script" aria-hidden="true">Особливі прикраси</p>
