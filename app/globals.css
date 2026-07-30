@@ -183,6 +183,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .contact-form input, .contact-form select, .contact-form textarea, .checkout-form input { width: 100%; margin-top: 8px; padding: 14px 0; border: 0; border-bottom: 1px solid #aaa095; border-radius: 0; background: transparent; outline: none; letter-spacing: 0; text-transform: none; }
 .contact-form textarea { resize: vertical; }
 .contact-form .button { width: 100%; margin-top: 8px; }
+.form-success { margin: 16px 0 0; color: #4f6a54; font: 15px/1.5 var(--serif); text-align: center; }
 
 .site-footer { color: #e6dfd5; background: #22201e; }
 .footer-signup { min-height: 370px; padding: 80px 6vw; display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 5vw; }
@@ -192,6 +193,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .footer-signup input { min-width: 0; flex: 1; padding: 18px 0; border: 0; color: white; background: transparent; outline: none; }
 .footer-signup input::placeholder { color: #8c857c; }
 .footer-signup button { border: 0; color: white; background: transparent; font-size: 9px; letter-spacing: .16em; text-transform: uppercase; }
+.signup-success { grid-column: 2; margin: -58px 0 0; color: #aaa39b; font: 14px var(--serif); }
 .footer-bottom { padding: 35px 6vw; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; border-top: 1px solid #3d3935; }
 .wordmark--footer { color: white; }
 .footer-bottom nav { display: flex; gap: 28px; }
@@ -263,8 +265,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .announcement { font-size: 8px; }
   .site-header { height: 72px; padding: 0 18px; }
   .mobile-menu { left: 18px; }
+  .mobile-menu summary, .bag { min-height: 44px; display: flex; align-items: center; }
   .mobile-menu[open] nav { left: -18px; padding: 25px 18px; }
+  .mobile-menu nav a, .mobile-menu nav button { min-height: 44px; display: flex; align-items: center; }
   .wordmark { font-size: 20px; }
+  .wordmark { min-height: 44px; display: flex; align-items: center; }
   .hero { min-height: 720px; padding: 55px 22px; background-position: 66% center; }
   .hero::before { background: linear-gradient(0deg,#211d19 0%,rgba(33,29,25,.94) 44%,rgba(33,29,25,.34) 78%,rgba(33,29,25,.1)); }
   .hero-copy { width: 100%; }
@@ -286,7 +291,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .jewelry-art { width: 80%; }
   .craft-image { min-height: 430px; }
   .craft-copy { padding: 80px 22px; }
-  .breadcrumbs { padding: 17px 18px; }
+  .breadcrumbs { min-height: 52px; padding: 4px 18px; align-items: center; }
+  .breadcrumbs a { min-height: 44px; display: flex; align-items: center; }
+  .option-values button, .add-button, .view-bag-link, .quantity button, .remove-item, .checkout-button, .back-button { min-height: 44px; }
   .product-detail { padding: 0 18px 90px; gap: 30px; }
   .product-visual { min-height: 440px; }
   .product-copy h1 { font-size: 52px; }
@@ -307,8 +314,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .contact-details dl > div { grid-template-columns: 100px 1fr; }
   .footer-signup { padding: 70px 22px; display: flex; align-items: stretch; flex-direction: column; }
   .footer-signup form { margin-top: 35px; }
+  .footer-signup button { min-height: 44px; }
+  .signup-success { margin: -20px 0 0; }
   .footer-bottom { padding: 35px 22px; display: flex; align-items: flex-start; flex-direction: column; gap: 30px; }
-  .footer-bottom nav { flex-wrap: wrap; gap: 18px 24px; }
+  .footer-bottom nav { flex-wrap: wrap; gap: 4px 24px; }
+  .footer-bottom nav a { min-height: 44px; display: flex; align-items: center; }
   .footer-bottom p { align-self: flex-start; }
   .cart-drawer { padding: 25px 18px; }
   .cart-item { grid-template-columns: 90px 1fr; }

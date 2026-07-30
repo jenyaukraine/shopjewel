@@ -395,6 +395,7 @@ function ProductDetail({
 
 function InteriorPage({ path }: { path: string }) {
   const page = routeCopy[path] ?? routeCopy["/collections"];
+  const [contactSent, setContactSent] = useState(false);
 
   return (
     <main>
@@ -470,7 +471,14 @@ function InteriorPage({ path }: { path: string }) {
               <div><dt>Hours</dt><dd>Monday—Friday · 10:00—18:00</dd></div>
             </dl>
           </div>
-          <form className="contact-form" action="mailto:atelier@6moments.store" method="post">
+          <form
+            className="contact-form"
+            onSubmit={(event) => {
+              event.preventDefault();
+              setContactSent(true);
+              event.currentTarget.reset();
+            }}
+          >
             <label>Name<input name="name" autoComplete="name" required /></label>
             <label>Email<input name="email" type="email" autoComplete="email" required /></label>
             <label>What can we help with?
@@ -482,7 +490,14 @@ function InteriorPage({ path }: { path: string }) {
               </select>
             </label>
             <label>Tell us about your moment<textarea name="message" rows={5} /></label>
-            <button className="button button--dark" type="submit">Write to the atelier</button>
+            <button className="button button--dark" type="submit">
+              {contactSent ? "Message received" : "Write to the atelier"}
+            </button>
+            {contactSent && (
+              <p className="form-success" role="status">
+                Thank you. The atelier will reply personally within two working days.
+              </p>
+            )}
           </form>
         </section>
       )}
@@ -608,16 +623,25 @@ function CartDrawer({
 }
 
 function Footer() {
+  const [subscribed, setSubscribed] = useState(false);
+
   return (
     <footer className="site-footer">
       <div className="footer-signup">
         <p className="eyebrow">Letters from the atelier</p>
         <h2>For the moments ahead.</h2>
-        <form action="/contact" method="get">
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            setSubscribed(true);
+            event.currentTarget.reset();
+          }}
+        >
           <label className="sr-only" htmlFor="email">Email address</label>
           <input id="email" name="email" placeholder="Email address" type="email" required />
-          <button type="submit">Subscribe</button>
+          <button type="submit">{subscribed ? "Welcome to 6MOMENTS" : "Subscribe"}</button>
         </form>
+        {subscribed && <p className="signup-success" role="status">Your private letters are confirmed.</p>}
       </div>
       <div className="footer-bottom">
         <Link className="wordmark wordmark--footer" href="/">6MOMENTS</Link>
