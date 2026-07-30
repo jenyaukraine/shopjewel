@@ -1,0 +1,139 @@
+name: Deploy production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+  DEPLOY_USER: ${{ vars.DEPLOY_USER }}
+  DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+  PRODUCTION_URL: https://katya-dev.duckdns.org/
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.13.0"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Check TypeScript
+        run: npx tsc --noEmit
+
+      - name: Build and test
+        run: npm test
+
+  deploy:
+    name: Deploy to Hetzner
+    needs: validate
+    if: vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check deployment configuration
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -Eeuo pipefail
+          test -n "$DEPLOY_HOST" || { echo "Missing repository variable DEPLOY_HOST"; exit 1; }
+          test -n "$DEPLOY_USER" || { echo "Missing repository variable DEPLOY_USER"; exit 1; }
+          test -n "$DEPLOY_PATH" || { echo "Missing repository variable DEPLOY_PATH"; exit 1; }
+          test "$DEPLOY_PATH" != "/" || { echo "DEPLOY_PATH cannot be /"; exit 1; }
+          test -n "$DEPLOY_SSH_KEY" || { echo "Missing production secret DEPLOY_SSH_KEY"; exit 1; }
+          test -n "$DEPLOY_KNOWN_HOSTS" || { echo "Missing production secret DEPLOY_KNOWN_HOSTS"; exit 1; }
+
+      - name: Configure SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -Eeuo pipefail
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_SSH_KEY" > "$HOME/.ssh/deploy_key"
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/deploy_key" "$HOME/.ssh/known_hosts"
+
+      - name: Package committed source
+        run: git archive --format=tar.gz --output=shopjewel.tar.gz "$GITHUB_SHA"
+
+      - name: Upload release
+        run: |
+          set -Eeuo pipefail
+          scp \
+            -i "$HOME/.ssh/deploy_key" \
+            -o IdentitiesOnly=yes \
+            shopjewel.tar.gz \
+            "$DEPLOY_USER@$DEPLOY_HOST:/tmp/shopjewel-$GITHUB_SHA.tar.gz"
+
+      - name: Build and restart production container
+        run: |
+          set -Eeuo pipefail
+          ssh \
+            -i "$HOME/.ssh/deploy_key" \
+            -o IdentitiesOnly=yes \
+            "$DEPLOY_USER@$DEPLOY_HOST" \
+            "DEPLOY_PATH='$DEPLOY_PATH' RELEASE_SHA='$GITHUB_SHA' ARCHIVE='/tmp/shopjewel-$GITHUB_SHA.tar.gz' bash -s" <<'REMOTE'
+          set -Eeuo pipefail
+
+          case "$DEPLOY_PATH" in
+            ""|"/") echo "Unsafe DEPLOY_PATH"; exit 1 ;;
+          esac
+
+          release_dir="$DEPLOY_PATH/releases/$RELEASE_SHA"
+          mkdir -p "$release_dir"
+          tar -xzf "$ARCHIVE" -C "$release_dir"
+          cd "$release_dir"
+
+          docker compose -p sixmoments build --pull
+
+          if docker container inspect sixmoments-store >/dev/null 2>&1; then
+            docker rm -f sixmoments-store
+          fi
+
+          docker compose -p sixmoments up -d --remove-orphans
+          ln -sfn "$release_dir" "$DEPLOY_PATH/current"
+          rm -f "$ARCHIVE"
+          docker compose -p sixmoments ps
+          REMOTE
+
+      - name: Verify production
+        run: |
+          set -Eeuo pipefail
+          for attempt in $(seq 1 24); do
+            if curl --fail --silent --show-error --max-time 15 "$PRODUCTION_URL" >/dev/null; then
+              echo "Production is healthy: $PRODUCTION_URL"
+              exit 0
+            fi
+            echo "Waiting for production ($attempt/24)"
+            sleep 5
+          done
+          echo "Production did not become healthy in time"
+          exit 1
