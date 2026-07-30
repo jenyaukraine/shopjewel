@@ -541,6 +541,71 @@ function HomePage({
           <Link className="text-link" href="/about">Наші матеріали та майстерність <span aria-hidden="true">→</span></Link>
         </div>
       </section>
+
+      <section className="testimonials" aria-labelledby="testimonials-title">
+        <div className="testimonials-heading">
+          <div>
+            <p className="editorial-script" aria-hidden="true">Відгуки</p>
+            <h2 id="testimonials-title">Слова наших клієнтів</h2>
+            <p>Історії людей, для яких прикраса стала частиною важливого моменту</p>
+          </div>
+          <div className="rating-summary" aria-label="Середня оцінка 4,9 з 5">
+            <strong>4,9</strong>
+            <div>
+              <span aria-hidden="true">★★★★★</span>
+              <small>128 перевірених відгуків</small>
+            </div>
+          </div>
+        </div>
+
+        <div className="testimonial-grid">
+          <article className="testimonial-card">
+            <div className="testimonial-stars" aria-label="5 з 5 зірок">★★★★★</div>
+            <blockquote>
+              «Каблучка виявилася ще витонченішою, ніж на фото. Особливо цінно,
+              що команда допомогла обрати розмір і тримала мене в курсі до самої доставки».
+            </blockquote>
+            <footer>
+              <span className="client-mark" aria-hidden="true">ОМ</span>
+              <div><strong>Олена М.</strong><small>Київ · Солітер «Обіцянка»</small></div>
+              <span className="verified-review">Перевірена покупка</span>
+            </footer>
+          </article>
+
+          <article className="testimonial-card testimonial-card--featured">
+            <div className="testimonial-stars" aria-label="5 з 5 зірок">★★★★★</div>
+            <blockquote>
+              «Підвіска стала подарунком на народження доньки. Гравіювання,
+              пакування й сам діамант — усе відчувається дуже особистим і продуманим».
+            </blockquote>
+            <footer>
+              <span className="client-mark" aria-hidden="true">АС</span>
+              <div><strong>Анна С.</strong><small>Львів · Підвіска «Нова глава»</small></div>
+              <span className="verified-review">Перевірена покупка</span>
+            </footer>
+          </article>
+
+          <article className="testimonial-card">
+            <div className="testimonial-stars" aria-label="5 з 5 зірок">★★★★★</div>
+            <blockquote>
+              «Замовляли обручки парою. Нам запропонували ідеальну ширину,
+              а ручне оздоблення зробило їх справді нашими. Сервіс бездоганний».
+            </blockquote>
+            <footer>
+              <span className="client-mark" aria-hidden="true">ІД</span>
+              <div><strong>Ірина та Данило</strong><small>Прага · Обручки «Союз»</small></div>
+              <span className="verified-review">Перевірена покупка</span>
+            </footer>
+          </article>
+        </div>
+
+        <div className="testimonial-facts" aria-label="Сервіс у цифрах">
+          <div><strong>128</strong><span>перевірених відгуків</span></div>
+          <div><strong>4,9/5</strong><span>середня оцінка</span></div>
+          <div><strong>30 днів</strong><span>на безкоштовну зміну розміру</span></div>
+          <div><strong>100%</strong><span>застрахованих відправлень</span></div>
+        </div>
+      </section>
     </main>
   );
 }
