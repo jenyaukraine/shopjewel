@@ -136,6 +136,31 @@ test("server-renders restored brand blocks and diamond education", async () => {
   assert.match(homeHtml, /Лабораторні[\s\S]*діаманти/);
   assert.match(homeHtml, /@6moments_jewelry/);
   assert.match(homeHtml, /atelier@6moments\.store/);
+  assert.match(homeHtml, /Останні історії/);
+  assert.match(homeHtml, /Тиха архітектура каблучки/);
   assert.match(diamondsHtml, /Оберіть свій діамант/);
   assert.match(diamondsHtml, /Лабораторний діамант — це підробка/);
+});
+
+test("server-renders Stripe checkout outcomes and protected orders admin", async () => {
+  const [successResponse, cancelledResponse, adminResponse] = await Promise.all([
+    render("/checkout/success"),
+    render("/checkout/cancelled"),
+    render("/admin/orders"),
+  ]);
+
+  assert.equal(successResponse.status, 200);
+  assert.equal(cancelledResponse.status, 200);
+  assert.equal(adminResponse.status, 200);
+
+  const [successHtml, cancelledHtml, adminHtml] = await Promise.all([
+    successResponse.text(),
+    cancelledResponse.text(),
+    adminResponse.text(),
+  ]);
+  assert.match(successHtml, /Безпечна оплата Stripe/);
+  assert.match(cancelledHtml, /Оплату не завершено/);
+  assert.match(cancelledHtml, /Ваш вибір збережено/);
+  assert.match(adminHtml, /Комерційна панель/);
+  assert.match(adminHtml, /Замовлення 6MOMENTS/);
 });

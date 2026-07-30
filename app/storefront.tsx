@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -58,6 +58,41 @@ type CartItem = {
   quantity: number;
   options: Record<string, string>;
 };
+
+type AdminOrder = {
+  id: string;
+  orderNumber: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  address: string;
+  city: string;
+  postalCode: string;
+  country: string;
+  deliveryMethod: string;
+  currency: CurrencyCode;
+  subtotal: number;
+  items: Array<{
+    productId: string;
+    sku: string;
+    title: string;
+    image: string;
+    quantity: number;
+    unitAmount: number;
+    options: Record<string, string>;
+  }>;
+  paymentStatus: "unpaid" | "paid" | "failed" | "refunded";
+  fulfillmentStatus: "new" | "processing" | "shipped" | "completed" | "cancelled";
+  createdAt: string;
+};
+
+function formatMinorMoney(amount: number, currency: CurrencyCode) {
+  return new Intl.NumberFormat("uk-UA", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  }).format(amount / 100);
+}
 
 const products: Product[] = [
   {
@@ -768,6 +803,43 @@ function HomePage({
           </a>
         </div>
       </section>
+
+      <section className="home-journal" aria-labelledby="home-journal-title">
+        <div className="home-journal-heading">
+          <div>
+            <p className="editorial-script" aria-hidden="true">Журнал</p>
+            <h2 id="home-journal-title">Останні історії</h2>
+            <p>Нотатки про майстерність, матеріали та моменти, які надають прикрасам особистого значення.</p>
+          </div>
+          <Link className="text-link" href="/journal">Усі статті <span aria-hidden="true">→</span></Link>
+        </div>
+        <div className="home-journal-grid">
+          {[
+            ["Польова нотатка 01", "Тиха архітектура каблучки", "Про посадку, м’який край і пропорції, які залишаються зручними щодня.", "/editorial/journal-ring-architecture.webp"],
+            ["Польова нотатка 02", "Краса часу на металі", "Чому патина, догляд і сліди носіння роблять благородний метал по-справжньому особистим.", "/editorial/journal-patina.webp"],
+            ["Польова нотатка 03", "Нова мова сімейних реліквій", "Як сучасні ритуали стають історіями, які хочеться передати наступному поколінню.", "/editorial/journal-heirlooms.webp"],
+          ].map(([label, title, copy, image]) => (
+            <article key={title}>
+              <Link href="/journal">
+                <div className="home-journal-art">
+                  <Image
+                    src={image}
+                    alt=""
+                    unoptimized
+                    width={1200}
+                    height={1200}
+                    sizes="(max-width: 720px) 100vw, 33vw"
+                  />
+                  <span aria-hidden="true">↗</span>
+                </div>
+                <p className="eyebrow">{label}</p>
+                <h3>{title}</h3>
+                <p>{copy}</p>
+              </Link>
+            </article>
+          ))}
+        </div>
+      </section>
     </main>
   );
 }
@@ -1467,6 +1539,289 @@ function InteriorPage({
   );
 }
 
+function CheckoutResultPage({
+  success,
+  onClear,
+}: {
+  success: boolean;
+  onClear: () => void;
+}) {
+  const [status, setStatus] = useState<"loading" | "paid" | "pending" | "error">(
+    success ? "loading" : "pending",
+  );
+  const [orderNumber, setOrderNumber] = useState("");
+
+  useEffect(() => {
+    if (!success) return;
+    const sessionId = new URLSearchParams(window.location.search).get("session_id");
+    if (!sessionId) {
+      const timer = window.setTimeout(() => setStatus("error"), 0);
+      return () => window.clearTimeout(timer);
+    }
+
+    let active = true;
+    fetch(`/api/order-status?session_id=${encodeURIComponent(sessionId)}`, { cache: "no-store" })
+      .then(async (response) => {
+        const data = await response.json() as {
+          orderNumber?: string;
+          paymentStatus?: string;
+          error?: string;
+        };
+        if (!response.ok) throw new Error(data.error ?? "Не вдалося перевірити оплату.");
+        if (!active) return;
+        setOrderNumber(data.orderNumber ?? "");
+        if (data.paymentStatus === "paid") {
+          onClear();
+          setStatus("paid");
+        } else {
+          setStatus("pending");
+        }
+      })
+      .catch(() => {
+        if (active) setStatus("error");
+      });
+
+    return () => { active = false; };
+  }, [onClear, success]);
+
+  return (
+    <main className="checkout-result-page">
+      <section className="checkout-result-card">
+        <span className={`checkout-result-icon ${success ? "" : "is-cancelled"}`} aria-hidden="true">
+          {success ? "✓" : "←"}
+        </span>
+        <p className="eyebrow">
+          {success ? "Безпечна оплата Stripe" : "Оплату не завершено"}
+        </p>
+        <h1>
+          {!success
+            ? "Ваш вибір збережено."
+            : status === "paid"
+              ? "Ваш момент уже наш."
+              : "Перевіряємо оплату…"}
+        </h1>
+        {!success ? (
+          <p>Кошик залишився без змін. Ви можете повернутися до нього й оплатити, коли будете готові.</p>
+        ) : status === "paid" ? (
+          <p>
+            Замовлення <strong>{orderNumber}</strong> оплачено. Ми надішлемо підтвердження та деталі
+            доставки електронною поштою.
+          </p>
+        ) : status === "error" ? (
+          <p>Оплата могла пройти, але підтвердження ще не отримано. Напишіть нам — ми перевіримо її вручну.</p>
+        ) : (
+          <p>Зазвичай це займає кілька секунд. Підтвердження також надійде електронною поштою.</p>
+        )}
+        <div className="checkout-result-actions">
+          <Link className="button button--dark" href="/collections">Продовжити покупки</Link>
+          <Link className="text-link" href="/contact">Потрібна допомога →</Link>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function AdminOrdersPage() {
+  const [orders, setOrders] = useState<AdminOrder[]>([]);
+  const [authenticated, setAuthenticated] = useState<boolean | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  async function loadOrders() {
+    setLoading(true);
+    setMessage("");
+    try {
+      const response = await fetch("/api/admin/orders", { cache: "no-store" });
+      const data = await response.json() as {
+        orders?: AdminOrder[];
+        error?: string;
+        authenticated?: boolean;
+      };
+      if (response.status === 401) {
+        setAuthenticated(false);
+        setOrders([]);
+        return;
+      }
+      if (!response.ok) throw new Error(data.error ?? "Не вдалося завантажити замовлення.");
+      setAuthenticated(true);
+      setOrders(data.orders ?? []);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Не вдалося завантажити замовлення.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => void loadOrders(), 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  async function login(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage("");
+    const form = new FormData(event.currentTarget);
+    const response = await fetch("/api/admin/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: form.get("password") }),
+    });
+    const data = await response.json() as { error?: string };
+    if (!response.ok) {
+      setMessage(data.error ?? "Не вдалося увійти.");
+      return;
+    }
+    await loadOrders();
+  }
+
+  async function updateStatus(id: string, status: AdminOrder["fulfillmentStatus"]) {
+    const response = await fetch("/api/admin/orders", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status }),
+    });
+    const data = await response.json() as { order?: AdminOrder; error?: string };
+    if (!response.ok || !data.order) {
+      setMessage(data.error ?? "Не вдалося змінити статус.");
+      return;
+    }
+    setOrders((current) => current.map((order) => order.id === id ? data.order! : order));
+  }
+
+  async function logout() {
+    await fetch("/api/admin/logout", { method: "POST" });
+    setAuthenticated(false);
+    setOrders([]);
+  }
+
+  if (authenticated === false) {
+    return (
+      <main className="admin-page admin-orders-page">
+        <section className="admin-login">
+          <p className="eyebrow">6MOMENTS · приватна зона</p>
+          <h1>Вхід до замовлень</h1>
+          <p>Ця сторінка містить персональні дані покупців і доступна лише команді магазину.</p>
+          <form onSubmit={login}>
+            <label>Пароль адміністратора<input name="password" type="password" autoComplete="current-password" required /></label>
+            {message && <p className="admin-error" role="alert">{message}</p>}
+            <button className="button button--dark" type="submit">Увійти</button>
+          </form>
+          {window.location.hostname === "localhost" && (
+            <small>Локальний MVP-пароль: sixmoments-demo</small>
+          )}
+        </section>
+      </main>
+    );
+  }
+
+  return (
+    <main className="admin-page admin-orders-page">
+      <section className="admin-hero admin-orders-hero">
+        <div>
+          <p className="eyebrow">Комерційна панель</p>
+          <h1>Замовлення 6MOMENTS</h1>
+          <p>Оплати Stripe, клієнти, доставка та робочі статуси в одному місці.</p>
+        </div>
+        <div className="admin-hero-actions">
+          <button type="button" className="button" onClick={() => void loadOrders()}>Оновити</button>
+          <button type="button" className="text-link" onClick={() => void logout()}>Вийти</button>
+        </div>
+      </section>
+      <section className="orders-panel">
+        <div className="orders-summary">
+          <article><strong>{orders.length}</strong><span>Усього замовлень</span></article>
+          <article><strong>{orders.filter((order) => order.paymentStatus === "paid").length}</strong><span>Оплачено</span></article>
+          <article><strong>{orders.filter((order) => order.fulfillmentStatus === "new").length}</strong><span>Нові</span></article>
+          <article>
+            <strong>{formatMinorMoney(
+              orders.filter((order) => order.paymentStatus === "paid" && order.currency === "UAH")
+                .reduce((sum, order) => sum + order.subtotal, 0),
+              "UAH",
+            )}</strong>
+            <span>Оплачено в UAH</span>
+          </article>
+        </div>
+        {message && <p className="admin-error" role="alert">{message}</p>}
+        {loading ? (
+          <div className="orders-empty">Завантажуємо замовлення…</div>
+        ) : orders.length === 0 ? (
+          <div className="orders-empty">
+            <h2>Поки що тихо.</h2>
+            <p>Перше створене замовлення одразу з’явиться тут.</p>
+          </div>
+        ) : (
+          <div className="orders-list">
+            {orders.map((order) => (
+              <article className="order-card" key={order.id}>
+                <button
+                  className="order-card-main"
+                  type="button"
+                  onClick={() => setExpanded((current) => current === order.id ? null : order.id)}
+                >
+                  <span>
+                    <strong>{order.orderNumber}</strong>
+                    <small>{new Intl.DateTimeFormat("uk-UA", { dateStyle: "medium", timeStyle: "short" }).format(new Date(order.createdAt))}</small>
+                  </span>
+                  <span><strong>{order.customerName}</strong><small>{order.customerEmail}</small></span>
+                  <span><strong>{formatMinorMoney(order.subtotal, order.currency)}</strong><small>{order.items.reduce((sum, item) => sum + item.quantity, 0)} вироби</small></span>
+                  <span className={`status-pill payment-${order.paymentStatus}`}>
+                    {order.paymentStatus === "paid" ? "Оплачено" : order.paymentStatus === "unpaid" ? "Очікує оплати" : order.paymentStatus === "failed" ? "Помилка оплати" : "Повернено"}
+                  </span>
+                  <span aria-hidden="true">{expanded === order.id ? "−" : "+"}</span>
+                </button>
+                {expanded === order.id && (
+                  <div className="order-card-details">
+                    <div className="order-detail-block">
+                      <p className="eyebrow">Склад замовлення</p>
+                      {order.items.map((item) => (
+                        <div className="admin-order-item" key={`${order.id}-${item.productId}-${JSON.stringify(item.options)}`}>
+                          <Image src={item.image} alt="" width={72} height={72} unoptimized />
+                          <span>
+                            <strong>{item.title} × {item.quantity}</strong>
+                            <small>{item.sku} · {Object.values(item.options).join(" · ")}</small>
+                          </span>
+                          <strong>{formatMinorMoney(item.unitAmount * item.quantity, order.currency)}</strong>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="order-detail-block">
+                      <p className="eyebrow">Покупець і доставка</p>
+                      <address>
+                        <strong>{order.customerName}</strong><br />
+                        {order.customerEmail}<br />
+                        {order.customerPhone && <>{order.customerPhone}<br /></>}
+                        {order.address}<br />
+                        {order.postalCode}, {order.city}<br />
+                        {order.country}
+                      </address>
+                      <p>{order.deliveryMethod}</p>
+                    </div>
+                    <div className="order-detail-block">
+                      <label>Статус виконання
+                        <select
+                          value={order.fulfillmentStatus}
+                          onChange={(event) => void updateStatus(order.id, event.target.value as AdminOrder["fulfillmentStatus"])}
+                        >
+                          <option value="new">Нове</option>
+                          <option value="processing">У роботі</option>
+                          <option value="shipped">Відправлено</option>
+                          <option value="completed">Завершено</option>
+                          <option value="cancelled">Скасовано</option>
+                        </select>
+                      </label>
+                    </div>
+                  </div>
+                )}
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+    </main>
+  );
+}
+
 function CartDrawer({
   open,
   items,
@@ -1474,7 +1829,6 @@ function CartDrawer({
   onClose,
   onQuantity,
   onRemove,
-  onClear,
 }: {
   open: boolean;
   items: Array<CartItem & { product: Product }>;
@@ -1482,10 +1836,10 @@ function CartDrawer({
   onClose: () => void;
   onQuantity: (key: string, quantity: number) => void;
   onRemove: (key: string) => void;
-  onClear: () => void;
 }) {
   const [checkout, setCheckout] = useState(false);
-  const [orderNumber, setOrderNumber] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [checkoutError, setCheckoutError] = useState("");
   const subtotal = items.reduce((total, item) => total + item.product.price * item.quantity, 0);
 
   useEffect(() => {
@@ -1494,17 +1848,51 @@ function CartDrawer({
     return () => document.body.classList.remove("cart-open");
   }, [open]);
 
-  function placeOrder(event: FormEvent<HTMLFormElement>) {
+  async function placeOrder(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setOrderNumber(`6M-${Math.random().toString(36).slice(2, 8).toUpperCase()}`);
-    onClear();
+    setSubmitting(true);
+    setCheckoutError("");
+    const form = new FormData(event.currentTarget);
+    try {
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          currency,
+          items: items.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            options: item.options,
+          })),
+          customer: {
+            name: form.get("name"),
+            email: form.get("email"),
+            phone: form.get("phone"),
+            address: form.get("address"),
+            city: form.get("city"),
+            postalCode: form.get("postal"),
+            country: form.get("country"),
+            deliveryMethod: form.get("delivery"),
+          },
+        }),
+      });
+      const data = await response.json() as { url?: string; error?: string };
+      if (!response.ok || !data.url) {
+        throw new Error(data.error ?? "Не вдалося відкрити безпечну оплату.");
+      }
+      window.location.assign(data.url);
+    } catch (error) {
+      setCheckoutError(error instanceof Error ? error.message : "Не вдалося відкрити безпечну оплату.");
+      setSubmitting(false);
+    }
   }
 
   function closeDrawer() {
     onClose();
     window.setTimeout(() => {
       setCheckout(false);
-      setOrderNumber("");
+      setCheckoutError("");
+      setSubmitting(false);
     }, 250);
   }
 
@@ -1520,18 +1908,11 @@ function CartDrawer({
           <button type="button" onClick={closeDrawer} aria-label="Закрити кошик">Закрити</button>
         </div>
 
-        {orderNumber ? (
-          <div className="order-success">
-            <span aria-hidden="true">✓</span>
-            <p className="eyebrow">Замовлення підтверджено</p>
-            <h3>Дякуємо за ваш момент.</h3>
-            <p>Заявку на замовлення <strong>{orderNumber}</strong> створено. Майстерня підтвердить наявність і деталі оплати електронною поштою.</p>
-            <button className="button button--dark" type="button" onClick={closeDrawer}>Продовжити покупки</button>
-          </div>
-        ) : checkout ? (
+        {checkout ? (
           <form className="checkout-form" onSubmit={placeOrder}>
             <label>Ім’я та прізвище<input name="name" autoComplete="name" required /></label>
             <label>Email<input name="email" type="email" autoComplete="email" required /></label>
+            <label>Телефон<input name="phone" type="tel" autoComplete="tel" placeholder="+380…" /></label>
             <label>Адреса доставки<input name="address" autoComplete="street-address" required /></label>
             <div className="checkout-row">
               <label>Місто<input name="city" autoComplete="address-level2" required /></label>
@@ -1557,7 +1938,11 @@ function CartDrawer({
               <span><strong>Безпечна оплата карткою</strong><small>Stripe · Visa · Mastercard · Apple Pay · Google Pay</small></span>
             </label>
             <div className="checkout-total"><span>Разом</span><strong>{formatMoney(subtotal, currency)}</strong></div>
-            <button className="button button--dark checkout-button" type="submit">Підтвердити тестове замовлення</button>
+            {checkoutError && <p className="checkout-error" role="alert">{checkoutError}</p>}
+            <button className="button button--dark checkout-button" type="submit" disabled={submitting}>
+              {submitting ? "Переходимо до Stripe…" : "Оплатити безпечно карткою"}
+            </button>
+            <p className="checkout-security">Дані картки вводяться лише на захищеній сторінці Stripe і не зберігаються на 6MOMENTS.</p>
             <button className="back-button" type="button" onClick={() => setCheckout(false)}>← Повернутися до кошика</button>
           </form>
         ) : items.length === 0 ? (
@@ -1832,6 +2217,7 @@ export function Storefront({ path }: { path: string }) {
   const [currency, setCurrency] = useState<CurrencyCode>("UAH");
   const [importedProducts, setImportedProducts] = useState<Product[]>([]);
   const [catalogLoaded, setCatalogLoaded] = useState(false);
+  const clearCart = useCallback(() => setCart([]), []);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -1923,6 +2309,12 @@ export function Storefront({ path }: { path: string }) {
         />
       ) : path === "/" ? (
         <HomePage products={catalog} currency={currency} onQuickAdd={addToCart} />
+      ) : path === "/checkout/success" ? (
+        <CheckoutResultPage success onClear={clearCart} />
+      ) : path === "/checkout/cancelled" ? (
+        <CheckoutResultPage success={false} onClear={clearCart} />
+      ) : path === "/admin/orders" ? (
+        <AdminOrdersPage />
       ) : path === "/admin/catalog" ? (
         <CatalogManager
           importedProducts={importedProducts}
@@ -1948,7 +2340,6 @@ export function Storefront({ path }: { path: string }) {
           else setCart((current) => current.map((item) => item.key === key ? { ...item, quantity } : item));
         }}
         onRemove={(key) => setCart((current) => current.filter((item) => item.key !== key))}
-        onClear={() => setCart([])}
       />
       <WelcomeOverlays />
     </div>

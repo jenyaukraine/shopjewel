@@ -61,6 +61,10 @@ jobs:
         env:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          ADMIN_SESSION_SECRET: ${{ secrets.ADMIN_SESSION_SECRET }}
         run: |
           set -Eeuo pipefail
           test -n "$DEPLOY_HOST" || { echo "Missing repository variable DEPLOY_HOST"; exit 1; }
@@ -69,6 +73,10 @@ jobs:
           test "$DEPLOY_PATH" != "/" || { echo "DEPLOY_PATH cannot be /"; exit 1; }
           test -n "$DEPLOY_SSH_KEY" || { echo "Missing production secret DEPLOY_SSH_KEY"; exit 1; }
           test -n "$DEPLOY_KNOWN_HOSTS" || { echo "Missing production secret DEPLOY_KNOWN_HOSTS"; exit 1; }
+          test -n "$STRIPE_SECRET_KEY" || { echo "Missing production secret STRIPE_SECRET_KEY"; exit 1; }
+          test -n "$STRIPE_WEBHOOK_SECRET" || { echo "Missing production secret STRIPE_WEBHOOK_SECRET"; exit 1; }
+          test -n "$ADMIN_PASSWORD" || { echo "Missing production secret ADMIN_PASSWORD"; exit 1; }
+          test -n "$ADMIN_SESSION_SECRET" || { echo "Missing production secret ADMIN_SESSION_SECRET"; exit 1; }
 
       - name: Configure SSH
         env:
@@ -84,6 +92,23 @@ jobs:
       - name: Package committed source
         run: git archive --format=tar.gz --output=shopjewel.tar.gz "$GITHUB_SHA"
 
+      - name: Prepare protected runtime settings
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          ADMIN_SESSION_SECRET: ${{ secrets.ADMIN_SESSION_SECRET }}
+        run: |
+          set -Eeuo pipefail
+          umask 077
+          {
+            printf 'STRIPE_SECRET_KEY=%s\n' "$STRIPE_SECRET_KEY"
+            printf 'STRIPE_WEBHOOK_SECRET=%s\n' "$STRIPE_WEBHOOK_SECRET"
+            printf 'ADMIN_PASSWORD=%s\n' "$ADMIN_PASSWORD"
+            printf 'ADMIN_SESSION_SECRET=%s\n' "$ADMIN_SESSION_SECRET"
+            printf 'NEXT_PUBLIC_SITE_URL=%s\n' "$PRODUCTION_URL"
+          } > .env.runtime
+
       - name: Upload release
         run: |
           set -Eeuo pipefail
@@ -92,6 +117,11 @@ jobs:
             -o IdentitiesOnly=yes \
             shopjewel.tar.gz \
             "$DEPLOY_USER@$DEPLOY_HOST:/tmp/shopjewel-$GITHUB_SHA.tar.gz"
+          scp \
+            -i "$HOME/.ssh/deploy_key" \
+            -o IdentitiesOnly=yes \
+            .env.runtime \
+            "$DEPLOY_USER@$DEPLOY_HOST:/tmp/shopjewel-$GITHUB_SHA.env"
 
       - name: Build and restart production container
         run: |
@@ -100,7 +130,7 @@ jobs:
             -i "$HOME/.ssh/deploy_key" \
             -o IdentitiesOnly=yes \
             "$DEPLOY_USER@$DEPLOY_HOST" \
-            "DEPLOY_PATH='$DEPLOY_PATH' RELEASE_SHA='$GITHUB_SHA' ARCHIVE='/tmp/shopjewel-$GITHUB_SHA.tar.gz' bash -s" <<'REMOTE'
+            "DEPLOY_PATH='$DEPLOY_PATH' RELEASE_SHA='$GITHUB_SHA' ARCHIVE='/tmp/shopjewel-$GITHUB_SHA.tar.gz' RUNTIME_ENV='/tmp/shopjewel-$GITHUB_SHA.env' bash -s" <<'REMOTE'
           set -Eeuo pipefail
 
           case "$DEPLOY_PATH" in
@@ -110,18 +140,20 @@ jobs:
           release_dir="$DEPLOY_PATH/releases/$RELEASE_SHA"
           mkdir -p "$release_dir"
           tar -xzf "$ARCHIVE" -C "$release_dir"
+          mv "$RUNTIME_ENV" "$release_dir/.env.runtime"
+          chmod 600 "$release_dir/.env.runtime"
           cd "$release_dir"
 
-          docker compose -p sixmoments build --pull
+          docker compose --env-file .env.runtime -p sixmoments build --pull
 
           if docker container inspect sixmoments-store >/dev/null 2>&1; then
             docker rm -f sixmoments-store
           fi
 
-          docker compose -p sixmoments up -d --remove-orphans
+          docker compose --env-file .env.runtime -p sixmoments up -d --remove-orphans
           ln -sfn "$release_dir" "$DEPLOY_PATH/current"
           rm -f "$ARCHIVE"
-          docker compose -p sixmoments ps
+          docker compose --env-file .env.runtime -p sixmoments ps
           REMOTE
 
       - name: Verify production

@@ -8,6 +8,11 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_SESSION_SECRET: ${ADMIN_SESSION_SECRET:-}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-}
     expose:
       - "3000"
     networks:
@@ -17,8 +22,13 @@ services:
     pids_limit: 256
     security_opt:
       - no-new-privileges:true
+    volumes:
+      - sixmoments-data:/app/.wrangler
 
 networks:
   edge:
     name: web-edge
     external: true
+
+volumes:
+  sixmoments-data:
