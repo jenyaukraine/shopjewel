@@ -44,7 +44,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .bag span { min-width: 19px; height: 19px; display: inline-grid; place-items: center; margin-left: 6px; border-radius: 50%; color: white; background: var(--ink); font-size: 8px; }
 .mobile-menu { display: none; }
 
-.hero { min-height: calc(100svh - 118px); position: relative; display: flex; align-items: flex-end; padding: clamp(45px, 7vw, 100px); color: white; background: #564b41 url("/hero-6moments.png") 60% 52%/cover no-repeat; overflow: hidden; }
+.hero { min-height: calc(100svh - 118px); position: relative; display: flex; align-items: flex-end; padding: clamp(45px, 7vw, 100px); color: white; background: #564b41 url("/hero-6moments.webp") 60% 52%/cover no-repeat; overflow: hidden; }
 .hero::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, #211d19 0%, rgba(33,29,25,.98) 42%, rgba(33,29,25,.74) 58%, rgba(33,29,25,.18) 78%, transparent); }
 .hero::after { content: "6"; position: absolute; right: 5vw; bottom: -10vw; color: rgba(255,255,255,.13); font: 55vw/.75 var(--serif); }
 .hero-copy { position: relative; z-index: 2; width: min(650px, 70vw); }
@@ -65,8 +65,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .product-card { min-width: 0; }
 .moment-art { aspect-ratio: .86; position: relative; display: grid; place-items: center; background: #e4ddd4; overflow: hidden; transition: background .35s; }
 .product-card:hover .moment-art { background: #dbd0c4; }
-.moment-number { position: absolute; top: 20px; left: 20px; color: #8a8178; font: 11px var(--sans); letter-spacing: .14em; }
-.card-arrow { position: absolute; right: 18px; bottom: 16px; width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid rgba(28,27,25,.3); border-radius: 50%; opacity: 0; transform: translate(-6px, 6px); transition: opacity .3s, transform .3s; }
+.product-photo { width: 100%; height: 100%; display: block; object-fit: cover; transition: transform .6s cubic-bezier(.2,.8,.2,1); }
+.product-card:hover .product-photo { transform: scale(1.025); }
+.moment-number { position: absolute; top: 16px; left: 16px; padding: 7px 9px; color: #4d473f; background: rgba(248,245,239,.82); border: 1px solid rgba(255,255,255,.5); backdrop-filter: blur(8px); font: 9px var(--sans); letter-spacing: .14em; }
+.card-arrow { position: absolute; right: 18px; bottom: 16px; width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid rgba(28,27,25,.2); border-radius: 50%; background: rgba(248,245,239,.82); backdrop-filter: blur(8px); opacity: 0; transform: translate(-6px, 6px); transition: opacity .3s, transform .3s; }
 .product-card:hover .card-arrow { opacity: 1; transform: translate(0); }
 .product-kicker { margin: 18px 0 7px; color: var(--gold) !important; font-size: 9px !important; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; }
 .product-line { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; }
@@ -74,36 +76,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .product-line span { font: 18px var(--serif); }
 .product-card > p:last-child { margin: 8px 0 0; color: var(--muted); font: 14px var(--serif); }
 
-.jewelry-art { width: 70%; aspect-ratio: 1; position: relative; filter: drop-shadow(0 25px 18px rgba(75,57,34,.16)); transition: transform .5s cubic-bezier(.2,.8,.2,1); }
-.product-card:hover .jewelry-art { transform: translateY(-6px) rotate(-2deg); }
-.jewel { position: absolute; display: block; }
-.jewelry-art--ring .jewel--one, .jewelry-art--bands .jewel--one, .jewelry-art--heirloom .jewel--one {
-  width: 58%; height: 58%; left: 21%; top: 24%; border: clamp(10px, 1.4vw, 20px) solid #bd8c43; border-radius: 50%; background: radial-gradient(circle, transparent 52%, rgba(255,255,255,.28) 54%, transparent 58%);
-}
-.jewelry-art--ring .jewel--two { width: 20%; aspect-ratio: 1; left: 40%; top: 14%; transform: rotate(45deg); background: linear-gradient(135deg,#fff,#b6c0c1 46%,#fafafa 48%,#8d9899); clip-path: polygon(50% 0,100% 42%,82% 100%,18% 100%,0 42%); box-shadow: 0 0 24px white; }
-.jewelry-art--bands .jewel--two { width: 52%; height: 52%; left: 29%; top: 18%; border: clamp(8px, 1.1vw, 15px) solid #d6b064; border-radius: 50%; }
-.jewelry-art--pendant .jewel--one { width: 1px; height: 72%; top: 0; left: 50%; background: #b68a4b; }
-.jewelry-art--pendant .jewel--two { width: 34%; aspect-ratio: 1; left: 33%; bottom: 11%; border: 8px solid #c59850; border-radius: 50%; background: radial-gradient(circle at 40% 35%,#fff,#b8c1c3 50%,#f8ffff 52%,#8d9899); }
-.jewelry-art--earrings .jewel--one, .jewelry-art--earrings .jewel--two { width: 34%; height: 62%; top: 18%; border: 9px solid #c99951; border-radius: 50%; }
-.jewelry-art--earrings .jewel--one { left: 10%; transform: rotate(-9deg); }
-.jewelry-art--earrings .jewel--two { right: 10%; transform: rotate(9deg); }
-.jewelry-art--bracelet .jewel--one { width: 84%; height: 48%; left: 8%; top: 26%; border: 4px dotted #ba8b48; border-radius: 50%; }
-.jewelry-art--bracelet .jewel--two { width: 18%; aspect-ratio: 1; left: 41%; top: 41%; border: 5px solid #bd904d; border-radius: 50%; background: radial-gradient(circle,#fff,#b7c1c3 60%,#fff); }
-.jewelry-art--heirloom .jewel--one { border-width: 20px; border-radius: 43% 43% 48% 48%; }
-.jewelry-art--heirloom .jewel--two { width: 46%; height: 34%; left: 27%; top: 18%; border-radius: 44%; background: linear-gradient(145deg,#e7c376,#ad7b39); box-shadow: inset 0 0 0 1px rgba(255,255,255,.45); }
-.jewelry-art--bike { width: 88%; height: 65%; }
-.jewelry-art--bike .jewel--one, .jewelry-art--bike .jewel--two { width: 34%; aspect-ratio: 1; bottom: 0; border: 7px solid #272522; border-radius: 50%; }
-.jewelry-art--bike .jewel--one { left: 0; }
-.jewelry-art--bike .jewel--two { right: 0; }
-.bike-frame { position: absolute; width: 52%; height: 42%; left: 23%; bottom: 17%; border: 10px solid #ae7c40; clip-path: polygon(0 100%,38% 0,100% 100%); }
-.bike-seat { position: absolute; width: 20%; height: 7%; left: 31%; top: 20%; border-radius: 80% 20% 50% 50%; background: #4d3829; }
-.bike-bar { position: absolute; width: 6px; height: 38%; right: 27%; top: 15%; background: #292725; transform: rotate(-12deg); }
-
 .craft { display: grid; grid-template-columns: 1.15fr .85fr; min-height: 700px; background: var(--sand); }
-.craft-image { position: relative; display: grid; place-items: center; background: radial-gradient(circle at 52% 44%,#f2e9dc,#c5b29a 55%,#887561); overflow: hidden; }
-.craft-image::before, .craft-image::after { content: ""; position: absolute; width: 66%; aspect-ratio: 1; border: 1px solid rgba(255,255,255,.33); border-radius: 50%; }
-.craft-image::after { width: 88%; }
-.craft-ring { width: 32%; aspect-ratio: 1; position: relative; z-index: 1; border: clamp(20px,3vw,46px) solid #c49348; border-radius: 50%; box-shadow: inset 0 0 18px rgba(255,255,255,.55),0 25px 45px rgba(60,42,22,.25); transform: rotate(-18deg); }
+.craft-image { width: 100%; height: 100%; min-height: 700px; display: block; object-fit: cover; }
 .craft-copy { padding: 10%; display: flex; flex-direction: column; justify-content: center; }
 .craft-copy h2 { margin: 18px 0 25px; font: 400 clamp(48px,5vw,76px)/.93 var(--serif); letter-spacing: -.035em; }
 .craft-copy > p:not(.eyebrow) { max-width: 500px; color: #5d554d; font: 18px/1.7 var(--serif); }
@@ -112,7 +86,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .breadcrumbs { max-width: 1500px; margin: auto; padding: 22px 4vw; display: flex; gap: 10px; color: #817a72; font-size: 9px; letter-spacing: .12em; text-transform: uppercase; }
 .product-detail { max-width: 1500px; margin: auto; padding: 10px 4vw 120px; display: grid; grid-template-columns: minmax(0,1.15fr) minmax(390px,.85fr); gap: 6vw; }
 .product-visual { min-height: 720px; position: sticky; top: 20px; display: grid; place-items: center; align-self: start; background: linear-gradient(145deg,#eee8e0,#d6c9ba); overflow: hidden; }
-.product-visual .jewelry-art { width: 65%; }
+.product-photo--detail { position: absolute; inset: 0; }
 .product-visual-caption { position: absolute; left: 24px; bottom: 22px; color: #776f66; font-size: 9px; letter-spacing: .18em; text-transform: uppercase; }
 .product-copy { padding-top: 34px; }
 .product-copy h1 { margin: 14px 0 12px; font: 400 clamp(48px,5vw,76px)/.92 var(--serif); letter-spacing: -.04em; }
@@ -161,13 +135,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .about-quote p { margin: 0; font: italic 400 clamp(36px,5vw,66px)/1.18 var(--serif); }
 .journal-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; padding: 100px 4vw 130px; }
 .journal-grid article:nth-child(2) { margin-top: 100px; }
-.journal-art { aspect-ratio: .84; position: relative; display: grid; place-items: center; margin-bottom: 28px; overflow: hidden; background: #d5c7b6; }
-.journal-art::before, .journal-art::after { content: ""; position: absolute; border: 1px solid rgba(255,255,255,.5); border-radius: 50%; }
-.journal-art::before { width: 70%; aspect-ratio: 1; }
-.journal-art::after { width: 42%; aspect-ratio: 1; }
-.journal-art span { color: rgba(255,255,255,.78); font: 130px var(--serif); }
-.journal-art--2 { background: #706258; }
-.journal-art--3 { background: #aaa091; }
+.journal-art { width: 100%; aspect-ratio: .84; display: block; margin-bottom: 28px; object-fit: cover; background: #d5c7b6; }
 .journal-grid h2 { margin: 12px 0 15px; font: 35px/1.02 var(--serif); }
 .journal-grid article > p:not(.eyebrow) { color: var(--muted); font: 16px/1.65 var(--serif); }
 .journal-grid article > a { display: inline-flex; gap: 12px; margin-top: 15px; padding-bottom: 5px; border-bottom: 1px solid; font-size: 9px; letter-spacing: .14em; text-transform: uppercase; }
@@ -212,7 +180,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .cart-items { flex: 1; }
 .cart-item { padding: 24px 0; display: grid; grid-template-columns: 120px 1fr; gap: 20px; border-bottom: 1px solid var(--line); }
 .cart-item-art { min-height: 140px; display: grid; place-items: center; background: #e4ddd4; }
-.cart-item-art .jewelry-art { width: 80%; }
+.product-photo--cart { min-height: 140px; }
 .cart-item-title { display: flex; justify-content: space-between; gap: 15px; }
 .cart-item-title h3 { margin: 0; font: 23px var(--serif); }
 .cart-item-title strong { font: 16px var(--serif); }
@@ -288,7 +256,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .product-line h3 { font-size: 22px; }
   .product-line span { font-size: 15px; }
   .product-card > p:last-child { font-size: 12px; }
-  .jewelry-art { width: 80%; }
   .craft-image { min-height: 430px; }
   .craft-copy { padding: 80px 22px; }
   .breadcrumbs { min-height: 52px; padding: 4px 18px; align-items: center; }
@@ -323,6 +290,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .cart-drawer { padding: 25px 18px; }
   .cart-item { grid-template-columns: 90px 1fr; }
   .cart-item-art { min-height: 110px; }
+  .product-photo--cart { min-height: 110px; }
   .checkout-row { grid-template-columns: 1fr; gap: 0; }
 }
 

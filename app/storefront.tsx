@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 
 type ProductOption = {
@@ -16,7 +17,7 @@ type Product = {
   subtitle: string;
   description: string;
   price: number;
-  art: "ring" | "bands" | "pendant" | "earrings" | "bracelet" | "heirloom" | "bike";
+  image: string;
   options: ProductOption[];
   details: string[];
 };
@@ -38,7 +39,7 @@ const products: Product[] = [
     description:
       "A low-set solitaire with a softly rounded band, designed to sit close to the hand and wear beautifully every day.",
     price: 2450,
-    art: "ring",
+    image: "/products/promise-solitaire.webp",
     options: [
       { name: "Metal", values: ["Yellow gold", "White gold", "Rose gold"] },
       { name: "Ring size", values: ["48", "50", "52", "54", "56"] },
@@ -55,7 +56,7 @@ const products: Product[] = [
     description:
       "A timeless band with a gently softened profile. Made alone or as a pair, and finished individually by hand.",
     price: 980,
-    art: "bands",
+    image: "/products/union-band.webp",
     options: [
       { name: "Metal", values: ["Yellow gold", "White gold", "Rose gold"] },
       { name: "Ring size", values: ["48", "50", "52", "54", "56", "58"] },
@@ -72,7 +73,7 @@ const products: Product[] = [
     description:
       "A small point of light suspended on a fine chain—made to mark the day a new chapter entered the world.",
     price: 1320,
-    art: "pendant",
+    image: "/products/arrival-pendant.webp",
     options: [
       { name: "Metal", values: ["Yellow gold", "White gold"] },
       { name: "Chain length", values: ["40 cm", "45 cm", "50 cm"] },
@@ -89,7 +90,7 @@ const products: Product[] = [
     description:
       "Lightweight oval hoops with enough presence for every day and enough restraint to remain entirely your own.",
     price: 1180,
-    art: "earrings",
+    image: "/products/becoming-hoops.webp",
     options: [
       { name: "Metal", values: ["Yellow gold", "White gold", "Rose gold"] },
       { name: "Size", values: ["Small", "Medium", "Large"] },
@@ -106,7 +107,7 @@ const products: Product[] = [
     description:
       "A delicate oval link bracelet punctuated by a single diamond—a quiet thank you that stays close.",
     price: 1560,
-    art: "bracelet",
+    image: "/products/gratitude-bracelet.webp",
     options: [
       { name: "Metal", values: ["Yellow gold", "White gold"] },
       { name: "Length", values: ["15 cm", "17 cm", "19 cm"] },
@@ -123,7 +124,7 @@ const products: Product[] = [
     description:
       "A weighty signet with a softened face, ready for a mark, monogram, date, or symbol that belongs only to you.",
     price: 2250,
-    art: "heirloom",
+    image: "/products/legacy-signet.webp",
     options: [
       { name: "Material", values: ["Platinum", "Yellow gold", "White gold"] },
       { name: "Ring size", values: ["50", "52", "54", "56", "58", "60"] },
@@ -140,7 +141,7 @@ const products: Product[] = [
     description:
       "A lasting object for a very first adventure. The same product model supports practical attributes such as wheel diameter, frame size and colour.",
     price: 890,
-    art: "bike",
+    image: "/products/first-ride.webp",
     options: [
       { name: "Wheel size", values: ["12 inch", "14 inch", "16 inch"] },
       { name: "Frame size", values: ["Small", "Medium"] },
@@ -178,23 +179,6 @@ const money = new Intl.NumberFormat("en-US", {
   currency: "USD",
   maximumFractionDigits: 0,
 });
-
-function ProductArt({ variant }: { variant: Product["art"] }) {
-  return (
-    <div className={`jewelry-art jewelry-art--${variant}`} aria-hidden="true">
-      <span className="jewel jewel--one" />
-      <span className="jewel jewel--two" />
-      <span className="jewel jewel--three" />
-      {variant === "bike" && (
-        <>
-          <span className="bike-frame" />
-          <span className="bike-seat" />
-          <span className="bike-bar" />
-        </>
-      )}
-    </div>
-  );
-}
 
 function Header({
   path,
@@ -252,8 +236,15 @@ function ProductGrid({ limit }: { limit?: number }) {
       {visibleProducts.map((product) => (
         <Link className="moment-card product-card" href={`/products/${product.slug}`} key={product.id}>
           <div className="moment-art">
+            <Image
+              className="product-photo"
+              src={product.image}
+              alt=""
+              width={1200}
+              height={1200}
+              sizes="(max-width: 720px) 50vw, 33vw"
+            />
             <span className="moment-number">{product.moment.split(" — ")[0]}</span>
-            <ProductArt variant={product.art} />
             <span className="card-arrow" aria-hidden="true">↗</span>
           </div>
           <p className="product-kicker">{product.moment}</p>
@@ -305,9 +296,14 @@ function HomePage() {
       </section>
 
       <section className="craft">
-        <div className="craft-image" role="img" aria-label="Goldsmith tools and a fine gold ring">
-          <div className="craft-ring" />
-        </div>
+        <Image
+          className="craft-image"
+          src="/editorial/craftsmanship.webp"
+          alt="Goldsmith finishing a fine gold ring by hand"
+          width={1200}
+          height={1200}
+          sizes="(max-width: 720px) 100vw, 58vw"
+        />
         <div className="craft-copy">
           <p className="eyebrow">Made to outlive the moment</p>
           <h2>Crafted slowly.<br />Kept forever.</h2>
@@ -346,7 +342,15 @@ function ProductDetail({
       </div>
       <section className="product-detail">
         <div className="product-visual">
-          <ProductArt variant={product.art} />
+          <Image
+            className="product-photo product-photo--detail"
+            src={product.image}
+            alt={product.title}
+            width={1200}
+            height={1200}
+            sizes="(max-width: 900px) 100vw, 58vw"
+            priority
+          />
           <span className="product-visual-caption">{product.moment}</span>
         </div>
         <div className="product-copy">
@@ -444,12 +448,19 @@ function InteriorPage({ path }: { path: string }) {
       ) : path === "/journal" ? (
         <section className="journal-grid">
           {[
-            ["Field note 01", "The quiet architecture of a ring", "Why a low setting, softened edge and careful proportion matter long after the first impression."],
-            ["Field note 02", "Objects that gather a life", "A conversation about patina, repair and the marks that turn fine materials into personal ones."],
-            ["Field note 03", "A new language for heirlooms", "Tradition can hold many shapes. We look at the rituals people are choosing for themselves."],
-          ].map(([label, title, copy], index) => (
+            ["Field note 01", "The quiet architecture of a ring", "Why a low setting, softened edge and careful proportion matter long after the first impression.", "/editorial/journal-ring-architecture.webp"],
+            ["Field note 02", "Objects that gather a life", "A conversation about patina, repair and the marks that turn fine materials into personal ones.", "/editorial/journal-patina.webp"],
+            ["Field note 03", "A new language for heirlooms", "Tradition can hold many shapes. We look at the rituals people are choosing for themselves.", "/editorial/journal-heirlooms.webp"],
+          ].map(([label, title, copy, image]) => (
             <article key={title}>
-              <div className={`journal-art journal-art--${index + 1}`}><span>{String(index + 1).padStart(2, "0")}</span></div>
+              <Image
+                className="journal-art"
+                src={image}
+                alt=""
+                width={1200}
+                height={1200}
+                sizes="(max-width: 720px) 100vw, 33vw"
+              />
               <p className="eyebrow">{label}</p>
               <h2>{title}</h2>
               <p>{copy}</p>
@@ -591,7 +602,16 @@ function CartDrawer({
             <div className="cart-items">
               {items.map((item) => (
                 <article className="cart-item" key={item.key}>
-                  <div className="cart-item-art"><ProductArt variant={item.product.art} /></div>
+                  <div className="cart-item-art">
+                    <Image
+                      className="product-photo product-photo--cart"
+                      src={item.product.image}
+                      alt=""
+                      width={240}
+                      height={240}
+                      sizes="120px"
+                    />
+                  </div>
                   <div className="cart-item-copy">
                     <div className="cart-item-title">
                       <h3>{item.product.title}</h3>
