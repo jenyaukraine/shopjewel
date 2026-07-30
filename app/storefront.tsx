@@ -349,6 +349,7 @@ const heroSlides = [
   {
     id: "signature",
     image: "/hero-6moments-v2.png",
+    mobileImage: "/hero-6moments-mobile.png",
     imagePosition: "58% 48%",
     kicker: "Авторська колекція",
     title: "Де моменти стають спадщиною.",
@@ -360,6 +361,7 @@ const heroSlides = [
   {
     id: "diamonds",
     image: "/editorial/lab-grown-diamond.png",
+    mobileImage: "/editorial/lab-grown-diamond-mobile.png",
     imagePosition: "58% 50%",
     kicker: "Освідомлена розкіш",
     title: "Діамант, обраний із наміром.",
@@ -371,6 +373,7 @@ const heroSlides = [
   {
     id: "craft",
     image: "/editorial/craftsmanship.webp",
+    mobileImage: "/editorial/craftsmanship.webp",
     imagePosition: "64% 52%",
     kicker: "Ручна майстерність",
     title: "Створено неквапливо. Збережено назавжди.",
@@ -380,6 +383,29 @@ const heroSlides = [
     secondaryHref: "/about",
   },
 ] as const;
+
+type LineIconName = "home" | "jewel" | "story" | "journal" | "diamond" | "mail" | "certificate" | "shield" | "delivery" | "verified";
+
+function LineIcon({ name }: { name: LineIconName }) {
+  const paths: Record<LineIconName, React.ReactNode> = {
+    home: <><path d="M3 10.5 12 3l9 7.5" /><path d="M5.5 9.5V21h13V9.5M9.5 21v-6h5v6" /></>,
+    jewel: <><path d="m4 8 3-4h10l3 4-8 12Z" /><path d="m4 8 8 12 8-12M7 4l5 4 5-4M4 8h16" /></>,
+    story: <><circle cx="12" cy="12" r="9" /><path d="M12 10v6M12 7h.01" /></>,
+    journal: <><path d="M5 3.5h11a3 3 0 0 1 3 3V21H8a3 3 0 0 1-3-3Z" /><path d="M8 3.5V18a3 3 0 0 0 3 3M11 8h5M11 12h5" /></>,
+    diamond: <><path d="m3.5 8 3.6-4h9.8l3.6 4L12 20Z" /><path d="m7.1 4 4.9 4 4.9-4M3.5 8h17" /></>,
+    mail: <><rect x="3" y="5" width="18" height="14" rx="1.5" /><path d="m4 7 8 6 8-6" /></>,
+    certificate: <><circle cx="12" cy="10" r="6.5" /><path d="m8 15-1 6 5-2 5 2-1-6M9.5 10l1.6 1.6 3.5-3.5" /></>,
+    shield: <><path d="M12 3 20 6v5.5c0 4.5-3.2 7.8-8 9.5-4.8-1.7-8-5-8-9.5V6Z" /><path d="m8.5 12 2.2 2.2 4.8-4.8" /></>,
+    delivery: <><path d="M3 6h11v10H3ZM14 9h4l3 3v4h-7Z" /><circle cx="7" cy="18" r="2" /><circle cx="18" cy="18" r="2" /></>,
+    verified: <><circle cx="12" cy="12" r="9" /><path d="m8 12 2.6 2.6L16.5 9" /></>,
+  };
+
+  return (
+    <svg className="line-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      {paths[name]}
+    </svg>
+  );
+}
 
 function Header({
   path,
@@ -473,12 +499,12 @@ function Header({
             ))}
           </nav>
           <nav className="mobile-main-nav" aria-label="Розділи сайту">
-            <Link href="/" onClick={closeMobileMenu}><span aria-hidden="true">⌂</span> Головна</Link>
-            <Link href="/collections" onClick={closeMobileMenu}><span aria-hidden="true">◇</span> Усі прикраси</Link>
-            <Link href="/about" onClick={closeMobileMenu}><span aria-hidden="true">○</span> Про нас</Link>
-            <Link href="/journal" onClick={closeMobileMenu}><span aria-hidden="true">▤</span> Журнал</Link>
-            <Link href="/diamonds" onClick={closeMobileMenu}><span aria-hidden="true">◆</span> Про діаманти</Link>
-            <Link href="/contact" onClick={closeMobileMenu}><span aria-hidden="true">✉</span> Контакти</Link>
+            <Link href="/" onClick={closeMobileMenu}><span><LineIcon name="home" /></span> Головна</Link>
+            <Link href="/collections" onClick={closeMobileMenu}><span><LineIcon name="jewel" /></span> Усі прикраси</Link>
+            <Link href="/about" onClick={closeMobileMenu}><span><LineIcon name="story" /></span> Про нас</Link>
+            <Link href="/journal" onClick={closeMobileMenu}><span><LineIcon name="journal" /></span> Журнал</Link>
+            <Link href="/diamonds" onClick={closeMobileMenu}><span><LineIcon name="diamond" /></span> Про діаманти</Link>
+            <Link href="/contact" onClick={closeMobileMenu}><span><LineIcon name="mail" /></span> Контакти</Link>
           </nav>
           <div className="mobile-drawer-controls">
             <label>Валюта
@@ -652,9 +678,10 @@ function HomePage({
               key={slide.id}
               className={`hero-background ${index === heroSlideIndex ? "is-active" : ""}`}
               style={{
-                backgroundImage: `url("${slide.image}")`,
+                "--hero-image": `url("${slide.image}")`,
+                "--hero-mobile-image": `url("${slide.mobileImage}")`,
                 backgroundPosition: slide.imagePosition,
-              }}
+              } as React.CSSProperties}
             />
           ))}
         </div>
@@ -666,8 +693,7 @@ function HomePage({
               {currentHeroSlide.primaryLabel}
             </Link>
             <Link className="hero-learn" href={currentHeroSlide.secondaryHref}>
-              <span className="hero-learn-icon" aria-hidden="true">▶</span>
-              {currentHeroSlide.secondaryLabel}
+              {currentHeroSlide.secondaryLabel} <span aria-hidden="true">→</span>
             </Link>
           </div>
         </div>
@@ -712,22 +738,22 @@ function HomePage({
 
       <section className="benefits-strip" aria-label="Переваги 6MOMENTS">
         <article>
-          <span className="benefit-icon benefit-icon--diamond" aria-hidden="true">◇</span>
+          <span className="benefit-icon"><LineIcon name="certificate" /></span>
           <h3>Сертифіковані діаманти GIA</h3>
           <p>Натуральні діаманти з офіційним підтвердженням походження</p>
         </article>
         <article>
-          <span className="benefit-icon" aria-hidden="true">♢</span>
+          <span className="benefit-icon"><LineIcon name="shield" /></span>
           <h3>Застрахована доставка</h3>
           <p>Безпечне міжнародне перевезення з повним відстеженням</p>
         </article>
         <article>
-          <span className="benefit-icon" aria-hidden="true">⌁</span>
+          <span className="benefit-icon"><LineIcon name="delivery" /></span>
           <h3>Безкоштовна доставка</h3>
           <p>Компліментарна доставка для замовлень від €1000</p>
         </article>
         <article>
-          <span className="benefit-icon benefit-icon--check" aria-hidden="true">✓</span>
+          <span className="benefit-icon"><LineIcon name="verified" /></span>
           <h3>Перевірено перед відправленням</h3>
           <p>Кожну прикрасу особисто оглядають експерти майстерні</p>
         </article>
@@ -1357,6 +1383,11 @@ function CatalogPage({
   const [maxPrice, setMaxPrice] = useState(highestPrice);
   const [sort, setSort] = useState("popular");
   const [visibleCount, setVisibleCount] = useState(6);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  useEffect(() => {
+    setFiltersOpen(!window.matchMedia("(max-width: 680px)").matches);
+  }, []);
 
   const unique = (values: string[]) => ["Усі", ...Array.from(new Set(values))];
   const categories = unique(catalog.map((product) => product.category));
@@ -1418,7 +1449,7 @@ function CatalogPage({
           <span className="sr-only">Пошук у каталозі</span>
           <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Пошук за назвою, артикулом, категорією або моментом" />
         </label>
-        <label className="catalog-sort">Сортування
+        <label className="catalog-sort"><span>Сортування</span>
           <select value={sort} onChange={(event) => setSort(event.target.value)}>
             <option value="popular">За популярністю</option>
             <option value="price-asc">Ціна: від нижчої</option>
@@ -1428,7 +1459,11 @@ function CatalogPage({
         </label>
       </div>
       <div className="catalog-layout">
-        <details className="catalog-filters" open>
+        <details
+          className="catalog-filters"
+          open={filtersOpen}
+          onToggle={(event) => setFiltersOpen(event.currentTarget.open)}
+        >
           <summary>
             <span className="filter-summary-title">
               Фільтри
@@ -1488,7 +1523,6 @@ function CatalogPage({
         <div className="catalog-results">
           <div className="results-heading">
             <p><strong>{filtered.length}</strong> виробів знайдено</p>
-            <Link href="/admin/catalog">Імпорт і керування каталогом →</Link>
           </div>
           {filtered.length ? (
             <>
