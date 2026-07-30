@@ -45,7 +45,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .mobile-menu { display: none; }
 
 .hero { min-height: calc(100svh - 118px); position: relative; display: flex; align-items: flex-end; padding: clamp(45px, 7vw, 100px); color: white; background: #564b41 url("/hero-6moments.png") 60% 52%/cover no-repeat; overflow: hidden; }
-.hero::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(21,18,15,.78), rgba(21,18,15,.15) 63%, transparent); }
+.hero::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, #211d19 0%, rgba(33,29,25,.98) 42%, rgba(33,29,25,.74) 58%, rgba(33,29,25,.18) 78%, transparent); }
 .hero::after { content: "6"; position: absolute; right: 5vw; bottom: -10vw; color: rgba(255,255,255,.13); font: 55vw/.75 var(--serif); }
 .hero-copy { position: relative; z-index: 2; width: min(650px, 70vw); }
 .hero .eyebrow { color: #dcc9ae; }
@@ -266,7 +266,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .mobile-menu[open] nav { left: -18px; padding: 25px 18px; }
   .wordmark { font-size: 20px; }
   .hero { min-height: 720px; padding: 55px 22px; background-position: 66% center; }
-  .hero::before { background: linear-gradient(0deg,rgba(21,18,15,.85),rgba(21,18,15,.15) 75%); }
+  .hero::before { background: linear-gradient(0deg,#211d19 0%,rgba(33,29,25,.94) 44%,rgba(33,29,25,.34) 78%,rgba(33,29,25,.1)); }
   .hero-copy { width: 100%; }
   .hero h1 { font-size: clamp(52px,15vw,72px); }
   .hero-copy > p:not(.eyebrow) { font-size: 16px; }
