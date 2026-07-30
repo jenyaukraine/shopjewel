@@ -295,6 +295,11 @@ const routeCopy: Record<string, { eyebrow: string; title: string; copy: string }
     title: "Юридична інформація.",
     copy: "Контактні дані та відомості про 6MOMENTS для клієнтів і партнерів.",
   },
+  "/diamonds": {
+    eyebrow: "Освідомлена розкіш",
+    title: "Лабораторні чи натуральні діаманти.",
+    copy: "Два справжні діаманти з однаковим блиском і різним походженням. Обирайте той, що відповідає саме вашим цінностям.",
+  },
 };
 
 function Header({
@@ -542,6 +547,30 @@ function HomePage({
         </div>
       </section>
 
+      <section className="lab-diamond-banner" aria-labelledby="lab-diamond-title">
+        <Image
+          src="/editorial/lab-grown-diamond.png"
+          alt=""
+          unoptimized
+          width={1792}
+          height={896}
+          sizes="100vw"
+        />
+        <div className="lab-diamond-overlay" />
+        <div className="lab-diamond-copy">
+          <p className="eyebrow">Освідомлена розкіш</p>
+          <h2 id="lab-diamond-title">Лабораторні<br />діаманти</h2>
+          <p>
+            Справжні діаманти з тим самим складом, твердістю та блиском —
+            створені в контрольованих умовах і перевірені незалежними лабораторіями.
+          </p>
+          <div>
+            <Link className="button button--light" href="/products/promise-solitaire">Переглянути прикраси</Link>
+            <Link className="lab-learn-link" href="/diamonds">Дізнатися більше <span aria-hidden="true">→</span></Link>
+          </div>
+        </div>
+      </section>
+
       <section className="testimonials" aria-labelledby="testimonials-title">
         <div className="testimonials-heading">
           <div>
@@ -665,6 +694,21 @@ function HomePage({
           </Link>
         </div>
         <Link className="gallery-link" href="/journal">Відкрити журнал <span aria-hidden="true">↗</span></Link>
+        <div className="instagram-callout">
+          <div>
+            <p className="eyebrow">Instagram</p>
+            <h3>Щоденне натхнення 6MOMENTS</h3>
+            <p>Нові прикраси, деталі майстерні та особливі релізи — в офіційному профілі бренду.</p>
+          </div>
+          <a
+            className="button button--light"
+            href="https://www.instagram.com/6moments_jewelry?igsh=MTdnaHg4eWo0YzlrNQ=="
+            target="_blank"
+            rel="noreferrer"
+          >
+            @6moments_jewelry <span aria-hidden="true">↗</span>
+          </a>
+        </div>
       </section>
     </main>
   );
@@ -1243,6 +1287,50 @@ function InteriorPage({
             </article>
           ))}
         </section>
+      ) : path === "/diamonds" ? (
+        <>
+          <section className="diamond-intro">
+            <div>
+              <p className="eyebrow">Однакова краса</p>
+              <h2>Різне походження.<br />Справжня цінність.</h2>
+            </div>
+            <p>
+              Лабораторний діамант не є імітацією: він має ту саму кристалічну
+              структуру, оптичні властивості й твердість, що й природний.
+              Відмінність полягає у способі та часі формування.
+            </p>
+          </section>
+          <section className="diamond-comparison" aria-labelledby="comparison-title">
+            <div className="editorial-heading">
+              <p className="editorial-script" aria-hidden="true">Порівняння</p>
+              <h2 id="comparison-title">Оберіть свій діамант</h2>
+              <p>Обидва варіанти оцінюють за однаковими параметрами 4C: огранювання, колір, чистота й каратність.</p>
+            </div>
+            <div className="comparison-table">
+              <div className="comparison-row comparison-row--head"><strong>Характеристика</strong><strong>Натуральний</strong><strong>Лабораторний</strong></div>
+              <div className="comparison-row"><span>Походження</span><span>Сформований природою протягом мільярдів років</span><span>Вирощений у контрольованих умовах за кілька тижнів</span></div>
+              <div className="comparison-row"><span>Вигляд і склад</span><span>Діамант із природними особливостями</span><span>Хімічно й оптично ідентичний діамант</span></div>
+              <div className="comparison-row"><span>Сертифікація</span><span>Незалежний сертифікат для обраних каменів</span><span>Незалежний сертифікат із позначкою Lab-grown</span></div>
+              <div className="comparison-row"><span>Вартість</span><span>Вища через рідкість і видобуток</span><span>Доступніша за однакових характеристик</span></div>
+              <div className="comparison-row"><span>Найкраще для</span><span>Традиції, природної рідкості та колекційної цінності</span><span>Більшої каратності в заданому бюджеті та сучасного вибору</span></div>
+            </div>
+          </section>
+          <section className="diamond-faq">
+            <div>
+              <p className="eyebrow">Часті запитання</p>
+              <h2>Коротко про головне</h2>
+            </div>
+            <div>
+              <details open><summary>Лабораторний діамант — це підробка?</summary><p>Ні. Це справжній діамант із тією самою кристалічною структурою та фізичними властивостями. Фіаніт і муасаніт — інші матеріали.</p></details>
+              <details><summary>Чи можна відрізнити його на око?</summary><p>Ні. Надійно визначити походження може гемологічна лабораторія за допомогою спеціального обладнання.</p></details>
+              <details><summary>Який варіант вигідніший?</summary><p>Лабораторний камінь зазвичай дає змогу обрати більшу каратність або вищі характеристики в тому самому бюджеті. Натуральний цінують за рідкість і природне походження.</p></details>
+            </div>
+          </section>
+          <section className="diamond-cta">
+            <div><p className="eyebrow">Готові обрати?</p><h2>Знайдіть діамант для свого моменту.</h2></div>
+            <Link className="button button--light" href="/products/promise-solitaire">Переглянути лабораторні діаманти</Link>
+          </section>
+        </>
       ) : path === "/privacy" ? (
         <section className="contact-layout">
           <div className="contact-details">
@@ -1499,10 +1587,10 @@ function Footer() {
           <ul>
             <li><span aria-hidden="true">◇</span> Приватні консультації онлайн</li>
             <li><span aria-hidden="true">◎</span> Застрахована доставка по світу</li>
-            <li><span aria-hidden="true">✉</span> <Link href="/contact">Написати консьєржу</Link></li>
+            <li><span aria-hidden="true">✉</span> <a href="mailto:atelier@6moments.store">atelier@6moments.store</a></li>
           </ul>
           <div className="footer-socials" aria-label="Соціальні мережі">
-            <a href="https://www.instagram.com/" target="_blank" rel="noreferrer" aria-label="Instagram">IG</a>
+            <a href="https://www.instagram.com/6moments_jewelry?igsh=MTdnaHg4eWo0YzlrNQ==" target="_blank" rel="noreferrer" aria-label="Instagram 6MOMENTS">IG</a>
             <a href="https://www.pinterest.com/" target="_blank" rel="noreferrer" aria-label="Pinterest">P</a>
             <Link href="/journal" aria-label="Журнал 6MOMENTS">J</Link>
           </div>
@@ -1512,6 +1600,7 @@ function Footer() {
           <h3>Про 6MOMENTS</h3>
           <Link href="/about">Наша історія</Link>
           <Link href="/about">Матеріали й майстерність</Link>
+          <Link href="/diamonds">Лабораторні діаманти</Link>
           <Link href="/journal">Журнал</Link>
           <Link href="/contact">Приватна консультація</Link>
         </nav>

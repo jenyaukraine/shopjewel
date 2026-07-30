@@ -116,3 +116,23 @@ test("server-renders Ukrainian legal information pages", async () => {
   assert.match(imprintHtml, /Юридична інформація/);
   assert.match(imprintHtml, /6MOMENTS Jewelry/);
 });
+
+test("server-renders restored brand blocks and diamond education", async () => {
+  const [homeResponse, diamondsResponse] = await Promise.all([
+    render("/"),
+    render("/diamonds"),
+  ]);
+
+  assert.equal(homeResponse.status, 200);
+  assert.equal(diamondsResponse.status, 200);
+
+  const [homeHtml, diamondsHtml] = await Promise.all([
+    homeResponse.text(),
+    diamondsResponse.text(),
+  ]);
+  assert.match(homeHtml, /Лабораторні[\s\S]*діаманти/);
+  assert.match(homeHtml, /@6moments_jewelry/);
+  assert.match(homeHtml, /atelier@6moments\.store/);
+  assert.match(diamondsHtml, /Оберіть свій діамант/);
+  assert.match(diamondsHtml, /Лабораторний діамант — це підробка/);
+});
