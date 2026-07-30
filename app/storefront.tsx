@@ -731,7 +731,9 @@ function HomePage({
           <p className="editorial-script" aria-hidden="true">Особливі прикраси</p>
           <h2 id="products-title">Найбажаніші</h2>
           <p>Позачасові прикраси, до яких повертаються знову і знову</p>
-          <Link className="sale-link" href="/collections">SALE</Link>
+          <Link className="sale-link" href="/collections">
+            Переглянути бестселери <span aria-hidden="true">→</span>
+          </Link>
         </div>
         <ProductGrid products={catalog} currency={currency} limit={3} onQuickAdd={onQuickAdd} />
       </section>
