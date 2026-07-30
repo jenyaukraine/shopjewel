@@ -54,5 +54,30 @@ test("server-renders product attributes and story routes", async () => {
   assert.match(productHtml, /First Ride Balance Bike/);
   assert.match(productHtml, /Wheel size/);
   assert.match(productHtml, /Frame size/);
+  assert.match(productHtml, /Product specifications/);
+  assert.match(productHtml, /Delivery in[\s\S]*3[\s\S]*days/);
+  assert.match(productHtml, /Hint about this gift/);
   assert.match(storyHtml, /One language\. Six chapters\./);
+});
+
+test("server-renders catalog filters and CSV manager", async () => {
+  const [catalogResponse, managerResponse] = await Promise.all([
+    render("/collections"),
+    render("/admin/catalog"),
+  ]);
+
+  assert.equal(catalogResponse.status, 200);
+  assert.equal(managerResponse.status, 200);
+
+  const [catalogHtml, managerHtml] = await Promise.all([
+    catalogResponse.text(),
+    managerResponse.text(),
+  ]);
+
+  assert.match(catalogHtml, /Search by name, SKU, category or moment/);
+  assert.match(catalogHtml, /Maximum price/);
+  assert.match(catalogHtml, /Quick add/);
+  assert.match(managerHtml, /Import products without touching code/);
+  assert.match(managerHtml, /Download CSV template/);
+  assert.match(managerHtml, /Choose a CSV file/);
 });

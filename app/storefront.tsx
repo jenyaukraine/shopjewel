@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -12,15 +12,45 @@ type ProductOption = {
 type Product = {
   id: string;
   slug: string;
+  sku: string;
+  category: string;
   moment: string;
   title: string;
   subtitle: string;
   description: string;
   price: number;
+  oldPrice?: number;
   image: string;
+  metal: string;
+  fineness: string;
+  stoneType: string;
+  availability: "In stock" | "Made to order";
+  deliveryDays: number;
+  weight: number;
+  carat: number;
+  stoneCount: number;
+  popularity: number;
+  isNew?: boolean;
   options: ProductOption[];
   details: string[];
 };
+
+type CurrencyCode = "USD" | "EUR" | "CZK" | "UAH";
+
+const currencyRates: Record<CurrencyCode, number> = {
+  USD: 1,
+  EUR: 0.92,
+  CZK: 23.4,
+  UAH: 41.2,
+};
+
+function formatMoney(price: number, currency: CurrencyCode) {
+  return new Intl.NumberFormat(currency === "CZK" ? "cs-CZ" : currency === "UAH" ? "uk-UA" : "en-US", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  }).format(price * currencyRates[currency]);
+}
 
 type CartItem = {
   key: string;
@@ -33,13 +63,26 @@ const products: Product[] = [
   {
     id: "promise-solitaire",
     slug: "promise-solitaire",
+    sku: "6M-RI-001",
+    category: "Rings",
     moment: "Moment 01 — The Promise",
     title: "Promise Solitaire",
     subtitle: "18k gold · traceable diamond",
     description:
       "A low-set solitaire with a softly rounded band, designed to sit close to the hand and wear beautifully every day.",
     price: 2450,
+    oldPrice: 2750,
     image: "/products/promise-solitaire.webp",
+    metal: "Yellow gold",
+    fineness: "750 / 18k",
+    stoneType: "Lab-grown diamond",
+    availability: "In stock",
+    deliveryDays: 3,
+    weight: 2.8,
+    carat: 0.5,
+    stoneCount: 1,
+    popularity: 100,
+    isNew: true,
     options: [
       { name: "Metal", values: ["Yellow gold", "White gold", "Rose gold"] },
       { name: "Ring size", values: ["48", "50", "52", "54", "56"] },
@@ -50,6 +93,8 @@ const products: Product[] = [
   {
     id: "union-band",
     slug: "union-band",
+    sku: "6M-WE-002",
+    category: "Wedding rings",
     moment: "Moment 02 — The Union",
     title: "Union Band",
     subtitle: "18k gold · hand-finished",
@@ -57,6 +102,15 @@ const products: Product[] = [
       "A timeless band with a gently softened profile. Made alone or as a pair, and finished individually by hand.",
     price: 980,
     image: "/products/union-band.webp",
+    metal: "Yellow gold",
+    fineness: "750 / 18k",
+    stoneType: "Without stones",
+    availability: "Made to order",
+    deliveryDays: 10,
+    weight: 3.9,
+    carat: 0,
+    stoneCount: 0,
+    popularity: 92,
     options: [
       { name: "Metal", values: ["Yellow gold", "White gold", "Rose gold"] },
       { name: "Ring size", values: ["48", "50", "52", "54", "56", "58"] },
@@ -67,13 +121,25 @@ const products: Product[] = [
   {
     id: "arrival-pendant",
     slug: "arrival-pendant",
+    sku: "6M-NE-003",
+    category: "Necklaces",
     moment: "Moment 03 — The Arrival",
     title: "Arrival Pendant",
     subtitle: "18k gold · brilliant diamond",
     description:
       "A small point of light suspended on a fine chain—made to mark the day a new chapter entered the world.",
     price: 1320,
+    oldPrice: 1480,
     image: "/products/arrival-pendant.webp",
+    metal: "Yellow gold",
+    fineness: "750 / 18k",
+    stoneType: "Natural diamond",
+    availability: "In stock",
+    deliveryDays: 3,
+    weight: 2.1,
+    carat: 0.1,
+    stoneCount: 1,
+    popularity: 96,
     options: [
       { name: "Metal", values: ["Yellow gold", "White gold"] },
       { name: "Chain length", values: ["40 cm", "45 cm", "50 cm"] },
@@ -84,6 +150,8 @@ const products: Product[] = [
   {
     id: "becoming-hoops",
     slug: "becoming-hoops",
+    sku: "6M-EA-004",
+    category: "Earrings",
     moment: "Moment 04 — The Becoming",
     title: "Becoming Hoops",
     subtitle: "18k gold · sold as a pair",
@@ -91,6 +159,16 @@ const products: Product[] = [
       "Lightweight oval hoops with enough presence for every day and enough restraint to remain entirely your own.",
     price: 1180,
     image: "/products/becoming-hoops.webp",
+    metal: "Yellow gold",
+    fineness: "750 / 18k",
+    stoneType: "Without stones",
+    availability: "In stock",
+    deliveryDays: 3,
+    weight: 4.2,
+    carat: 0,
+    stoneCount: 0,
+    popularity: 88,
+    isNew: true,
     options: [
       { name: "Metal", values: ["Yellow gold", "White gold", "Rose gold"] },
       { name: "Size", values: ["Small", "Medium", "Large"] },
@@ -101,13 +179,25 @@ const products: Product[] = [
   {
     id: "gratitude-bracelet",
     slug: "gratitude-bracelet",
+    sku: "6M-BR-005",
+    category: "Bracelets",
     moment: "Moment 05 — The Gratitude",
     title: "Gratitude Bracelet",
     subtitle: "18k gold · hand-set stone",
     description:
       "A delicate oval link bracelet punctuated by a single diamond—a quiet thank you that stays close.",
     price: 1560,
+    oldPrice: 1790,
     image: "/products/gratitude-bracelet.webp",
+    metal: "Yellow gold",
+    fineness: "750 / 18k",
+    stoneType: "Natural diamond",
+    availability: "In stock",
+    deliveryDays: 3,
+    weight: 2.6,
+    carat: 0.15,
+    stoneCount: 1,
+    popularity: 90,
     options: [
       { name: "Metal", values: ["Yellow gold", "White gold"] },
       { name: "Length", values: ["15 cm", "17 cm", "19 cm"] },
@@ -118,6 +208,8 @@ const products: Product[] = [
   {
     id: "legacy-signet",
     slug: "legacy-signet",
+    sku: "6M-RI-006",
+    category: "Rings",
     moment: "Moment 06 — The Legacy",
     title: "Legacy Signet",
     subtitle: "Platinum · made to order",
@@ -125,6 +217,15 @@ const products: Product[] = [
       "A weighty signet with a softened face, ready for a mark, monogram, date, or symbol that belongs only to you.",
     price: 2250,
     image: "/products/legacy-signet.webp",
+    metal: "Platinum",
+    fineness: "950",
+    stoneType: "Without stones",
+    availability: "Made to order",
+    deliveryDays: 10,
+    weight: 8.4,
+    carat: 0,
+    stoneCount: 0,
+    popularity: 82,
     options: [
       { name: "Material", values: ["Platinum", "Yellow gold", "White gold"] },
       { name: "Ring size", values: ["50", "52", "54", "56", "58", "60"] },
@@ -135,6 +236,8 @@ const products: Product[] = [
   {
     id: "first-ride",
     slug: "first-ride",
+    sku: "6M-SE-007",
+    category: "Special editions",
     moment: "Special edition — The First Ride",
     title: "First Ride Balance Bike",
     subtitle: "Ash wood · leather · alloy",
@@ -142,6 +245,16 @@ const products: Product[] = [
       "A lasting object for a very first adventure. The same product model supports practical attributes such as wheel diameter, frame size and colour.",
     price: 890,
     image: "/products/first-ride.webp",
+    metal: "Alloy",
+    fineness: "Not applicable",
+    stoneType: "Without stones",
+    availability: "In stock",
+    deliveryDays: 3,
+    weight: 3100,
+    carat: 0,
+    stoneCount: 0,
+    popularity: 76,
+    isNew: true,
     options: [
       { name: "Wheel size", values: ["12 inch", "14 inch", "16 inch"] },
       { name: "Frame size", values: ["Small", "Medium"] },
@@ -174,19 +287,17 @@ const routeCopy: Record<string, { eyebrow: string; title: string; copy: string }
   },
 };
 
-const money = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
-
 function Header({
   path,
   count,
+  currency,
+  onCurrency,
   onOpenCart,
 }: {
   path: string;
   count: number;
+  currency: CurrencyCode;
+  onCurrency: (currency: CurrencyCode) => void;
   onOpenCart: () => void;
 }) {
   return (
@@ -208,6 +319,15 @@ function Header({
           </Link>
         </nav>
         <div className="header-actions">
+          <label className="currency-control">
+            <span className="sr-only">Currency</span>
+            <select value={currency} onChange={(event) => onCurrency(event.target.value as CurrencyCode)}>
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+              <option value="CZK">CZK</option>
+              <option value="UAH">UAH</option>
+            </select>
+          </label>
           <Link href="/contact">Private appointment</Link>
           <button className="bag" type="button" onClick={onOpenCart} aria-label={`Shopping bag, ${count} items`}>
             Bag <span>{count}</span>
@@ -219,7 +339,16 @@ function Header({
             <Link href="/collections">Shop</Link>
             <Link href="/about">Our story</Link>
             <Link href="/journal">Journal</Link>
+            <Link href="/admin/catalog">Catalog manager</Link>
             <Link href="/contact">Private appointment</Link>
+            <label className="mobile-currency">Currency
+              <select value={currency} onChange={(event) => onCurrency(event.target.value as CurrencyCode)}>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="CZK">CZK</option>
+                <option value="UAH">UAH</option>
+              </select>
+            </label>
             <button type="button" onClick={onOpenCart}>Bag ({count})</button>
           </nav>
         </details>
@@ -228,38 +357,82 @@ function Header({
   );
 }
 
-function ProductGrid({ limit }: { limit?: number }) {
-  const visibleProducts = typeof limit === "number" ? products.slice(0, limit) : products;
+function defaultOptions(product: Product) {
+  return Object.fromEntries(product.options.map((option) => [option.name, option.values[0]]));
+}
+
+function ProductGrid({
+  products: catalog,
+  currency,
+  limit,
+  onQuickAdd,
+}: {
+  products: Product[];
+  currency: CurrencyCode;
+  limit?: number;
+  onQuickAdd?: (product: Product, options: Record<string, string>) => void;
+}) {
+  const visibleProducts = typeof limit === "number" ? catalog.slice(0, limit) : catalog;
 
   return (
     <div className="collection-grid product-grid">
       {visibleProducts.map((product) => (
-        <Link className="moment-card product-card" href={`/products/${product.slug}`} key={product.id}>
-          <div className="moment-art">
-            <Image
-              className="product-photo"
-              src={product.image}
-              alt=""
-              width={1200}
-              height={1200}
-              sizes="(max-width: 720px) 50vw, 33vw"
-            />
-            <span className="moment-number">{product.moment.split(" — ")[0]}</span>
-            <span className="card-arrow" aria-hidden="true">↗</span>
+        <article className="moment-card product-card" key={product.id}>
+          <Link href={`/products/${product.slug}`}>
+            <div className="moment-art">
+              <Image
+                className="product-photo"
+                src={product.image}
+                alt=""
+                width={1200}
+                height={1200}
+                sizes="(max-width: 720px) 50vw, 33vw"
+              />
+              <span className="moment-number">{product.moment.split(" — ")[0]}</span>
+              {product.isNew && <span className="product-badge">New</span>}
+              <span className="card-arrow" aria-hidden="true">↗</span>
+            </div>
+            <p className="product-kicker">{product.moment}</p>
+            <div className="product-line">
+              <h3>{product.title}</h3>
+              <span className="card-price">
+                {product.oldPrice && <del>{formatMoney(product.oldPrice, currency)}</del>}
+                {formatMoney(product.price, currency)}
+              </span>
+            </div>
+            <p>{product.subtitle}</p>
+            <dl className="card-specs">
+              <div><dt>SKU</dt><dd>{product.sku}</dd></div>
+              <div><dt>Weight</dt><dd>{product.weight >= 100 ? `${(product.weight / 1000).toFixed(1)} kg` : `${product.weight} g`}</dd></div>
+              <div><dt>Carat</dt><dd>{product.carat || "—"}</dd></div>
+              <div><dt>Stones</dt><dd>{product.stoneCount || "—"}</dd></div>
+            </dl>
+          </Link>
+          <div className="card-footer">
+            <span className={`stock-status ${product.availability === "In stock" ? "is-stocked" : ""}`}>
+              {product.availability} · {product.deliveryDays} days
+            </span>
+            {onQuickAdd && (
+              <button type="button" onClick={() => onQuickAdd(product, defaultOptions(product))}>
+                Quick add
+              </button>
+            )}
           </div>
-          <p className="product-kicker">{product.moment}</p>
-          <div className="product-line">
-            <h3>{product.title}</h3>
-            <span>{money.format(product.price)}</span>
-          </div>
-          <p>{product.subtitle}</p>
-        </Link>
+        </article>
       ))}
     </div>
   );
 }
 
-function HomePage() {
+function HomePage({
+  products: catalog,
+  currency,
+  onQuickAdd,
+}: {
+  products: Product[];
+  currency: CurrencyCode;
+  onQuickAdd: (product: Product, options: Record<string, string>) => void;
+}) {
   return (
     <main>
       <section className="hero" aria-labelledby="hero-title">
@@ -292,7 +465,7 @@ function HomePage() {
           </div>
           <Link className="text-link" href="/collections">View all products <span aria-hidden="true">→</span></Link>
         </div>
-        <ProductGrid limit={6} />
+        <ProductGrid products={catalog} currency={currency} limit={6} onQuickAdd={onQuickAdd} />
       </section>
 
       <section className="craft">
@@ -319,19 +492,25 @@ function HomePage() {
 
 function ProductDetail({
   product,
+  related,
+  currency,
   onAdd,
   onOpenCart,
 }: {
   product: Product;
+  related: Product[];
+  currency: CurrencyCode;
   onAdd: (product: Product, options: Record<string, string>) => void;
   onOpenCart: () => void;
 }) {
-  const initialOptions = Object.fromEntries(product.options.map((option) => [option.name, option.values[0]]));
+  const initialOptions = defaultOptions(product);
   const [selected, setSelected] = useState<Record<string, string>>(initialOptions);
   const [added, setAdded] = useState(false);
+  const [engraving, setEngraving] = useState("");
+  const [hintSent, setHintSent] = useState(false);
 
   function addProduct() {
-    onAdd(product, selected);
+    onAdd(product, engraving ? { ...selected, Engraving: engraving } : selected);
     setAdded(true);
   }
 
@@ -356,7 +535,15 @@ function ProductDetail({
         <div className="product-copy">
           <p className="eyebrow">{product.moment}</p>
           <h1>{product.title}</h1>
-          <p className="product-price">{money.format(product.price)}</p>
+          <div className="product-status-line">
+            <strong className={product.availability === "In stock" ? "is-stocked" : ""}>{product.availability}</strong>
+            <span>Delivery in {product.deliveryDays} days</span>
+            <span>SKU {product.sku}</span>
+          </div>
+          <p className="product-price">
+            {product.oldPrice && <del>{formatMoney(product.oldPrice, currency)}</del>}
+            {formatMoney(product.price, currency)}
+          </p>
           <p className="product-description">{product.description}</p>
 
           <div className="option-groups">
@@ -382,8 +569,22 @@ function ProductDetail({
             ))}
           </div>
 
+          <label className="engraving-field">
+            Optional engraving
+            <input
+              maxLength={24}
+              onChange={(event) => {
+                setEngraving(event.target.value);
+                setAdded(false);
+              }}
+              placeholder="Initials or a meaningful date"
+              value={engraving}
+            />
+            <small>{engraving.length}/24 characters · confirmed by the atelier before production</small>
+          </label>
+
           <button className="button button--dark add-button" type="button" onClick={addProduct}>
-            {added ? "Added to bag" : `Add to bag — ${money.format(product.price)}`}
+            {added ? "Added to bag" : `Add to bag — ${formatMoney(product.price, currency)}`}
           </button>
           {added && (
             <button className="view-bag-link" type="button" onClick={onOpenCart}>View bag →</button>
@@ -391,13 +592,410 @@ function ProductDetail({
           <ul className="product-details-list">
             {product.details.map((detail) => <li key={detail}>{detail}</li>)}
           </ul>
+          <div className="specification-block">
+            <h2>Product specifications</h2>
+            <dl>
+              <div><dt>Category</dt><dd>{product.category}</dd></div>
+              <div><dt>Metal colour</dt><dd>{product.metal}</dd></div>
+              <div><dt>Fineness</dt><dd>{product.fineness}</dd></div>
+              <div><dt>Stone</dt><dd>{product.stoneType}</dd></div>
+              <div><dt>Weight</dt><dd>{product.weight >= 100 ? `${(product.weight / 1000).toFixed(1)} kg` : `${product.weight} g`}</dd></div>
+              <div><dt>Total carat</dt><dd>{product.carat ? `${product.carat} ct` : "Without stones"}</dd></div>
+              <div><dt>Stone count</dt><dd>{product.stoneCount}</dd></div>
+            </dl>
+          </div>
+          {product.category.includes("Ring") && (
+            <details className="product-accordion">
+              <summary>Find your ring size</summary>
+              <p>Measure the inside diameter of a ring that already fits. 15.3 / 15.9 / 16.5 / 17.2 / 17.8 mm correspond to EU sizes 48 / 50 / 52 / 54 / 56.</p>
+            </details>
+          )}
+          <details className="product-accordion">
+            <summary>Hint about this gift</summary>
+            <form
+              className="hint-form"
+              onSubmit={(event) => {
+                event.preventDefault();
+                setHintSent(true);
+                event.currentTarget.reset();
+              }}
+            >
+              <label>Your name<input name="sender" required /></label>
+              <label>Recipient email<input name="recipient" type="email" required /></label>
+              <label>Message<textarea name="message" rows={3} defaultValue={`I found ${product.title} and thought of you.`} /></label>
+              <button className="button button--dark" type="submit">Send a discreet hint</button>
+              {hintSent && <p className="form-success" role="status">Your hint is ready to make their day.</p>}
+            </form>
+          </details>
+        </div>
+      </section>
+      {related[0] && (
+        <section className="bundle-section">
+          <div>
+            <p className="eyebrow">Better together</p>
+            <h2>A considered pair, 10% less.</h2>
+            <p>{product.title} and {related[0].title} arrive together in our signature presentation.</p>
+          </div>
+          <div className="bundle-price">
+            <del>{formatMoney(product.price + related[0].price, currency)}</del>
+            <strong>{formatMoney((product.price + related[0].price) * 0.9, currency)}</strong>
+            <button
+              className="button button--light"
+              type="button"
+              onClick={() => {
+                onAdd(product, selected);
+                onAdd(related[0], defaultOptions(related[0]));
+                onOpenCart();
+              }}
+            >
+              Add the set
+            </button>
+          </div>
+        </section>
+      )}
+      {related.length > 0 && (
+        <section className="moments-section recommendations">
+          <div className="section-heading">
+            <div><p className="eyebrow">You may also like</p><h2>Chosen for your moment</h2></div>
+          </div>
+          <ProductGrid products={related} currency={currency} limit={3} onQuickAdd={onAdd} />
+        </section>
+      )}
+    </main>
+  );
+}
+
+function CatalogPage({
+  products: catalog,
+  currency,
+  onQuickAdd,
+}: {
+  products: Product[];
+  currency: CurrencyCode;
+  onQuickAdd: (product: Product, options: Record<string, string>) => void;
+}) {
+  const highestPrice = Math.ceil(Math.max(...catalog.map((product) => product.price), 1000) / 100) * 100;
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("All");
+  const [moment, setMoment] = useState("All");
+  const [metal, setMetal] = useState("All");
+  const [stone, setStone] = useState("All");
+  const [availability, setAvailability] = useState("All");
+  const [delivery, setDelivery] = useState("All");
+  const [maxPrice, setMaxPrice] = useState(highestPrice);
+  const [sort, setSort] = useState("popular");
+  const [visibleCount, setVisibleCount] = useState(6);
+
+  const unique = (values: string[]) => ["All", ...Array.from(new Set(values))];
+  const categories = unique(catalog.map((product) => product.category));
+  const moments = unique(catalog.map((product) => product.moment));
+  const metals = unique(catalog.map((product) => product.metal));
+  const stones = unique(catalog.map((product) => product.stoneType));
+
+  const filtered = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    return catalog
+      .filter((product) => (
+        (!normalizedQuery
+          || product.title.toLowerCase().includes(normalizedQuery)
+          || product.sku.toLowerCase().includes(normalizedQuery)
+          || product.category.toLowerCase().includes(normalizedQuery)
+          || product.moment.toLowerCase().includes(normalizedQuery))
+        && (category === "All" || product.category === category)
+        && (moment === "All" || product.moment === moment)
+        && (metal === "All" || product.metal === metal)
+        && (stone === "All" || product.stoneType === stone)
+        && (availability === "All" || product.availability === availability)
+        && (delivery === "All" || product.deliveryDays === Number(delivery))
+        && product.price <= maxPrice
+      ))
+      .sort((a, b) => (
+        sort === "price-asc" ? a.price - b.price
+          : sort === "price-desc" ? b.price - a.price
+            : sort === "new" ? Number(Boolean(b.isNew)) - Number(Boolean(a.isNew))
+              : b.popularity - a.popularity
+      ));
+  }, [availability, catalog, category, delivery, maxPrice, metal, moment, query, sort, stone]);
+
+  function resetFilters() {
+    setQuery("");
+    setCategory("All");
+    setMoment("All");
+    setMetal("All");
+    setStone("All");
+    setAvailability("All");
+    setDelivery("All");
+    setMaxPrice(highestPrice);
+    setSort("popular");
+    setVisibleCount(6);
+  }
+
+  return (
+    <section className="catalog-shell">
+      <div className="catalog-toolbar">
+        <label className="catalog-search">
+          <span className="sr-only">Search catalog</span>
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by name, SKU, category or moment" />
+        </label>
+        <label className="catalog-sort">Sort
+          <select value={sort} onChange={(event) => setSort(event.target.value)}>
+            <option value="popular">Most popular</option>
+            <option value="price-asc">Price: low to high</option>
+            <option value="price-desc">Price: high to low</option>
+            <option value="new">Newest first</option>
+          </select>
+        </label>
+      </div>
+      <div className="catalog-layout">
+        <details className="catalog-filters" open>
+          <summary>Filters <span>{filtered.length} pieces</span></summary>
+          <div className="filter-fields">
+            {[
+              ["Jewelry type", category, setCategory, categories],
+              ["Moment", moment, setMoment, moments],
+              ["Metal", metal, setMetal, metals],
+              ["Stone", stone, setStone, stones],
+              ["Availability", availability, setAvailability, ["All", "In stock", "Made to order"]],
+              ["Delivery", delivery, setDelivery, ["All", "3", "10"]],
+            ].map(([label, value, setter, options]) => (
+              <label key={label as string}>{label as string}
+                <select
+                  value={value as string}
+                  onChange={(event) => (setter as (value: string) => void)(event.target.value)}
+                >
+                  {(options as string[]).map((option) => (
+                    <option value={option} key={option}>
+                      {label === "Delivery" && option !== "All" ? `${option} days` : option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ))}
+            <label className="price-filter">Maximum price
+              <strong>{formatMoney(maxPrice, currency)}</strong>
+              <input
+                min="500"
+                max={highestPrice}
+                step="50"
+                type="range"
+                value={Math.min(maxPrice, highestPrice)}
+                onChange={(event) => setMaxPrice(Number(event.target.value))}
+              />
+            </label>
+            <button className="reset-filters" type="button" onClick={resetFilters}>Reset all filters</button>
+          </div>
+        </details>
+        <div className="catalog-results">
+          <div className="results-heading">
+            <p><strong>{filtered.length}</strong> pieces found</p>
+            <Link href="/admin/catalog">Import or manage catalog →</Link>
+          </div>
+          {filtered.length ? (
+            <>
+              <ProductGrid products={filtered.slice(0, visibleCount)} currency={currency} onQuickAdd={onQuickAdd} />
+              {visibleCount < filtered.length && (
+                <button className="button load-more" type="button" onClick={() => setVisibleCount((count) => count + 6)}>
+                  Show more
+                </button>
+              )}
+            </>
+          ) : (
+            <div className="no-results">
+              <h2>No pieces match these filters.</h2>
+              <p>Try a different moment, material or price.</p>
+              <button className="button" type="button" onClick={resetFilters}>Clear filters</button>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function parseCsvRows(text: string) {
+  return text
+    .replace(/^\uFEFF/, "")
+    .split(/\r?\n/)
+    .filter((line) => line.trim())
+    .map((line) => {
+      const cells: string[] = [];
+      let cell = "";
+      let quoted = false;
+      for (let index = 0; index < line.length; index += 1) {
+        const character = line[index];
+        if (character === '"') {
+          if (quoted && line[index + 1] === '"') {
+            cell += '"';
+            index += 1;
+          } else {
+            quoted = !quoted;
+          }
+        } else if (character === "," && !quoted) {
+          cells.push(cell.trim());
+          cell = "";
+        } else {
+          cell += character;
+        }
+      }
+      cells.push(cell.trim());
+      return cells;
+    });
+}
+
+const csvColumns = [
+  "id", "slug", "sku", "title", "category", "moment", "price", "old_price", "metal", "fineness",
+  "stone_type", "availability", "delivery_days", "weight", "carat", "stone_count", "image", "subtitle", "description",
+];
+
+function CatalogManager({
+  importedProducts,
+  onImport,
+  onReset,
+}: {
+  importedProducts: Product[];
+  onImport: (products: Product[]) => void;
+  onReset: () => void;
+}) {
+  const [preview, setPreview] = useState<Product[]>([]);
+  const [message, setMessage] = useState("");
+
+  async function readCsv(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const rows = parseCsvRows(await file.text());
+    const [headers, ...records] = rows;
+    const missing = csvColumns.filter((column) => !headers.includes(column));
+    if (missing.length) {
+      setMessage(`Missing columns: ${missing.join(", ")}`);
+      setPreview([]);
+      return;
+    }
+    const index = Object.fromEntries(headers.map((header, position) => [header, position]));
+    const parsed = records.flatMap((record, position) => {
+      const read = (column: string) => record[index[column]] ?? "";
+      const title = read("title");
+      const price = Number(read("price"));
+      if (!title || !price) return [];
+      const category = read("category") || "Rings";
+      const metal = read("metal") || "Yellow gold";
+      const imported: Product = {
+        id: read("id") || `csv-${Date.now()}-${position}`,
+        slug: read("slug") || title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
+        sku: read("sku") || `CSV-${String(position + 1).padStart(3, "0")}`,
+        title,
+        category,
+        moment: read("moment") || "Moment 06 — The Legacy",
+        price,
+        oldPrice: Number(read("old_price")) || undefined,
+        metal,
+        fineness: read("fineness") || "750 / 18k",
+        stoneType: read("stone_type") || "Without stones",
+        availability: read("availability").toLowerCase().includes("order") ? "Made to order" : "In stock",
+        deliveryDays: Number(read("delivery_days")) || 3,
+        weight: Number(read("weight")) || 1,
+        carat: Number(read("carat")) || 0,
+        stoneCount: Number(read("stone_count")) || 0,
+        image: read("image") || "/products/promise-solitaire.webp",
+        subtitle: read("subtitle") || `${metal} · ${read("stone_type") || "fine jewelry"}`,
+        description: read("description") || "A considered piece imported into the 6MOMENTS catalog.",
+        popularity: 50,
+        isNew: true,
+        options: [
+          { name: "Metal", values: [metal] },
+          ...(category.includes("Ring") ? [{ name: "Ring size", values: ["48", "50", "52", "54", "56"] }] : []),
+        ],
+        details: [`SKU ${read("sku") || `CSV-${position + 1}`}`, `${read("availability") || "In stock"}`, `Delivery in ${Number(read("delivery_days")) || 3} days`],
+      };
+      return [imported];
+    });
+    setPreview(parsed);
+    setMessage(parsed.length ? `${parsed.length} valid products are ready to import.` : "No valid products were found.");
+  }
+
+  function downloadTemplate() {
+    const sample = [
+      csvColumns.join(","),
+      'sample-ring,sample-ring,6M-RI-100,Sample Ring,Rings,Moment 01 — The Promise,1450,1650,Yellow gold,750 / 18k,Lab-grown diamond,In stock,3,2.4,0.3,1,/products/promise-solitaire.webp,18k gold · diamond,A refined sample product imported from CSV.',
+    ].join("\n");
+    const url = window.URL.createObjectURL(new Blob([sample], { type: "text/csv;charset=utf-8" }));
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "6moments-products-template.csv";
+    anchor.click();
+    window.URL.revokeObjectURL(url);
+  }
+
+  return (
+    <main className="admin-page">
+      <section className="admin-hero">
+        <p className="eyebrow">Catalog workspace</p>
+        <h1>Import products without touching code.</h1>
+        <p>Upload a structured CSV, verify every record, and publish it to this browser’s working catalog. The format is ready to connect to the production API.</p>
+      </section>
+      <section className="admin-panel">
+        <div className="admin-upload">
+          <div>
+            <p className="eyebrow">Step 01</p>
+            <h2>Prepare the file</h2>
+            <p>Use UTF-8 CSV with comma-separated fields. Product slugs and IDs must be unique.</p>
+          </div>
+          <button className="button" type="button" onClick={downloadTemplate}>Download CSV template</button>
+        </div>
+        <label className="csv-drop">
+          <span>Choose a CSV file</span>
+          <small>Required columns are checked before import.</small>
+          <input type="file" accept=".csv,text/csv" onChange={readCsv} />
+        </label>
+        {message && <p className="import-message" role="status">{message}</p>}
+        {preview.length > 0 && (
+          <>
+            <div className="import-preview">
+              <table>
+                <thead><tr><th>SKU</th><th>Product</th><th>Category</th><th>Price</th><th>Status</th></tr></thead>
+                <tbody>
+                  {preview.slice(0, 8).map((product) => (
+                    <tr key={product.id}>
+                      <td>{product.sku}</td><td>{product.title}</td><td>{product.category}</td>
+                      <td>{formatMoney(product.price, "USD")}</td><td>{product.availability}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <button
+              className="button button--dark publish-import"
+              type="button"
+              onClick={() => {
+                onImport(preview);
+                setMessage(`${preview.length} products were added to the storefront catalog.`);
+                setPreview([]);
+              }}
+            >
+              Publish {preview.length} products
+            </button>
+          </>
+        )}
+        <div className="imported-summary">
+          <div><strong>{importedProducts.length}</strong><span>CSV products currently stored</span></div>
+          <Link className="text-link" href="/collections">View storefront →</Link>
+          {importedProducts.length > 0 && <button type="button" onClick={onReset}>Remove imported products</button>}
         </div>
       </section>
     </main>
   );
 }
 
-function InteriorPage({ path }: { path: string }) {
+function InteriorPage({
+  path,
+  products: catalog,
+  currency,
+  onQuickAdd,
+}: {
+  path: string;
+  products: Product[];
+  currency: CurrencyCode;
+  onQuickAdd: (product: Product, options: Record<string, string>) => void;
+}) {
   const page = routeCopy[path] ?? routeCopy["/collections"];
   const [contactSent, setContactSent] = useState(false);
 
@@ -415,13 +1013,7 @@ function InteriorPage({ path }: { path: string }) {
       </section>
 
       {path === "/collections" ? (
-        <section className="moments-section interior-grid">
-          <div className="collection-intro">
-            <p>01—07</p>
-            <p>Recycled precious metals, traceable stones and considered objects for the chapters that matter.</p>
-          </div>
-          <ProductGrid />
-        </section>
+        <CatalogPage products={catalog} currency={currency} onQuickAdd={onQuickAdd} />
       ) : path === "/about" ? (
         <>
           <section className="story-panel">
@@ -519,6 +1111,7 @@ function InteriorPage({ path }: { path: string }) {
 function CartDrawer({
   open,
   items,
+  currency,
   onClose,
   onQuantity,
   onRemove,
@@ -526,6 +1119,7 @@ function CartDrawer({
 }: {
   open: boolean;
   items: Array<CartItem & { product: Product }>;
+  currency: CurrencyCode;
   onClose: () => void;
   onQuantity: (key: string, quantity: number) => void;
   onRemove: (key: string) => void;
@@ -572,7 +1166,7 @@ function CartDrawer({
             <span aria-hidden="true">✓</span>
             <p className="eyebrow">Order confirmed</p>
             <h3>Thank you for your moment.</h3>
-            <p>Your demonstration order <strong>{orderNumber}</strong> has been created.</p>
+            <p>Your order request <strong>{orderNumber}</strong> has been created. The atelier will confirm availability and payment details by email.</p>
             <button className="button button--dark" type="button" onClick={closeDrawer}>Continue shopping</button>
           </div>
         ) : checkout ? (
@@ -584,12 +1178,27 @@ function CartDrawer({
               <label>City<input name="city" autoComplete="address-level2" required /></label>
               <label>Postal code<input name="postal" autoComplete="postal-code" required /></label>
             </div>
+            <label>Country
+              <select name="country" defaultValue="European Union">
+                <option>European Union</option>
+                <option>Ukraine</option>
+                <option>United Kingdom</option>
+                <option>United States</option>
+                <option>Rest of world</option>
+              </select>
+            </label>
+            <label>Delivery service
+              <select name="delivery" defaultValue="DHL Express">
+                <option>DHL Express · insured</option>
+                <option>DPD Classic · insured</option>
+              </select>
+            </label>
             <label className="payment-choice">
               <input type="radio" name="payment" defaultChecked />
-              <span><strong>Pay on delivery</strong><small>No card details are collected in this demonstration.</small></span>
+              <span><strong>Secure card payment</strong><small>Stripe · Visa · Mastercard · Apple Pay · Google Pay</small></span>
             </label>
-            <div className="checkout-total"><span>Total</span><strong>{money.format(subtotal)}</strong></div>
-            <button className="button button--dark checkout-button" type="submit">Place demonstration order</button>
+            <div className="checkout-total"><span>Total</span><strong>{formatMoney(subtotal, currency)}</strong></div>
+            <button className="button button--dark checkout-button" type="submit">Confirm test order</button>
             <button className="back-button" type="button" onClick={() => setCheckout(false)}>← Back to bag</button>
           </form>
         ) : items.length === 0 ? (
@@ -615,7 +1224,7 @@ function CartDrawer({
                   <div className="cart-item-copy">
                     <div className="cart-item-title">
                       <h3>{item.product.title}</h3>
-                      <strong>{money.format(item.product.price * item.quantity)}</strong>
+                      <strong>{formatMoney(item.product.price * item.quantity, currency)}</strong>
                     </div>
                     <p>{Object.entries(item.options).map(([name, value]) => `${name}: ${value}`).join(" · ")}</p>
                     <div className="cart-item-actions">
@@ -631,7 +1240,7 @@ function CartDrawer({
               ))}
             </div>
             <div className="cart-summary">
-              <div><span>Subtotal</span><strong>{money.format(subtotal)}</strong></div>
+              <div><span>Subtotal</span><strong>{formatMoney(subtotal, currency)}</strong></div>
               <p>Insured delivery and returns are complimentary.</p>
               <button className="button button--dark checkout-button" type="button" onClick={() => setCheckout(true)}>Continue to checkout</button>
             </div>
@@ -670,6 +1279,7 @@ function Footer() {
           <Link href="/about">Our story</Link>
           <Link href="/journal">Journal</Link>
           <Link href="/contact">Contact</Link>
+          <Link href="/admin/catalog">Catalog manager</Link>
         </nav>
         <p>Modern heirlooms · © {new Date().getFullYear()}</p>
       </div>
@@ -681,16 +1291,25 @@ export function Storefront({ path }: { path: string }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [cartLoaded, setCartLoaded] = useState(false);
+  const [currency, setCurrency] = useState<CurrencyCode>("USD");
+  const [importedProducts, setImportedProducts] = useState<Product[]>([]);
+  const [catalogLoaded, setCatalogLoaded] = useState(false);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
       try {
         const saved = window.localStorage.getItem("6moments-cart");
         if (saved) setCart(JSON.parse(saved) as CartItem[]);
+        const savedCurrency = window.localStorage.getItem("6moments-currency") as CurrencyCode | null;
+        if (savedCurrency && savedCurrency in currencyRates) setCurrency(savedCurrency);
+        const savedProducts = window.localStorage.getItem("6moments-imported-products");
+        if (savedProducts) setImportedProducts(JSON.parse(savedProducts) as Product[]);
       } catch {
         window.localStorage.removeItem("6moments-cart");
+        window.localStorage.removeItem("6moments-imported-products");
       }
       setCartLoaded(true);
+      setCatalogLoaded(true);
     }, 0);
     return () => window.clearTimeout(timer);
   }, []);
@@ -699,13 +1318,26 @@ export function Storefront({ path }: { path: string }) {
     if (cartLoaded) window.localStorage.setItem("6moments-cart", JSON.stringify(cart));
   }, [cart, cartLoaded]);
 
+  useEffect(() => {
+    window.localStorage.setItem("6moments-currency", currency);
+  }, [currency]);
+
+  useEffect(() => {
+    if (catalogLoaded) window.localStorage.setItem("6moments-imported-products", JSON.stringify(importedProducts));
+  }, [catalogLoaded, importedProducts]);
+
+  const catalog = useMemo(() => {
+    const importedIds = new Set(importedProducts.map((product) => product.id));
+    return [...products.filter((product) => !importedIds.has(product.id)), ...importedProducts];
+  }, [importedProducts]);
+
   const detailedItems = useMemo(
     () =>
       cart.flatMap((item) => {
-        const product = products.find((candidate) => candidate.id === item.productId);
+        const product = catalog.find((candidate) => candidate.id === item.productId);
         return product ? [{ ...item, product }] : [];
       }),
-    [cart],
+    [cart, catalog],
   );
   const count = cart.reduce((total, item) => total + item.quantity, 0);
   const legacyProductPaths: Record<string, string> = {
@@ -720,7 +1352,7 @@ export function Storefront({ path }: { path: string }) {
     ? path.replace("/products/", "")
     : legacyProductPaths[path];
   const product = requestedProductSlug
-    ? products.find((candidate) => candidate.slug === requestedProductSlug)
+    ? catalog.find((candidate) => candidate.slug === requestedProductSlug)
     : undefined;
 
   function addToCart(selectedProduct: Product, options: Record<string, string>) {
@@ -736,18 +1368,42 @@ export function Storefront({ path }: { path: string }) {
 
   return (
     <div className="site-shell">
-      <Header path={path} count={count} onOpenCart={() => setCartOpen(true)} />
+      <Header
+        path={path}
+        count={count}
+        currency={currency}
+        onCurrency={setCurrency}
+        onOpenCart={() => setCartOpen(true)}
+      />
       {product ? (
-        <ProductDetail product={product} onAdd={addToCart} onOpenCart={() => setCartOpen(true)} />
+        <ProductDetail
+          product={product}
+          related={catalog.filter((candidate) => candidate.id !== product.id && (candidate.moment === product.moment || candidate.category !== product.category)).slice(0, 3)}
+          currency={currency}
+          onAdd={addToCart}
+          onOpenCart={() => setCartOpen(true)}
+        />
       ) : path === "/" ? (
-        <HomePage />
+        <HomePage products={catalog} currency={currency} onQuickAdd={addToCart} />
+      ) : path === "/admin/catalog" ? (
+        <CatalogManager
+          importedProducts={importedProducts}
+          onImport={(incoming) => {
+            setImportedProducts((current) => {
+              const incomingIds = new Set(incoming.map((product) => product.id));
+              return [...current.filter((product) => !incomingIds.has(product.id)), ...incoming];
+            });
+          }}
+          onReset={() => setImportedProducts([])}
+        />
       ) : (
-        <InteriorPage path={path} />
+        <InteriorPage path={path} products={catalog} currency={currency} onQuickAdd={addToCart} />
       )}
       <Footer />
       <CartDrawer
         open={cartOpen}
         items={detailedItems}
+        currency={currency}
         onClose={() => setCartOpen(false)}
         onQuantity={(key, quantity) => {
           if (quantity < 1) setCart((current) => current.filter((item) => item.key !== key));
