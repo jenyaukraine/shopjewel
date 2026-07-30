@@ -374,6 +374,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   gap: 28px;
   text-align: center;
   color: white;
+  /*noinspection CssUnknownTarget -- served from Next.js/Vite's public directory */
   background:
     linear-gradient(90deg, rgba(25,20,16,.04), rgba(25,20,16,.24) 34%, rgba(25,20,16,.42) 50%, rgba(25,20,16,.24) 66%, rgba(25,20,16,.04)),
     #2b241f url("/about-quote-jewelry.webp") center 72% / cover no-repeat;
@@ -736,6 +737,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   grid-column: 1 / -1;
   margin: 18px 0 0;
   appearance: none;
+  --range-progress: 100%;
   background: transparent;
 }
 .price-filter input::-webkit-slider-runnable-track {
@@ -900,6 +902,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .welcome-image {
   height: 375px;
   border-radius: 8px 8px 0 0;
+  /*noinspection CssUnknownTarget -- served from Next.js/Vite's public directory */
   background: #cbbba7 url("/hero-6moments.webp") 76% 52%/cover no-repeat;
 }
 .welcome-close {
