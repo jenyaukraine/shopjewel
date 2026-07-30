@@ -44,6 +44,14 @@ const currencyRates: Record<CurrencyCode, number> = {
   UAH: 41.2,
 };
 
+const ringDiameters: Record<string, string> = {
+  "48": "15,3",
+  "50": "15,9",
+  "52": "16,5",
+  "54": "17,2",
+  "56": "17,8",
+};
+
 function formatMoney(price: number, currency: CurrencyCode) {
   return new Intl.NumberFormat("uk-UA", {
     style: "currency",
@@ -979,6 +987,22 @@ function ProductDetail({
   const [added, setAdded] = useState(false);
   const [engraving, setEngraving] = useState("");
   const [hintSent, setHintSent] = useState(false);
+  const [zoomOpen, setZoomOpen] = useState(false);
+
+  useEffect(() => {
+    if (!zoomOpen) return;
+
+    const closeOnEscape = (event: globalThis.KeyboardEvent) => {
+      if (event.key === "Escape") setZoomOpen(false);
+    };
+
+    document.body.classList.add("product-zoom-is-open");
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.classList.remove("product-zoom-is-open");
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [zoomOpen]);
 
   function addProduct() {
     onAdd(product, engraving ? { ...selected, Гравіювання: engraving } : selected);
@@ -991,17 +1015,36 @@ function ProductDetail({
         <Link href="/collections">Колекція</Link><span aria-hidden="true">/</span><span>{product.title}</span>
       </div>
       <section className="product-detail">
-        <div className="product-visual">
-          <Image
-            className="product-photo product-photo--detail"
-            src={product.image}
-            alt={product.title}
-            unoptimized
-            width={1200}
-            height={1200}
-            sizes="(max-width: 900px) 100vw, 58vw"
-            priority
-          />
+        <div
+          className="product-visual"
+          onPointerMove={(event) => {
+            const bounds = event.currentTarget.getBoundingClientRect();
+            const x = ((event.clientX - bounds.left) / bounds.width) * 100;
+            const y = ((event.clientY - bounds.top) / bounds.height) * 100;
+            event.currentTarget.style.setProperty("--zoom-x", `${x}%`);
+            event.currentTarget.style.setProperty("--zoom-y", `${y}%`);
+          }}
+        >
+          <button
+            aria-label={`Роздивитися ${product.title} зблизька`}
+            className="product-zoom-trigger"
+            onClick={() => setZoomOpen(true)}
+            type="button"
+          >
+            <Image
+              className="product-photo product-photo--detail"
+              src={product.image}
+              alt={product.title}
+              unoptimized
+              width={1200}
+              height={1200}
+              sizes="(max-width: 900px) 100vw, 58vw"
+              priority
+            />
+            <span className="product-zoom-hint" aria-hidden="true">
+              <span>＋</span> Роздивитися деталі
+            </span>
+          </button>
           <span className="product-visual-caption">{product.moment}</span>
         </div>
         <div className="product-copy">
@@ -1021,21 +1064,44 @@ function ProductDetail({
           <div className="option-groups">
             {product.options.map((option) => (
               <fieldset className="option-group" key={option.name}>
-                <legend>{option.name}: <strong>{selected[option.name]}</strong></legend>
-                <div className="option-values">
-                  {option.values.map((value) => (
-                    <button
-                      aria-pressed={selected[option.name] === value}
-                      key={value}
-                      onClick={() => {
-                        setSelected((current) => ({ ...current, [option.name]: value }));
-                        setAdded(false);
-                      }}
-                      type="button"
-                    >
-                      {value}
-                    </button>
-                  ))}
+                <legend>
+                  {option.name}:
+                  <strong>
+                    {selected[option.name]}
+                    {option.name === "Розмір каблучки" && ringDiameters[selected[option.name]]
+                      ? ` · Ø ${ringDiameters[selected[option.name]]} мм`
+                      : ""}
+                  </strong>
+                </legend>
+                <div
+                  className={`option-values ${
+                    option.name === "Розмір каблучки"
+                      ? "option-values--sizes"
+                      : option.name === "Метал"
+                        ? "option-values--metal"
+                        : option.name === "Камінь"
+                          ? "option-values--stone"
+                          : ""
+                  }`}
+                >
+                  {option.values.map((value) => {
+                    const diameter = option.name === "Розмір каблучки" ? ringDiameters[value] : undefined;
+                    return (
+                      <button
+                        aria-label={diameter ? `Розмір ${value}, внутрішній діаметр ${diameter} міліметра` : undefined}
+                        aria-pressed={selected[option.name] === value}
+                        key={value}
+                        onClick={() => {
+                          setSelected((current) => ({ ...current, [option.name]: value }));
+                          setAdded(false);
+                        }}
+                        type="button"
+                      >
+                        <span>{value}</span>
+                        {diameter && <small>Ø {diameter} мм</small>}
+                      </button>
+                    );
+                  })}
                 </div>
               </fieldset>
             ))}
@@ -1101,6 +1167,38 @@ function ProductDetail({
           </details>
         </div>
       </section>
+      {zoomOpen && (
+        <div
+          aria-label={`Збільшене фото ${product.title}`}
+          aria-modal="true"
+          className="product-zoom-dialog"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setZoomOpen(false);
+          }}
+          role="dialog"
+        >
+          <button
+            aria-label="Закрити збільшене фото"
+            className="product-zoom-close"
+            onClick={() => setZoomOpen(false)}
+            type="button"
+          >
+            ×
+          </button>
+          <div className="product-zoom-stage">
+            <Image
+              alt={`${product.title}, збільшений вигляд`}
+              className="product-zoom-image"
+              height={1600}
+              priority
+              src={product.image}
+              unoptimized
+              width={1600}
+            />
+          </div>
+          <p>Натисніть поза фото або Esc, щоб закрити</p>
+        </div>
+      )}
       {related[0] && (
         <section className="bundle-section">
           <div>
@@ -2266,11 +2364,12 @@ function Footer() {
 
           <div className="footer-signup-card">
             <div className="footer-offer-heading">
-              <span className="footer-mail-icon" aria-hidden="true">✉</span>
-              <div>
+              <span className="footer-mail-icon" aria-hidden="true">✉︎</span>
+              <div className="footer-offer-copy">
                 <p>Привітальний подарунок</p>
-                <strong>−15%</strong>
+                <span>На перше замовлення</span>
               </div>
+              <strong>−15%</strong>
             </div>
             <form
               onSubmit={(event) => {
