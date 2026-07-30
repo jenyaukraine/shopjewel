@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, KeyboardEvent, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -1020,6 +1020,108 @@ function ProductDetail({
   );
 }
 
+function FilterSelect({
+  label,
+  value,
+  options,
+  onChange,
+  formatOption,
+}: {
+  label: string;
+  value: string;
+  options: string[];
+  onChange: (value: string) => void;
+  formatOption?: (option: string) => string;
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const listId = useId();
+  const selectedIndex = Math.max(0, options.indexOf(value));
+  const displayOption = (option: string) => formatOption?.(option) ?? option;
+
+  useEffect(() => {
+    function closeOnOutsideClick(event: PointerEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+    }
+
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    return () => document.removeEventListener("pointerdown", closeOnOutsideClick);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    requestAnimationFrame(() => optionRefs.current[selectedIndex]?.focus());
+  }, [open, selectedIndex]);
+
+  function moveFocus(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      setOpen(false);
+      triggerRef.current?.focus();
+      return;
+    }
+
+    if (!open || !["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    const currentIndex = optionRefs.current.findIndex((option) => option === document.activeElement);
+    const nextIndex = event.key === "Home"
+      ? 0
+      : event.key === "End"
+        ? options.length - 1
+        : event.key === "ArrowDown"
+          ? Math.min((currentIndex < 0 ? selectedIndex : currentIndex) + 1, options.length - 1)
+          : Math.max((currentIndex < 0 ? selectedIndex : currentIndex) - 1, 0);
+    optionRefs.current[nextIndex]?.focus();
+  }
+
+  return (
+    <div
+      className={`filter-field${value !== "Усі" ? " is-active" : ""}${open ? " is-open" : ""}`}
+      onKeyDown={moveFocus}
+      ref={rootRef}
+    >
+      <span className="filter-label">{label}</span>
+      <button
+        aria-controls={listId}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        className="filter-select-trigger"
+        onClick={() => setOpen((current) => !current)}
+        ref={triggerRef}
+        type="button"
+      >
+        <span>{displayOption(value)}</span>
+        <i aria-hidden="true" />
+      </button>
+      {open && (
+        <div aria-label={label} className="filter-options" id={listId} role="listbox">
+          {options.map((option, index) => (
+            <button
+              aria-selected={option === value}
+              className={option === value ? "is-selected" : ""}
+              key={option}
+              onClick={() => {
+                onChange(option);
+                setOpen(false);
+                requestAnimationFrame(() => triggerRef.current?.focus());
+              }}
+              ref={(element) => { optionRefs.current[index] = element; }}
+              role="option"
+              tabIndex={-1}
+              type="button"
+            >
+              <span>{displayOption(option)}</span>
+              {option === value && <span aria-hidden="true" className="filter-option-check">✓</span>}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function CatalogPage({
   products: catalog,
   currency,
@@ -1046,6 +1148,15 @@ function CatalogPage({
   const moments = unique(catalog.map((product) => product.moment));
   const metals = unique(catalog.map((product) => product.metal));
   const stones = unique(catalog.map((product) => product.stoneType));
+  const activeFilterCount = [
+    category !== "Усі",
+    moment !== "Усі",
+    metal !== "Усі",
+    stone !== "Усі",
+    availability !== "Усі",
+    delivery !== "Усі",
+    maxPrice < highestPrice,
+  ].filter(Boolean).length;
 
   const filtered = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -1103,7 +1214,13 @@ function CatalogPage({
       </div>
       <div className="catalog-layout">
         <details className="catalog-filters" open>
-          <summary>Фільтри <span>{filtered.length} виробів</span></summary>
+          <summary>
+            <span className="filter-summary-title">
+              Фільтри
+              {activeFilterCount > 0 && <b>{activeFilterCount}</b>}
+            </span>
+            <span className="filter-result-count">{filtered.length} виробів</span>
+          </summary>
           <div className="filter-fields">
             {[
               ["Тип прикраси", category, setCategory, categories],
@@ -1113,31 +1230,44 @@ function CatalogPage({
               ["Наявність", availability, setAvailability, ["Усі", "В наявності", "Під замовлення"]],
               ["Доставка", delivery, setDelivery, ["Усі", "3", "10"]],
             ].map(([label, value, setter, options]) => (
-              <label key={label as string}>{label as string}
-                <select
-                  value={value as string}
-                  onChange={(event) => (setter as (value: string) => void)(event.target.value)}
-                >
-                  {(options as string[]).map((option) => (
-                    <option value={option} key={option}>
-                      {label === "Доставка" && option !== "Усі" ? `${option} днів` : option}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <FilterSelect
+                formatOption={(option) => (
+                  label === "Доставка" && option !== "Усі" ? `${option} днів` : option
+                )}
+                key={label as string}
+                label={label as string}
+                onChange={setter as (value: string) => void}
+                options={options as string[]}
+                value={value as string}
+              />
             ))}
-            <label className="price-filter">Максимальна ціна
+            <label className={`price-filter${maxPrice < highestPrice ? " is-active" : ""}`}>
+              <span className="filter-label">Максимальна ціна</span>
               <strong>{formatMoney(maxPrice, currency)}</strong>
               <input
+                aria-label="Максимальна ціна"
                 min="500"
                 max={highestPrice}
+                style={{ "--range-progress": `${((maxPrice - 500) / (highestPrice - 500)) * 100}%` } as React.CSSProperties}
                 step="50"
                 type="range"
                 value={Math.min(maxPrice, highestPrice)}
                 onChange={(event) => setMaxPrice(Number(event.target.value))}
               />
+              <span className="price-range-labels">
+                <span>{formatMoney(500, currency)}</span>
+                <span>{formatMoney(highestPrice, currency)}</span>
+              </span>
             </label>
-            <button className="reset-filters" type="button" onClick={resetFilters}>Скинути всі фільтри</button>
+            <button
+              className="reset-filters"
+              disabled={activeFilterCount === 0 && !query}
+              type="button"
+              onClick={resetFilters}
+            >
+              <span aria-hidden="true">×</span>
+              Скинути всі фільтри
+            </button>
           </div>
         </details>
         <div className="catalog-results">
