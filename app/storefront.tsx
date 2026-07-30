@@ -285,6 +285,16 @@ const routeCopy: Record<string, { eyebrow: string; title: string; copy: string }
     title: "Ми поруч у ваш особливий момент.",
     copy: "Поговоріть із нашою майстернею про розмір, камені, гравіювання або прикрасу, створену лише для вас.",
   },
+  "/privacy": {
+    eyebrow: "Інформація",
+    title: "Політика конфіденційності.",
+    copy: "Коротко про те, які дані ми збираємо, навіщо вони потрібні та як ви можете керувати ними.",
+  },
+  "/imprint": {
+    eyebrow: "Інформація",
+    title: "Юридична інформація.",
+    copy: "Контактні дані та відомості про 6MOMENTS для клієнтів і партнерів.",
+  },
 };
 
 function Header({
@@ -467,15 +477,49 @@ function HomePage({
         </p>
       </section>
 
-      <section className="moments-section" aria-labelledby="products-title">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Колекція</p>
-            <h2 id="products-title">Речі, які залишаються</h2>
-          </div>
-          <Link className="text-link" href="/collections">Переглянути всі товари <span aria-hidden="true">→</span></Link>
+      <section className="moments-section editorial-products signature-section" aria-labelledby="products-title">
+        <div className="editorial-heading">
+          <p className="editorial-script" aria-hidden="true">Особливі прикраси</p>
+          <h2 id="products-title">Найбажаніші</h2>
+          <p>Позачасові прикраси, до яких повертаються знову і знову</p>
+          <Link className="sale-link" href="/collections">SALE</Link>
         </div>
-        <ProductGrid products={catalog} currency={currency} limit={6} onQuickAdd={onQuickAdd} />
+        <ProductGrid products={catalog} currency={currency} limit={3} onQuickAdd={onQuickAdd} />
+      </section>
+
+      <section className="benefits-strip" aria-label="Переваги 6MOMENTS">
+        <article>
+          <span className="benefit-icon benefit-icon--diamond" aria-hidden="true">◇</span>
+          <h3>Сертифіковані діаманти GIA</h3>
+          <p>Натуральні діаманти з офіційним підтвердженням походження</p>
+        </article>
+        <article>
+          <span className="benefit-icon" aria-hidden="true">♢</span>
+          <h3>Застрахована доставка</h3>
+          <p>Безпечне міжнародне перевезення з повним відстеженням</p>
+        </article>
+        <article>
+          <span className="benefit-icon" aria-hidden="true">⌁</span>
+          <h3>Безкоштовна доставка</h3>
+          <p>Компліментарна доставка для замовлень від €1000</p>
+        </article>
+        <article>
+          <span className="benefit-icon benefit-icon--check" aria-hidden="true">✓</span>
+          <h3>Перевірено перед відправленням</h3>
+          <p>Кожну прикрасу особисто оглядають експерти майстерні</p>
+        </article>
+      </section>
+
+      <section className="moments-section editorial-products archive-section" aria-labelledby="archive-title">
+        <div className="editorial-heading">
+          <p className="editorial-script" aria-hidden="true">Вибране</p>
+          <h2 id="archive-title">Архівна колекція</h2>
+          <p>Рідкісні прикраси, доступні протягом обмеженого часу</p>
+        </div>
+        <ProductGrid products={catalog.slice(3, 6)} currency={currency} onQuickAdd={onQuickAdd} />
+        <div className="archive-action">
+          <Link className="text-link" href="/collections">Переглянути всю колекцію <span aria-hidden="true">→</span></Link>
+        </div>
       </section>
 
       <section className="craft">
@@ -1074,6 +1118,36 @@ function InteriorPage({
             </article>
           ))}
         </section>
+      ) : path === "/privacy" ? (
+        <section className="contact-layout">
+          <div className="contact-details">
+            <p className="eyebrow">Ваші дані</p>
+            <h2>Прозоро й<br />з повагою.</h2>
+            <p>Ми використовуємо контактні дані лише для обробки замовлень, консультацій, доставки та повідомлень, на які ви погодилися.</p>
+          </div>
+          <div className="contact-details">
+            <dl>
+              <div><dt>Що зберігаємо</dt><dd>Контактні дані, адресу доставки, склад замовлення та обрані налаштування.</dd></div>
+              <div><dt>Файли cookie</dt><dd>Вони допомагають зберегти кошик, валюту та покращити роботу сайту.</dd></div>
+              <div><dt>Ваші права</dt><dd>Ви можете попросити доступ, виправлення або видалення даних через atelier@6moments.store.</dd></div>
+            </dl>
+          </div>
+        </section>
+      ) : path === "/imprint" ? (
+        <section className="contact-layout">
+          <div className="contact-details">
+            <p className="eyebrow">6MOMENTS</p>
+            <h2>Де моменти<br />стають спадщиною.</h2>
+            <p>Ювелірний бренд і онлайн-майстерня. Детальні реєстраційні та податкові відомості будуть додані до запуску продажів.</p>
+          </div>
+          <div className="contact-details">
+            <dl>
+              <div><dt>Email</dt><dd><a href="mailto:atelier@6moments.store">atelier@6moments.store</a></dd></div>
+              <div><dt>Консультації</dt><dd>Онлайн · у всьому світі</dd></div>
+              <div><dt>Відповідальність за зміст</dt><dd>6MOMENTS Jewelry</dd></div>
+            </dl>
+          </div>
+        </section>
       ) : (
         <section className="contact-layout">
           <div className="contact-details">
@@ -1203,8 +1277,8 @@ function CartDrawer({
             </label>
             <label>Служба доставки
               <select name="delivery" defaultValue="DHL Express · застраховано">
-                <option>DHL Express · insured</option>
-                <option>DPD Classic · insured</option>
+                <option>DHL Express · застраховано</option>
+                <option>DPD Classic · застраховано</option>
               </select>
             </label>
             <label className="payment-choice">
@@ -1295,6 +1369,8 @@ function Footer() {
           <Link href="/journal">Журнал</Link>
           <Link href="/contact">Контакти</Link>
           <Link href="/admin/catalog">Керування каталогом</Link>
+          <Link href="/privacy">Конфіденційність</Link>
+          <Link href="/imprint">Юридична інформація</Link>
         </nav>
         <p>Сучасні реліквії · © {new Date().getFullYear()}</p>
       </div>
@@ -1313,11 +1389,14 @@ function WelcomeOverlays() {
     const newsletterDismissed = window.localStorage.getItem("6moments-early-access-dismissed") === "true";
     const newsletterCompleted = window.localStorage.getItem("6moments-early-access-complete") === "true";
 
-    setCookieOpen(!cookieAccepted);
-    if (!newsletterDismissed && !newsletterCompleted) {
-      const timer = window.setTimeout(() => setNewsletterOpen(true), 350);
-      return () => window.clearTimeout(timer);
-    }
+    const cookieTimer = window.setTimeout(() => setCookieOpen(!cookieAccepted), 0);
+    const newsletterTimer = !newsletterDismissed && !newsletterCompleted
+      ? window.setTimeout(() => setNewsletterOpen(true), 350)
+      : undefined;
+    return () => {
+      window.clearTimeout(cookieTimer);
+      if (newsletterTimer) window.clearTimeout(newsletterTimer);
+    };
   }, []);
 
   useEffect(() => {
@@ -1373,35 +1452,35 @@ function WelcomeOverlays() {
               className="welcome-close"
               type="button"
               onClick={closeNewsletter}
-              aria-label="Close early access invitation"
+              aria-label="Закрити запрошення до раннього доступу"
             >
               <span aria-hidden="true">×</span>
             </button>
             <div className="welcome-image" aria-hidden="true" />
             <div className="welcome-copy">
-              <h2 id="welcome-title">Unlock early access</h2>
+              <h2 id="welcome-title">Відкрийте ранній доступ</h2>
               <p>
-                Be among the first to explore new collections, exclusive releases,
-                and private offers reserved for our community. Enjoy{" "}
-                <strong>complimentary shipping</strong> on your first purchase.
+                Дізнавайтеся першими про нові колекції, ексклюзивні релізи
+                та приватні пропозиції для нашої спільноти. Отримайте{" "}
+                <strong>безкоштовну доставку</strong> для першої покупки.
               </p>
               {subscribed ? (
                 <p className="welcome-success" role="status">
-                  Welcome to the inner circle.
+                  Ласкаво просимо до нашого кола.
                 </p>
               ) : (
                 <form className="welcome-form" onSubmit={submitNewsletter}>
-                  <label className="sr-only" htmlFor="welcome-email">Email address</label>
+                  <label className="sr-only" htmlFor="welcome-email">Електронна адреса</label>
                   <input
                     id="welcome-email"
                     name="email"
                     type="email"
                     autoComplete="email"
-                    placeholder="Email address"
+                    placeholder="Електронна адреса"
                     autoFocus
                     required
                   />
-                  <button type="submit" aria-label="Join the early access list">
+                  <button type="submit" aria-label="Приєднатися до списку раннього доступу">
                     <span aria-hidden="true">↗</span>
                   </button>
                 </form>
@@ -1413,21 +1492,21 @@ function WelcomeOverlays() {
                 checked={neverShowAgain}
                 onChange={(event) => setNeverShowAgain(event.target.checked)}
               />
-              <span>Don&apos;t show again</span>
+              <span>Більше не показувати</span>
             </label>
           </section>
         </div>
       )}
 
       {cookieOpen && (
-        <aside className="cookie-banner" aria-label="Cookie notice">
+        <aside className="cookie-banner" aria-label="Повідомлення про файли cookie">
           <span className="cookie-icon" aria-hidden="true">●</span>
           <p>
-            We use cookies and other similar technologies to improve your browsing
-            experience and the functionality of our site. Learn more in our{" "}
-            <Link href="/privacy">Privacy Policy</Link>.
+            Ми використовуємо файли cookie та подібні технології, щоб покращити
+            роботу сайту й ваш досвід перегляду. Докладніше — у нашій{" "}
+            <Link href="/privacy">Політиці конфіденційності</Link>.
           </p>
-          <button type="button" onClick={acceptCookies} aria-label="Accept cookies">OK</button>
+          <button type="button" onClick={acceptCookies} aria-label="Прийняти файли cookie">OK</button>
         </aside>
       )}
     </>
@@ -1438,7 +1517,7 @@ export function Storefront({ path }: { path: string }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [cartLoaded, setCartLoaded] = useState(false);
-  const [currency, setCurrency] = useState<CurrencyCode>("USD");
+  const [currency, setCurrency] = useState<CurrencyCode>("UAH");
   const [importedProducts, setImportedProducts] = useState<Product[]>([]);
   const [catalogLoaded, setCatalogLoaded] = useState(false);
 

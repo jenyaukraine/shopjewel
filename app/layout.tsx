@@ -4,22 +4,22 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://katya-dev.duckdns.org"),
   title: {
-    default: "6MOMENTS — Where moments become legacy",
+    default: "6MOMENTS — Де моменти стають спадщиною",
     template: "%s | 6MOMENTS",
   },
   description:
-    "Meaningful, configurable pieces made to preserve the moments that define us.",
+    "Ювелірні вироби зі змістом, створені зберігати моменти, що визначають нас.",
   openGraph: {
-    title: "6MOMENTS — Where moments become legacy",
+    title: "6MOMENTS — Де моменти стають спадщиною",
     description:
-      "Meaningful pieces, configured for the person who will carry them forward.",
+      "Особливі речі, створені для людини, яка нестиме їхню історію далі.",
     images: [{ url: "/og-store.png", width: 1680, height: 940 }],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "6MOMENTS — Where moments become legacy",
-    description: "Meaningful pieces for moments worth keeping forever.",
+    title: "6MOMENTS — Де моменти стають спадщиною",
+    description: "Особливі речі для моментів, які хочеться зберегти назавжди.",
     images: ["/og-store.png"],
   },
 };
@@ -28,7 +28,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="uk">
       <body>{children}</body>
     </html>
   );

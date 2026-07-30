@@ -28,11 +28,12 @@ test("server-renders the finished storefront", async () => {
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>6MOMENTS — Where moments become legacy<\/title>/i);
-  assert.match(html, /Where moments become legacy\./);
-  assert.match(html, /Choose the details that make it yours\./);
-  assert.match(html, /Promise Solitaire/);
-  assert.match(html, /Crafted slowly/);
+  assert.match(html, /<html lang="uk"/i);
+  assert.match(html, /<title>6MOMENTS — Де моменти стають спадщиною<\/title>/i);
+  assert.match(html, /Де моменти стають спадщиною\./);
+  assert.match(html, /Позачасові прикраси/);
+  assert.match(html, /Солітер «Обіцянка»/);
+  assert.match(html, /Створено неквапливо/);
   assert.match(html, /https:\/\/katya-dev\.duckdns\.org\/og-store\.png/);
   assert.doesNotMatch(html, /_vinext\/image/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/i);
@@ -52,13 +53,13 @@ test("server-renders product attributes and story routes", async () => {
     storyResponse.text(),
   ]);
 
-  assert.match(productHtml, /First Ride Balance Bike/);
-  assert.match(productHtml, /Wheel size/);
-  assert.match(productHtml, /Frame size/);
-  assert.match(productHtml, /Product specifications/);
-  assert.match(productHtml, /Delivery in[\s\S]*3[\s\S]*days/);
-  assert.match(productHtml, /Hint about this gift/);
-  assert.match(storyHtml, /One language\. Six chapters\./);
+  assert.match(productHtml, /Біговел «Перша поїздка»/);
+  assert.match(productHtml, /Розмір коліс/);
+  assert.match(productHtml, /Розмір рами/);
+  assert.match(productHtml, /Характеристики товару/);
+  assert.match(productHtml, /Доставка:[\s\S]*3[\s\S]*днів/);
+  assert.match(productHtml, /Натякнути про подарунок/);
+  assert.match(storyHtml, /Одна мова\. Шість розділів\./);
 });
 
 test("server-renders catalog filters and CSV manager", async () => {
@@ -75,12 +76,12 @@ test("server-renders catalog filters and CSV manager", async () => {
     managerResponse.text(),
   ]);
 
-  assert.match(catalogHtml, /Search by name, SKU, category or moment/);
-  assert.match(catalogHtml, /Maximum price/);
-  assert.match(catalogHtml, /Quick add/);
-  assert.match(managerHtml, /Import products without touching code/);
-  assert.match(managerHtml, /Download CSV template/);
-  assert.match(managerHtml, /Choose a CSV file/);
+  assert.match(catalogHtml, /Пошук за назвою, артикулом, категорією або моментом/);
+  assert.match(catalogHtml, /Максимальна ціна/);
+  assert.match(catalogHtml, /Швидко додати/);
+  assert.match(managerHtml, /Імпортуйте товари без редагування коду/);
+  assert.match(managerHtml, /Завантажити шаблон CSV/);
+  assert.match(managerHtml, /Оберіть CSV-файл/);
 });
 
 test("image requests fall back safely when Cloudflare bindings are unavailable", async () => {
@@ -95,4 +96,23 @@ test("image requests fall back safely when Cloudflare bindings are unavailable",
 
   assert.equal(response.status, 307);
   assert.equal(response.headers.get("location"), "http://localhost/products/promise-solitaire.webp");
+});
+
+test("server-renders Ukrainian legal information pages", async () => {
+  const [privacyResponse, imprintResponse] = await Promise.all([
+    render("/privacy"),
+    render("/imprint"),
+  ]);
+
+  assert.equal(privacyResponse.status, 200);
+  assert.equal(imprintResponse.status, 200);
+
+  const [privacyHtml, imprintHtml] = await Promise.all([
+    privacyResponse.text(),
+    imprintResponse.text(),
+  ]);
+  assert.match(privacyHtml, /Політика конфіденційності/);
+  assert.match(privacyHtml, /Ваші права/);
+  assert.match(imprintHtml, /Юридична інформація/);
+  assert.match(imprintHtml, /6MOMENTS Jewelry/);
 });
