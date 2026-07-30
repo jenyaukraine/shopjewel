@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, FormEvent, KeyboardEvent, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, KeyboardEvent as ReactKeyboardEvent, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -1055,7 +1055,7 @@ function FilterSelect({
     requestAnimationFrame(() => optionRefs.current[selectedIndex]?.focus());
   }, [open, selectedIndex]);
 
-  function moveFocus(event: KeyboardEvent<HTMLDivElement>) {
+  function moveFocus(event: ReactKeyboardEvent<HTMLDivElement>) {
     if (event.key === "Escape") {
       event.preventDefault();
       setOpen(false);
@@ -2230,7 +2230,7 @@ function WelcomeOverlays() {
     if (!newsletterOpen) return;
 
     document.body.classList.add("welcome-open");
-    const closeOnEscape = (event: KeyboardEvent) => {
+    const closeOnEscape = (event: globalThis.KeyboardEvent) => {
       if (event.key === "Escape") closeNewsletter();
     };
     window.addEventListener("keydown", closeOnEscape);
