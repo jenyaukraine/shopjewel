@@ -1,0 +1,9 @@
+node_modules
+.git
+.vinext
+.wrangler
+dist
+*.log
+.env*
+work
+outputs

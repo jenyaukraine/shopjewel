@@ -1,0 +1,24 @@
+services:
+  sixmoments:
+    build:
+      context: .
+    image: sixmoments-store:latest
+    container_name: sixmoments-store
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+    expose:
+      - "3000"
+    networks:
+      - edge
+    mem_limit: 512m
+    cpus: 0.75
+    pids_limit: 256
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  edge:
+    name: web-edge
+    external: true
