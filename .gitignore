@@ -45,3 +45,14 @@ next-env.d.ts
 
 # local preview
 .devserver*.log
+
+# JetBrains IDE
+/.idea/
+*.iml
+
+# generated screenshots
+/artifacts/
+/screenshots/
+
+# generated deployment archives
+/.openai/site-build-*.tar.gz
