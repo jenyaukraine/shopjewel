@@ -34,6 +34,7 @@ test("server-renders the finished storefront", async () => {
   assert.match(html, /Promise Solitaire/);
   assert.match(html, /Crafted slowly/);
   assert.match(html, /https:\/\/katya-dev\.duckdns\.org\/og-store\.png/);
+  assert.doesNotMatch(html, /_vinext\/image/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/i);
 });
 
@@ -80,4 +81,18 @@ test("server-renders catalog filters and CSV manager", async () => {
   assert.match(managerHtml, /Import products without touching code/);
   assert.match(managerHtml, /Download CSV template/);
   assert.match(managerHtml, /Choose a CSV file/);
+});
+
+test("image requests fall back safely when Cloudflare bindings are unavailable", async () => {
+  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+  workerUrl.searchParams.set("test", `image-${process.pid}-${Date.now()}`);
+  const { default: worker } = await import(workerUrl.href);
+  const response = await worker.fetch(
+    new Request("http://localhost/_vinext/image?url=%2Fproducts%2Fpromise-solitaire.webp&w=640&q=75"),
+    {},
+    { waitUntil() {}, passThroughOnException() {} },
+  );
+
+  assert.equal(response.status, 307);
+  assert.equal(response.headers.get("location"), "http://localhost/products/promise-solitaire.webp");
 });

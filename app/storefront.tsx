@@ -384,6 +384,7 @@ function ProductGrid({
                 className="product-photo"
                 src={product.image}
                 alt=""
+                unoptimized
                 width={1200}
                 height={1200}
                 sizes="(max-width: 720px) 50vw, 33vw"
@@ -473,6 +474,7 @@ function HomePage({
           className="craft-image"
           src="/editorial/craftsmanship.webp"
           alt="Goldsmith finishing a fine gold ring by hand"
+          unoptimized
           width={1200}
           height={1200}
           sizes="(max-width: 720px) 100vw, 58vw"
@@ -525,6 +527,7 @@ function ProductDetail({
             className="product-photo product-photo--detail"
             src={product.image}
             alt={product.title}
+            unoptimized
             width={1200}
             height={1200}
             sizes="(max-width: 900px) 100vw, 58vw"
@@ -1049,6 +1052,7 @@ function InteriorPage({
                 className="journal-art"
                 src={image}
                 alt=""
+                unoptimized
                 width={1200}
                 height={1200}
                 sizes="(max-width: 720px) 100vw, 33vw"
@@ -1216,6 +1220,7 @@ function CartDrawer({
                       className="product-photo product-photo--cart"
                       src={item.product.image}
                       alt=""
+                      unoptimized
                       width={240}
                       height={240}
                       sizes="120px"
