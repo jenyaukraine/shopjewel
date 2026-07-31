@@ -28,7 +28,7 @@ test("container startup refreshes NOVERAILE media without reseeding an existing 
 
   assert.match(entrypoint, /find \/var\/www\/html\/image\/cache\/catalog\/noveraile -type f -delete/);
   assert.match(entrypoint, /noveraile_seed_demo=0/);
-  assert.match(entrypoint, /timeout 30s env NOVERAILE_WITH_DEMO_DATA=0/);
+  assert.match(entrypoint, /timeout --kill-after=5s 30s env NOVERAILE_WITH_DEMO_DATA=0/);
   assert.match(entrypoint, /keeping the existing registration/);
   assert.match(bootstrap, /getenv\('NOVERAILE_WITH_DEMO_DATA'\)/);
   assert.match(bootstrap, /bootstrap\(\$withDemoData\)/);

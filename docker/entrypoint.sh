@@ -114,7 +114,7 @@ fi
 # fresh installation and future container replacements.
 if [ "$noveraile_seed_demo" = "1" ]; then
     NOVERAILE_WITH_DEMO_DATA=1 php /usr/local/bin/bootstrap-noveraile.php
-elif ! timeout 30s env NOVERAILE_WITH_DEMO_DATA=0 php /usr/local/bin/bootstrap-noveraile.php; then
+elif ! timeout --kill-after=5s 30s env NOVERAILE_WITH_DEMO_DATA=0 php /usr/local/bin/bootstrap-noveraile.php; then
     echo "NOVERAILE registration refresh timed out; keeping the existing registration" >&2
 fi
 
