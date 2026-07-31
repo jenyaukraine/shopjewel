@@ -39,6 +39,49 @@
     body.classList.remove('menu-open');
   }
 
+  // Turn OpenCart's native rating radios into a clear, keyboard-friendly star picker.
+  const reviewRating = document.querySelector('.product-reviews #input-rating');
+  if (reviewRating && !reviewRating.dataset.sixEnhanced) {
+    const ratingInputs = Array.from(reviewRating.querySelectorAll('input[type="radio"]'));
+    const edgeLabels = Array.from(reviewRating.childNodes)
+      .filter((node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim())
+      .map((node) => node.textContent.trim());
+
+    if (ratingInputs.length) {
+      const bad = document.createElement('span');
+      bad.className = 'six-rating-edge';
+      bad.textContent = edgeLabels[0] || '';
+
+      const stars = document.createElement('span');
+      stars.className = 'six-rating-stars';
+      ratingInputs.forEach((input) => {
+        const choice = document.createElement('label');
+        choice.className = 'six-rating-choice';
+        choice.title = input.value + ' / 5';
+        input.setAttribute('aria-label', input.value + ' / 5');
+        const star = document.createElement('span');
+        star.className = 'six-rating-star';
+        star.setAttribute('aria-hidden', 'true');
+        star.textContent = '★';
+        choice.append(input, star);
+        stars.append(choice);
+      });
+
+      const good = document.createElement('span');
+      good.className = 'six-rating-edge';
+      good.textContent = edgeLabels[edgeLabels.length - 1] || '';
+
+      const value = document.createElement('output');
+      value.className = 'six-rating-value';
+      value.setAttribute('aria-live', 'polite');
+      value.textContent = '—';
+      ratingInputs.forEach((input) => input.addEventListener('change', () => { value.textContent = input.value + '/5'; }));
+
+      reviewRating.replaceChildren(bad, stars, good, value);
+      reviewRating.dataset.sixEnhanced = 'true';
+    }
+  }
+
   const heroSlides = Array.from(document.querySelectorAll('[data-six-hero-slide]'));
   const heroMessages = Array.from(document.querySelectorAll('[data-six-hero-message]'));
   const heroDots = Array.from(document.querySelectorAll('[data-six-hero-dot]'));
