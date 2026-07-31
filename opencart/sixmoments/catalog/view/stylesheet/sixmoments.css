@@ -700,8 +700,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   position: relative;
   padding: clamp(72px,7.5vw,122px) 6vw;
   background:
-    radial-gradient(circle at 88% 16%, rgba(255,255,255,.7) 0 7%, transparent 26%),
-    linear-gradient(135deg, #eee5da 0%, #e8dbcc 56%, #efe7dc 100%);
+    linear-gradient(90deg, rgba(243,235,225,.64) 0%, rgba(243,235,225,.42) 54%, rgba(243,235,225,.18) 100%),
+    url("/image/catalog/sixmoments/footer-signup-bg.webp") center / cover no-repeat;
   overflow: hidden;
 }
 .footer-signup::before {
@@ -2088,6 +2088,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .cart-page-quantity input::-webkit-inner-spin-button { display: none; }
 .cart-page-update, .cart-page-remove, .cart-page-continue { padding: 7px 0; border: 0; border-bottom: 1px solid currentColor; color: var(--muted); background: transparent; font-size: 8px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
 .cart-page-update:disabled { opacity: .45; }
+.cart-page-update.is-ready { color: var(--ink); }
 .cart-page-remove { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
 .cart-page-remove span { font: 17px/1 var(--serif); }
 .cart-page-summary { align-self: start; position: sticky; top: 22px; padding: 30px; border: 1px solid #c8bcae; background: #eee7dd; box-shadow: 0 18px 45px rgba(47,39,30,.06); }
@@ -2155,6 +2156,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .cart-page { padding: 0 14px 72px; }
   .cart-page-progress { min-height: 55px; }
   .cart-page-progress span { gap: 7px; font-size: 7px; letter-spacing: .08em; }
+  .cart-page-progress span:not(.is-current) { font-size: 0; }
   .cart-page-progress i { width: 22px; height: 22px; font-size: 7px; }
   .cart-page-masthead { gap: 22px; padding: 38px 2px; }
   .cart-page-masthead h1 { font-size: 43px; }

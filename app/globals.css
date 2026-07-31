@@ -454,8 +454,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   position: relative;
   padding: clamp(72px,7.5vw,122px) 6vw;
   background:
-    radial-gradient(circle at 88% 16%, rgba(255,255,255,.7) 0 7%, transparent 26%),
-    linear-gradient(135deg, #eee5da 0%, #e8dbcc 56%, #efe7dc 100%);
+    linear-gradient(90deg, rgba(243,235,225,.64) 0%, rgba(243,235,225,.42) 54%, rgba(243,235,225,.18) 100%),
+    url("/footer-signup-bg.webp") center / cover no-repeat;
   overflow: hidden;
 }
 .footer-signup::before {

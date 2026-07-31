@@ -62,12 +62,14 @@
     const nextValue = Math.max(1, (Number(input.value) || 1) + Number(this.dataset.cartStep));
     if (nextValue === Number(input.value)) return;
     input.value = nextValue;
-    form.requestSubmit(form.querySelector('.cart-page-update'));
+    this.disabled = nextValue <= 1 && Number(this.dataset.cartStep) < 0;
+    form.querySelector('.cart-page-update').classList.add('is-ready');
   });
 
   cart.on('change', 'input[name="quantity"]', function () {
     this.value = Math.max(1, Number(this.value) || 1);
-    this.form.requestSubmit(this.form.querySelector('.cart-page-update'));
+    this.form.querySelector('[data-cart-step="-1"]').disabled = Number(this.value) <= 1;
+    this.form.querySelector('.cart-page-update').classList.add('is-ready');
   });
 
   cart.on('submit', '#output-cart form', function (event) {
