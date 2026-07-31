@@ -1366,6 +1366,7 @@ function CatalogPage({
   currency: CurrencyCode;
   onQuickAdd: (product: Product, options: Record<string, string>) => void;
 }) {
+  const lowestPrice = Math.floor(Math.min(...catalog.map((product) => product.price), 500) / 100) * 100;
   const highestPrice = Math.ceil(Math.max(...catalog.map((product) => product.price), 1000) / 100) * 100;
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("Усі");
@@ -1374,6 +1375,7 @@ function CatalogPage({
   const [stone, setStone] = useState("Усі");
   const [availability, setAvailability] = useState("Усі");
   const [delivery, setDelivery] = useState("Усі");
+  const [minPrice, setMinPrice] = useState(lowestPrice);
   const [maxPrice, setMaxPrice] = useState(highestPrice);
   const [sort, setSort] = useState("popular");
   const [visibleCount, setVisibleCount] = useState(6);
@@ -1398,6 +1400,7 @@ function CatalogPage({
     stone !== "Усі",
     availability !== "Усі",
     delivery !== "Усі",
+    minPrice > lowestPrice,
     maxPrice < highestPrice,
   ].filter(Boolean).length;
 
@@ -1416,6 +1419,7 @@ function CatalogPage({
         && (stone === "Усі" || product.stoneType === stone)
         && (availability === "Усі" || product.availability === availability)
         && (delivery === "Усі" || product.deliveryDays === Number(delivery))
+        && product.price >= minPrice
         && product.price <= maxPrice
       ))
       .sort((a, b) => (
@@ -1424,7 +1428,7 @@ function CatalogPage({
             : sort === "new" ? Number(Boolean(b.isNew)) - Number(Boolean(a.isNew))
               : b.popularity - a.popularity
       ));
-  }, [availability, catalog, category, delivery, maxPrice, metal, moment, query, sort, stone]);
+  }, [availability, catalog, category, delivery, maxPrice, metal, minPrice, moment, query, sort, stone]);
 
   function resetFilters() {
     setQuery("");
@@ -1434,6 +1438,7 @@ function CatalogPage({
     setStone("Усі");
     setAvailability("Усі");
     setDelivery("Усі");
+    setMinPrice(lowestPrice);
     setMaxPrice(highestPrice);
     setSort("popular");
     setVisibleCount(6);
@@ -1489,24 +1494,40 @@ function CatalogPage({
                 value={value as string}
               />
             ))}
-            <label className={`price-filter${maxPrice < highestPrice ? " is-active" : ""}`}>
-              <span className="filter-label">Максимальна ціна</span>
-              <strong>{formatMoney(maxPrice, currency)}</strong>
-              <input
-                aria-label="Максимальна ціна"
-                min="500"
-                max={highestPrice}
-                style={{ "--range-progress": `${((maxPrice - 500) / (highestPrice - 500)) * 100}%` } as React.CSSProperties}
-                step="50"
-                type="range"
-                value={Math.min(maxPrice, highestPrice)}
-                onChange={(event) => setMaxPrice(Number(event.target.value))}
-              />
+            <div className={`price-filter${minPrice > lowestPrice || maxPrice < highestPrice ? " is-active" : ""}`}>
+              <span className="filter-label">Діапазон цін</span>
+              <strong>{formatMoney(minPrice, currency)} — {formatMoney(maxPrice, currency)}</strong>
+              <div
+                className="price-filter__slider"
+                style={{
+                  "--range-start": `${((minPrice - lowestPrice) / (highestPrice - lowestPrice)) * 100}%`,
+                  "--range-end": `${((maxPrice - lowestPrice) / (highestPrice - lowestPrice)) * 100}%`,
+                } as React.CSSProperties}
+              >
+                <input
+                  aria-label="Мінімальна ціна"
+                  min={lowestPrice}
+                  max={highestPrice}
+                  step="50"
+                  type="range"
+                  value={Math.min(minPrice, maxPrice)}
+                  onChange={(event) => setMinPrice(Math.min(Number(event.target.value), maxPrice))}
+                />
+                <input
+                  aria-label="Максимальна ціна"
+                  min={lowestPrice}
+                  max={highestPrice}
+                  step="50"
+                  type="range"
+                  value={Math.max(maxPrice, minPrice)}
+                  onChange={(event) => setMaxPrice(Math.max(Number(event.target.value), minPrice))}
+                />
+              </div>
               <span className="price-range-labels">
-                <span>{formatMoney(500, currency)}</span>
+                <span>{formatMoney(lowestPrice, currency)}</span>
                 <span>{formatMoney(highestPrice, currency)}</span>
               </span>
-            </label>
+            </div>
             <button
               className="reset-filters"
               disabled={activeFilterCount === 0 && !query}

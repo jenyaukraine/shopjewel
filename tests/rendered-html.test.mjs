@@ -185,6 +185,8 @@ test("server-renders catalog filters and CSV manager", async () => {
   ]);
 
   assert.match(catalogHtml, /Пошук за назвою, артикулом, категорією або моментом/);
+  assert.match(catalogHtml, /Діапазон цін/);
+  assert.match(catalogHtml, /Мінімальна ціна/);
   assert.match(catalogHtml, /Максимальна ціна/);
   assert.match(catalogHtml, /Швидко додати/);
   assert.match(managerHtml, /Імпортуйте товари без редагування коду/);
