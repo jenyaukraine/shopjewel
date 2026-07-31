@@ -73,6 +73,17 @@ test("OpenCart product cards keep the platform AJAX cart handler active", async 
   assert.match(controller, /sixmoments\.js\?v=1\.2\.6/);
 });
 
+test("OpenCart in-stock labels use the storefront success color", async () => {
+  const [stylesheet, controller] = await Promise.all([
+    readFile(new URL("../opencart/sixmoments/catalog/view/stylesheet/sixmoments.css", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/sixmoments/catalog/controller/event/theme.php", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(stylesheet, /--success:\s*#4e7658/);
+  assert.match(stylesheet, /\.product-details-list li:first-child,[\s\S]*?li:first-child::before\s*\{\s*color:\s*var\(--success\)/);
+  assert.match(controller, /sixmoments\.css\?v=1\.2\.6/);
+});
+
 test("OpenCart checkout uses the branded responsive purchase flow", async () => {
   const [template, stylesheet, controller, installer] = await Promise.all([
     readFile(new URL("../opencart/sixmoments/catalog/view/template/checkout/checkout.twig", import.meta.url), "utf8"),

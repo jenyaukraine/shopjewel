@@ -24,7 +24,7 @@ class Theme extends \Opencart\System\Engine\Controller {
             $data['title'] = '6MOMENTS Jewelry';
         }
 
-        $data['six_stylesheet'] = 'extension/sixmoments/catalog/view/stylesheet/sixmoments.css?v=1.2.5';
+        $data['six_stylesheet'] = 'extension/sixmoments/catalog/view/stylesheet/sixmoments.css?v=1.2.6';
         $data['six_script'] = 'extension/sixmoments/catalog/view/javascript/sixmoments.js?v=1.2.6';
         $data['six_favicon'] = '/image/catalog/sixmoments/favicon.svg?v=2';
         $data['six_og_image'] = '/image/catalog/sixmoments/og-store.png';
