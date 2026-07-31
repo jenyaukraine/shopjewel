@@ -118,8 +118,12 @@ elif ! timeout --kill-after=5s 30s env NOVERAILE_WITH_DEMO_DATA=0 php /usr/local
     echo "NOVERAILE registration refresh timed out; keeping the existing registration" >&2
 fi
 
-chown -R www-data:www-data config.php admin/config.php system/storage image/catalog/noveraile
-chown www-data:www-data image image/catalog
+chown -R www-data:www-data config.php admin/config.php image/catalog/noveraile
+chown www-data:www-data \
+    image image/catalog \
+    system/storage system/storage/cache system/storage/download \
+    system/storage/logs system/storage/marketplace system/storage/session \
+    system/storage/upload
 chmod 640 config.php admin/config.php
 
 exec docker-php-entrypoint "$@"
