@@ -24,6 +24,7 @@
 <script>
 (function () {
   const cart = $('#shopping-cart');
+  const quantityTimers = new WeakMap();
 
   function syncBagCount() {
     let count = 0;
@@ -34,7 +35,8 @@
   function showMessage(type, message) {
     if (!message) return;
     const text = typeof message === 'string' ? message : Object.values(message).join(' ');
-    $('#cart-messages').html('<div class="cart-page-alert is-' + type + '">' + $('<span>').text(text).html() + '</div>');
+    const role = type === 'error' ? 'alert' : 'status';
+    $('#cart-messages').html('<div class="cart-page-alert is-' + type + '" role="' + role + '">' + $('<span>').text(text).html() + '</div>');
   }
 
   function setFormBusy(form, busy) {
@@ -56,28 +58,14 @@
     });
   }
 
-  cart.on('click', '[data-cart-step]', function () {
-    const form = this.closest('form');
-    const input = form.querySelector('input[name="quantity"]');
-    const nextValue = Math.max(1, (Number(input.value) || 1) + Number(this.dataset.cartStep));
-    if (nextValue === Number(input.value)) return;
-    input.value = nextValue;
-    this.disabled = nextValue <= 1 && Number(this.dataset.cartStep) < 0;
-    form.querySelector('.cart-page-update').classList.add('is-ready');
-  });
+  function updateQuantity(form) {
+    if (!form || form.getAttribute('aria-busy') === 'true') return;
+    const timer = quantityTimers.get(form);
+    if (timer) window.clearTimeout(timer);
+    quantityTimers.delete(form);
 
-  cart.on('change', 'input[name="quantity"]', function () {
-    this.value = Math.max(1, Number(this.value) || 1);
-    this.form.querySelector('[data-cart-step="-1"]').disabled = Number(this.value) <= 1;
-    this.form.querySelector('.cart-page-update').classList.add('is-ready');
-  });
-
-  cart.on('submit', '#output-cart form', function (event) {
-    event.preventDefault();
-    const form = this;
-    const button = event.originalEvent && event.originalEvent.submitter ? event.originalEvent.submitter : form.querySelector('[type="submit"]');
     $.ajax({
-      url: button.formAction,
+      url: form.action,
       type: 'post',
       data: $(form).serialize(),
       dataType: 'json',
@@ -85,13 +73,42 @@
       complete: function () { if (document.body.contains(form)) setFormBusy(form, false); },
       success: function (json) {
         if (json.redirect) { location = json.redirect; return; }
-        if (json.error) showMessage('error', json.error);
-        if (json.success) {
-          showMessage('success', json.success);
+        if (json.error) {
+          showMessage('error', json.error);
           refreshCart();
+          return;
         }
+        if (json.success) showMessage('success', json.success);
+        refreshCart();
       }
     });
+  }
+
+  function scheduleQuantityUpdate(form, delay) {
+    const current = quantityTimers.get(form);
+    if (current) window.clearTimeout(current);
+    quantityTimers.set(form, window.setTimeout(function () { updateQuantity(form); }, delay));
+  }
+
+  cart.on('click', '[data-cart-step]', function () {
+    const form = this.closest('form');
+    const input = form.querySelector('input[name="quantity"]');
+    const nextValue = Math.max(1, (Number(input.value) || 1) + Number(this.dataset.cartStep));
+    if (nextValue === Number(input.value)) return;
+    input.value = nextValue;
+    this.disabled = nextValue <= 1 && Number(this.dataset.cartStep) < 0;
+    scheduleQuantityUpdate(form, 220);
+  });
+
+  cart.on('change', 'input[name="quantity"]', function () {
+    this.value = Math.max(1, Number(this.value) || 1);
+    this.form.querySelector('[data-cart-step="-1"]').disabled = Number(this.value) <= 1;
+    scheduleQuantityUpdate(this.form, 0);
+  });
+
+  cart.on('submit', '[data-cart-auto-update]', function (event) {
+    event.preventDefault();
+    updateQuantity(this);
   });
 
   cart.on('click', '.cart-page-remove', function (event) {

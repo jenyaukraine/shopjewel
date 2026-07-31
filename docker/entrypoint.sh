@@ -45,6 +45,8 @@ until php -r '
     sleep 2
 done
 
+noveraile_seed_demo=1
+
 if php -r '
     $db = new mysqli(
         getenv("OPENCART_DB_HOST"),
@@ -58,6 +60,7 @@ if php -r '
     exit($result && $result->num_rows > 0 ? 0 : 1);
 '; then
     echo "Existing OpenCart database found; preserving store data"
+    noveraile_seed_demo=0
 else
     echo "Empty database found; installing clean OpenCart"
     : > config.php
@@ -100,9 +103,16 @@ mkdir -p \
 # assets from the immutable extension overlay on every container start.
 cp -a extension/noveraile/image/. image/
 
+# Generated thumbnails live in the persistent image volume. Remove only this
+# extension's cache so stale or partial files are rebuilt from the originals.
+if [ -d /var/www/html/image/cache/catalog/noveraile ]; then
+    find /var/www/html/image/cache/catalog/noveraile -type f -delete
+    find /var/www/html/image/cache/catalog/noveraile -depth -type d -empty -delete
+fi
+
 # Keep the module registration and its OpenCart events healthy after both a
 # fresh installation and future container replacements.
-php /usr/local/bin/bootstrap-noveraile.php
+NOVERAILE_WITH_DEMO_DATA="$noveraile_seed_demo" php /usr/local/bin/bootstrap-noveraile.php
 
 chown -R www-data:www-data config.php admin/config.php system/storage image
 chmod 640 config.php admin/config.php

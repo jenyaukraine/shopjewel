@@ -61,6 +61,8 @@ $registry->set('factory', new \Opencart\System\Engine\Factory($registry));
 $registry->set('load', new \Opencart\System\Engine\Loader($registry));
 
 $model = new \Opencart\Admin\Model\Extension\Noveraile\Module\Noveraile($registry);
-$model->bootstrap();
+$demoFlag = getenv('NOVERAILE_WITH_DEMO_DATA');
+$withDemoData = $demoFlag === false ? true : filter_var($demoFlag, FILTER_VALIDATE_BOOLEAN);
+$model->bootstrap($withDemoData);
 
 fwrite(STDOUT, "NOVERAILE storefront registration is ready.\n");

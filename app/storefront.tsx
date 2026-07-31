@@ -384,7 +384,7 @@ const heroSlides = [
   },
 ] as const;
 
-type LineIconName = "home" | "jewel" | "story" | "journal" | "diamond" | "mail" | "certificate" | "shield" | "delivery" | "verified";
+type LineIconName = "home" | "jewel" | "story" | "journal" | "diamond" | "mail" | "certificate" | "shield" | "delivery" | "verified" | "bag";
 
 function LineIcon({ name }: { name: LineIconName }) {
   const paths: Record<LineIconName, React.ReactNode> = {
@@ -398,6 +398,7 @@ function LineIcon({ name }: { name: LineIconName }) {
     shield: <><path d="M12 3 20 6v5.5c0 4.5-3.2 7.8-8 9.5-4.8-1.7-8-5-8-9.5V6Z" /><path d="m8.5 12 2.2 2.2 4.8-4.8" /></>,
     delivery: <><path d="M3 6h11v10H3ZM14 9h4l3 3v4h-7Z" /><circle cx="7" cy="18" r="2" /><circle cx="18" cy="18" r="2" /></>,
     verified: <><circle cx="12" cy="12" r="9" /><path d="m8 12 2.6 2.6L16.5 9" /></>,
+    bag: <><path d="M6.5 8.5h11l1 11h-13l1-11Z" /><path d="M9 9V6.5a3 3 0 0 1 6 0V9" /></>,
   };
 
   return (
@@ -471,7 +472,7 @@ function Header({
           </label>
           <Link href="/contact">Приватна консультація</Link>
           <button className="bag" type="button" onClick={onOpenCart} aria-label={`Кошик, товарів: ${count}`}>
-            Кошик <span>{count}</span>
+            <LineIcon name="bag" /> Кошик <span>{count}</span>
           </button>
         </div>
         <button

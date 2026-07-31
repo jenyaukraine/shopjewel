@@ -20,17 +20,35 @@ test("OpenCart 4 package has valid marketplace metadata and entry points", async
   await Promise.all(required.map((file) => readFile(path.join(root, file))));
 });
 
+test("container startup refreshes NOVERAILE media without reseeding an existing store", async () => {
+  const [entrypoint, bootstrap] = await Promise.all([
+    readFile(path.resolve("docker/entrypoint.sh"), "utf8"),
+    readFile(path.resolve("docker/bootstrap-noveraile.php"), "utf8"),
+  ]);
+
+  assert.match(entrypoint, /find \/var\/www\/html\/image\/cache\/catalog\/noveraile -type f -delete/);
+  assert.match(entrypoint, /noveraile_seed_demo=0/);
+  assert.match(entrypoint, /NOVERAILE_WITH_DEMO_DATA="\$noveraile_seed_demo"/);
+  assert.match(bootstrap, /getenv\('NOVERAILE_WITH_DEMO_DATA'\)/);
+  assert.match(bootstrap, /bootstrap\(\$withDemoData\)/);
+});
+
 test("admin content remains adjacent to the OpenCart sidebar", async () => {
   const template = await readFile(path.join(root, "admin/view/template/module/noveraile.twig"), "utf8");
   assert.match(template, /\{\{ header \}\}\{\{ column_left \}\}\s*<div id="content">/);
 });
 
 test("desktop navigation keeps every primary link vertically aligned", async () => {
-  const stylesheet = await readFile(path.join(root, "catalog/view/stylesheet/noveraile.css"), "utf8");
+  const [header, stylesheet] = await Promise.all([
+    readFile(path.join(root, "catalog/view/template/common/header.twig"), "utf8"),
+    readFile(path.join(root, "catalog/view/stylesheet/noveraile.css"), "utf8"),
+  ]);
   const navigationRule = stylesheet.match(/\.desktop-nav\s*\{[^}]*\}/)?.[0] ?? "";
 
   assert.match(navigationRule, /display:\s*flex/);
   assert.match(navigationRule, /align-items:\s*center/);
+  assert.match(header, /class="bag"[^>]*><svg class="bag-icon"/);
+  assert.match(stylesheet, /\.bag-icon\s*\{/);
 });
 
 test("mobile categories are deduplicated and use semantic jewellery icons", async () => {
@@ -43,8 +61,8 @@ test("mobile categories are deduplicated and use semantic jewellery icons", asyn
   assert.match(event, /\$category_names\s*=\s*\[\]/);
   assert.match(event, /mb_strtolower/);
   assert.match(event, /'icon'\s*=>\s*\$this->categoryIcon\(\$name\)/);
-  assert.match(event, /noveraile\.css\?v=2\.2\.0\.8/);
-  assert.match(event, /noveraile\.js\?v=2\.2\.0\.4/);
+  assert.match(event, /noveraile\.css\?v=2\.2\.0\.9/);
+  assert.match(event, /noveraile\.js\?v=2\.2\.0\.5/);
   assert.match(header, /class="mobile-category-icon"/);
   assert.match(header, /category\.icon == 'earring'/);
   assert.match(header, /class="mobile-main-icon"/);
@@ -90,8 +108,30 @@ test("storefront is light-only and ships no theme control", async () => {
   }
 });
 
+test("storefront notifications share one responsive status system", async () => {
+  const [stylesheet, script, cart] = await Promise.all([
+    readFile(path.join(root, "catalog/view/stylesheet/noveraile.css"), "utf8"),
+    readFile(path.join(root, "catalog/view/javascript/noveraile.js"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/checkout/cart.twig"), "utf8"),
+  ]);
+
+  assert.match(stylesheet, /#alert\s*\{[^}]*position:\s*fixed;[^}]*display:\s*grid/);
+  assert.match(stylesheet, /#alert \.alert-success[\s\S]*--notice-accent:\s*#52715a/);
+  assert.match(stylesheet, /#alert \.alert-danger[\s\S]*--notice-accent:\s*#8a443b/);
+  assert.match(stylesheet, /\.cart-page-alert\.is-info[\s\S]*--notice-accent:\s*#9a7445/);
+  assert.match(stylesheet, /\.six-form-status\.is-success/);
+  assert.match(stylesheet, /@media \(max-width:\s*420px\)[\s\S]*#alert/);
+  assert.match(script, /const setFormStatus =/);
+  assert.match(script, /status\.classList\.toggle\('is-error'/);
+  assert.match(cart, /const role = type === 'error' \? 'alert' : 'status'/);
+});
+
 test("mobile catalog and cart keep primary content above the fold", async () => {
-  const stylesheet = await readFile(path.join(root, "catalog/view/stylesheet/noveraile.css"), "utf8");
+  const [stylesheet, cart, cartList] = await Promise.all([
+    readFile(path.join(root, "catalog/view/stylesheet/noveraile.css"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/checkout/cart.twig"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/checkout/cart_list.twig"), "utf8"),
+  ]);
 
   assert.match(stylesheet, /\.catalog-hero\s*\{\s*min-height:\s*350px;\s*padding:\s*34px 22px 38px;/);
   assert.match(stylesheet, /\.catalog-dual-nav\s*\{\s*gap:\s*10px;\s*padding:\s*14px 16px;/);
@@ -101,6 +141,15 @@ test("mobile catalog and cart keep primary content above the fold", async () => 
   assert.match(stylesheet, /\.cart-page-layout\s*\{\s*gap:\s*28px;\s*padding-top:\s*24px;/);
   assert.match(stylesheet, /#checkout-cart\.cart-page\s*\{\s*padding:\s*0 14px 72px;/);
   assert.match(stylesheet, /#checkout-cart\.cart-page \.cart-page-section-heading h2\s*\{\s*margin:\s*5px 0 10px;/);
+  assert.match(cartList, /data-cart-auto-update/);
+  assert.doesNotMatch(cartList, /cart-page-update|button_update/);
+  assert.match(cartList, /cart-page-summary-heading[\s\S]*summary-bag-icon/);
+  assert.doesNotMatch(cartList, /cart-page-summary-heading[^\n]*>◇</);
+  assert.match(cartList, /cart-page-empty-benefits[\s\S]*<svg class="line-icon"/);
+  assert.doesNotMatch(cartList, /<div><span>[◇◎○]<\/span><strong>/);
+  assert.match(stylesheet, /\.cart-page-empty-benefits \.line-icon\s*\{/);
+  assert.match(cart, /scheduleQuantityUpdate\(form, 220\)/);
+  assert.match(cart, /scheduleQuantityUpdate\(this\.form, 0\)/);
 });
 
 test("premium suite ships working builder, mega menu, AJAX filters, one-page checkout and reviewed AI tools", async () => {
@@ -134,6 +183,7 @@ test("premium suite ships working builder, mega menu, AJAX filters, one-page che
   assert.match(script, /--range-start/);
   assert.match(script, /history\.pushState/);
   assert.match(checkout, /checkout-page-grid/);
+  assert.match(checkout, /checkout-page-sidebar-heading[\s\S]*summary-bag-icon/);
   assert.match(admin, /function aiGenerate\(/);
   assert.match(admin, /function aiApply\(/);
   assert.match(admin, /never invent specifications/);

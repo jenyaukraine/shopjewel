@@ -2,6 +2,22 @@
   'use strict';
 
   const body = document.body;
+  const statusMessage = (value) => {
+    if (!value) return '';
+    if (typeof value === 'string') return value;
+    if (Array.isArray(value)) return value.filter(Boolean).join(' ');
+    if (typeof value === 'object') return Object.values(value).filter(Boolean).join(' ');
+    return String(value);
+  };
+  const setFormStatus = (status, value, type = '') => {
+    if (!status) return;
+    const message = statusMessage(value);
+    status.textContent = message;
+    status.classList.toggle('is-success', Boolean(message) && type === 'success');
+    status.classList.toggle('is-error', Boolean(message) && type === 'error');
+    status.classList.toggle('is-info', Boolean(message) && type === 'info');
+    status.setAttribute('role', type === 'error' ? 'alert' : 'status');
+  };
 
   const menu = document.querySelector('.mobile-drawer-shell');
   const open = document.querySelector('[data-six-menu-open]');
@@ -580,21 +596,21 @@
     const form = document.querySelector('#form-product');
     const status = button.parentElement.querySelector('.six-form-status');
     if (!form) return;
+    setFormStatus(status, '');
     button.disabled = true;
     try {
       const cartResponse = await fetch(button.dataset.cartAction, { method: 'POST', body: new FormData(form), headers: { 'X-Requested-With': 'XMLHttpRequest' } });
       const cartJson = await cartResponse.json();
       if (cartJson.error) {
-        const messages = typeof cartJson.error === 'string' ? [cartJson.error] : Object.values(cartJson.error);
-        if (status) status.textContent = messages.join(' '); return;
+        setFormStatus(status, cartJson.error, 'error'); return;
       }
       const pair = new FormData(); pair.set('product_id', button.dataset.productId); pair.set('paired_id', button.dataset.pairedId);
       const bundleResponse = await fetch(button.dataset.bundleAction, { method: 'POST', body: pair, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
       const bundleJson = await bundleResponse.json();
-      if (status) status.textContent = bundleJson.success || bundleJson.error || '';
+      setFormStatus(status, bundleJson.success || bundleJson.error, bundleJson.success ? 'success' : 'error');
       if (bundleJson.total) document.querySelectorAll('.bag span').forEach((element) => { element.textContent = bundleJson.total; });
       if (bundleJson.success) flyToBag(button, bundleJson.total);
-    } catch { if (status) status.textContent = 'Please try again.'; }
+    } catch { setFormStatus(status, 'Please try again.', 'error'); }
     finally { button.disabled = false; }
   }));
 
@@ -602,14 +618,15 @@
     event.preventDefault();
     const status = form.querySelector('.six-form-status') || form.parentElement.querySelector('.six-form-status');
     const button = form.querySelector('button[type="submit"]');
+    setFormStatus(status, '');
     if (button) button.disabled = true;
     try {
       const response = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { 'X-Requested-With': 'XMLHttpRequest' } });
       const json = await response.json();
-      if (status) status.textContent = json.success || json.error || '';
+      setFormStatus(status, json.success || json.error, json.success ? 'success' : 'error');
       if (json.success) form.reset();
     } catch {
-      if (status) status.textContent = 'Please try again.';
+      setFormStatus(status, 'Please try again.', 'error');
     } finally {
       if (button) button.disabled = false;
     }
