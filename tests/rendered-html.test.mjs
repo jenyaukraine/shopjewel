@@ -55,6 +55,40 @@ test("OpenCart benefits use the storefront line icons instead of placeholder gly
   assert.doesNotMatch(benefits, /[◇◎✦○]/);
 });
 
+test("OpenCart product cards keep the platform AJAX cart handler active", async () => {
+  const [script, controller] = await Promise.all([
+    readFile(
+      new URL("../opencart/sixmoments/catalog/view/javascript/sixmoments.js", import.meta.url),
+      "utf8",
+    ),
+    readFile(
+      new URL("../opencart/sixmoments/catalog/controller/event/theme.php", import.meta.url),
+      "utf8",
+    ),
+  ]);
+
+  assert.doesNotMatch(script, /stopImmediatePropagation\(\)/);
+  assert.doesNotMatch(script, /function submitProductCard\b/);
+  assert.match(script, /ajaxSuccess\.sixBagFlight/);
+  assert.match(controller, /sixmoments\.js\?v=1\.2\.6/);
+});
+
+test("OpenCart product zoom fills the preview and provides an interactive lightbox", async () => {
+  const [template, stylesheet, script] = await Promise.all([
+    readFile(new URL("../opencart/sixmoments/catalog/view/template/product/product.twig", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/sixmoments/catalog/view/stylesheet/sixmoments.css", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/sixmoments/catalog/view/javascript/sixmoments.js", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(template, /class="product-photo product-photo--detail"/);
+  assert.match(template, /data-six-zoom-stage/);
+  assert.match(template, /data-six-zoom-(?:in|out|reset)/);
+  assert.match(stylesheet, /\.product-photo--detail\s*\{[^}]*width:\s*100%[^}]*height:\s*100%[^}]*object-fit:\s*cover/s);
+  assert.match(script, /function setupProductZoom\b/);
+  assert.match(script, /addEventListener\('wheel'/);
+  assert.match(script, /setPointerCapture/);
+});
+
 test("server-renders product attributes and story routes", async () => {
   const [productResponse, storyResponse] = await Promise.all([
     render("/products/first-ride"),

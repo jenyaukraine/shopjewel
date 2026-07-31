@@ -1,13 +1,25 @@
 {{ header }}
 <section id="checkout-cart" class="cart-page">
-  <header class="cart-page-masthead">
-    <p class="eyebrow">6MOMENTS · {{ six_bag }}</p>
-    <h1>{{ six_cart_title }}</h1>
-    <p>{{ six_cart_intro }}</p>
-  </header>
-  <div id="cart-messages" aria-live="polite"></div>
-  <div id="shopping-cart">{{ list }}</div>
-  {{ content_top }}{{ content_bottom }}
+  <div class="cart-page-shell">
+    <nav class="cart-page-progress" aria-label="{{ six_cart_title }}">
+      <span class="is-current"><i>01</i>{{ six_bag }}</span>
+      <span><i>02</i>{{ six_benefit_delivery_title }}</span>
+      <span><i>03</i>{{ button_checkout }}</span>
+    </nav>
+    <header class="cart-page-masthead">
+      <div>
+        <p class="eyebrow">6MOMENTS · {{ six_bag }}</p>
+        <h1>{{ six_cart_title }}</h1>
+      </div>
+      <div class="cart-page-masthead-copy">
+        <p>{{ six_cart_intro }}</p>
+        <span><i aria-hidden="true">◇</i>{{ six_cart_secure }}</span>
+      </div>
+    </header>
+    <div id="cart-messages" aria-live="polite"></div>
+    <div id="shopping-cart">{{ list }}</div>
+    {{ content_top }}{{ content_bottom }}
+  </div>
 </section>
 <script>
 (function () {
@@ -25,9 +37,37 @@
     $('#cart-messages').html('<div class="cart-page-alert is-' + type + '">' + $('<span>').text(text).html() + '</div>');
   }
 
+  function setFormBusy(form, busy) {
+    form.setAttribute('aria-busy', busy ? 'true' : 'false');
+    $(form).find('button, input').prop('disabled', busy);
+    if (!busy) {
+      const input = form.querySelector('input[name="quantity"]');
+      const decrease = form.querySelector('[data-cart-step="-1"]');
+      if (decrease) decrease.disabled = (Number(input.value) || 1) <= 1;
+    }
+    cart.toggleClass('is-updating', busy);
+  }
+
+  function refreshCart(callback) {
+    cart.load('index.php?route=checkout/cart.list&language={{ language }}', function () {
+      cart.removeClass('is-updating');
+      syncBagCount();
+      if (callback) callback();
+    });
+  }
+
   cart.on('click', '[data-cart-step]', function () {
-    const input = this.closest('form').querySelector('input[name="quantity"]');
-    input.value = Math.max(1, (Number(input.value) || 1) + Number(this.dataset.cartStep));
+    const form = this.closest('form');
+    const input = form.querySelector('input[name="quantity"]');
+    const nextValue = Math.max(1, (Number(input.value) || 1) + Number(this.dataset.cartStep));
+    if (nextValue === Number(input.value)) return;
+    input.value = nextValue;
+    form.requestSubmit(form.querySelector('.cart-page-update'));
+  });
+
+  cart.on('change', 'input[name="quantity"]', function () {
+    this.value = Math.max(1, Number(this.value) || 1);
+    this.form.requestSubmit(this.form.querySelector('.cart-page-update'));
   });
 
   cart.on('submit', '#output-cart form', function (event) {
@@ -39,14 +79,14 @@
       type: 'post',
       data: $(form).serialize(),
       dataType: 'json',
-      beforeSend: function () { button.disabled = true; },
-      complete: function () { button.disabled = false; },
+      beforeSend: function () { setFormBusy(form, true); },
+      complete: function () { if (document.body.contains(form)) setFormBusy(form, false); },
       success: function (json) {
         if (json.redirect) { location = json.redirect; return; }
         if (json.error) showMessage('error', json.error);
         if (json.success) {
           showMessage('success', json.success);
-          cart.load('index.php?route=checkout/cart.list&language={{ language }}', syncBagCount);
+          refreshCart();
         }
       }
     });
@@ -54,14 +94,15 @@
 
   cart.on('click', '.cart-page-remove', function (event) {
     event.preventDefault();
+    cart.addClass('is-updating');
     $.getJSON(this.href, function (json) {
       if (json.redirect) { location = json.redirect; return; }
       if (json.error) showMessage('error', json.error);
       if (json.success) {
         showMessage('success', json.success);
-        cart.load('index.php?route=checkout/cart.list&language={{ language }}', syncBagCount);
+        refreshCart();
       }
-    });
+    }).always(function () { cart.removeClass('is-updating'); });
   });
 }());
 </script>

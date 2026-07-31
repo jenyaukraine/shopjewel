@@ -7,12 +7,12 @@
   <div id="output-cart" class="cart-page-layout">
     <section class="cart-page-products" aria-label="{{ six_bag }}">
       <div class="cart-page-section-heading">
-        <div><p class="eyebrow">{{ six_cart_kicker }}</p><h2>{{ six_bag }}</h2></div>
+        <div><p class="eyebrow">{{ six_cart_kicker }}</p><h2>{{ six_bag }} <sup>{{ products|length }}</sup></h2></div>
         {% if weight %}<span>{{ weight }}</span>{% endif %}
       </div>
       {% for product in products %}
         <article class="cart-page-item">
-          <a class="cart-page-item-image" href="{{ product.href }}">{% if product.thumb %}<img src="{{ product.thumb }}" alt="{{ product.name }}">{% endif %}</a>
+          <a class="cart-page-item-image" href="{{ product.href }}">{% if product.thumb %}<img src="{{ product.thumb }}" alt="{{ product.name }}" loading="lazy">{% endif %}<span aria-hidden="true">↗</span></a>
           <div class="cart-page-item-body">
             <div class="cart-page-item-heading">
               <div><p>{{ text_model }} · {{ product.model }}</p><h3><a href="{{ product.href }}">{{ product.name }}</a>{% if not product.stock %}<span class="cart-page-stock">*</span>{% endif %}</h3></div>
@@ -27,16 +27,17 @@
             {% endif %}
             {% if product.minimum %}<p class="cart-page-minimum">{{ product.minimum }}</p>{% endif %}
             <div class="cart-page-item-footer">
-              <form method="post">
-                <div class="cart-page-quantity" aria-label="{{ column_quantity }}">
-                  <button type="button" data-cart-step="-1" aria-label="−">−</button>
+              <form class="cart-page-quantity-form" method="post">
+                <label>{{ column_quantity }}</label>
+                <div class="cart-page-quantity">
+                  <button type="button" data-cart-step="-1" aria-label="−"{% if product.quantity <= 1 %} disabled{% endif %}>−</button>
                   <input type="number" name="quantity" min="1" value="{{ product.quantity }}" aria-label="{{ column_quantity }}">
                   <button type="button" data-cart-step="1" aria-label="+">+</button>
                 </div>
                 <input type="hidden" name="key" value="{{ product.cart_id }}">
                 <button class="cart-page-update" type="submit" formaction="{{ edit }}">{{ button_update }}</button>
               </form>
-              <a class="cart-page-remove" href="{{ product.remove }}">{{ button_remove }}</a>
+              <a class="cart-page-remove" href="{{ product.remove }}"><span aria-hidden="true">×</span>{{ button_remove }}</a>
             </div>
           </div>
         </article>
@@ -44,29 +45,30 @@
     </section>
 
     <aside class="cart-page-summary">
-      <p class="eyebrow">{{ six_cart_summary }}</p>
-      <h2>{{ six_cart_summary }}</h2>
+      <div class="cart-page-summary-heading"><div><p class="eyebrow">6MOMENTS</p><h2>{{ six_cart_summary }}</h2></div><span>◇</span></div>
       <div class="cart-page-totals">
         {% for total in totals %}<div><span>{{ total.title }}</span><strong>{{ total.text }}</strong></div>{% endfor %}
       </div>
+      <a class="button button--dark cart-page-checkout" href="{{ checkout }}">{{ button_checkout }} <span>→</span></a>
+      <a class="cart-page-continue" href="{{ continue }}">← {{ button_shopping }}</a>
       <ul class="cart-page-assurances">
         <li><span>◇</span><div><strong>{{ six_cart_secure }}</strong><small>{{ six_cart_secure_copy }}</small></div></li>
         <li><span>◎</span><div><strong>{{ six_benefit_delivery_title }}</strong><small>{{ six_cart_delivery_copy }}</small></div></li>
         <li><span>↺</span><div><strong>{{ six_returns }}</strong><small>{{ six_cart_returns_copy }}</small></div></li>
       </ul>
-      <a class="button button--dark cart-page-checkout" href="{{ checkout }}">{{ button_checkout }} <span>→</span></a>
-      <a class="cart-page-continue" href="{{ continue }}">← {{ button_shopping }}</a>
     </aside>
   </div>
 
-  {% if modules %}<section class="cart-page-modules"><h2>{{ text_next }}</h2><p>{{ text_next_choice }}</p>{% for module in modules %}{{ module }}{% endfor %}</section>{% endif %}
+  {% if modules %}<section class="cart-page-modules"><div class="cart-page-modules-intro"><p class="eyebrow">6MOMENTS · {{ six_bag }}</p><h2>{{ text_next }}</h2><p>{{ text_next_choice }}</p></div><div class="cart-page-module-grid">{% for module in modules %}{{ module }}{% endfor %}</div></section>{% endif %}
 {% else %}
   <section class="cart-page-empty">
-    <div class="cart-page-empty-mark" aria-hidden="true"><span>◇</span></div>
-    <p class="eyebrow">{{ six_bag }} · 0</p>
-    <h2>{{ six_cart_empty_title }}</h2>
-    <p>{{ six_cart_empty_copy }}</p>
-    <a class="button button--dark" href="{{ continue }}">{{ six_catalog }} <span>→</span></a>
+    <div class="cart-page-empty-mark" aria-hidden="true"><small>01 / 06</small><span>◇</span></div>
+    <div class="cart-page-empty-copy">
+      <p class="eyebrow">{{ six_bag }} · 0</p>
+      <h2>{{ six_cart_empty_title }}</h2>
+      <p>{{ six_cart_empty_copy }}</p>
+      <a class="button button--dark" href="{{ continue }}">{{ six_catalog }} <span>→</span></a>
+    </div>
   </section>
   <div class="cart-page-empty-benefits">
     <div><span>◇</span><strong>{{ six_benefit_cert_title }}</strong><small>{{ six_benefit_cert_copy }}</small></div>

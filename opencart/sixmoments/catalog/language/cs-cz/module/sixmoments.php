@@ -15,7 +15,7 @@ $_['six_desired'] = 'Nejžádanější'; $_['six_desired_copy'] = 'Nadčasové �
 $_['six_moment_yes'] = 'Ano'; $_['six_moment_forever'] = 'Navždy'; $_['six_moment_new_life'] = 'Nový život'; $_['six_moment_victory'] = 'Moje vítězství'; $_['six_moment_deserve'] = 'Zasloužím si'; $_['six_moment_with_me'] = 'Se mnou';
 $_['six_specials'] = 'Soukromé nabídky'; $_['six_lab_title'] = 'Stejný lesk. Moderní původ.'; $_['six_shop_lab'] = 'Lab-grown šperky'; $_['six_discover_more'] = 'Zjistit více';
 $_['six_story_title'] = 'Život si pamatujeme v okamžicích.'; $_['six_read_story'] = 'Náš příběh'; $_['six_follow'] = 'Sledujte náš Instagram';
-$_['six_newsletter_title'] = 'Vstupte do světa Six Moments'; $_['six_join'] = 'Připojit se'; $_['six_footer_about'] = 'O nás'; $_['six_footer_care'] = 'Péče o zákazníky'; $_['six_footer_info'] = 'Informace'; $_['six_footer_account'] = 'Účet';
+$_['six_newsletter_title'] = 'Vstupte do světa Six Moments'; $_['six_newsletter_gift'] = 'Dárek na uvítanou'; $_['six_newsletter_first_order'] = 'Na první objednávku'; $_['six_newsletter_note'] = 'Osobní kód vám přijde e-mailem. Odběr můžete kdykoli zrušit.'; $_['six_join'] = 'Připojit se'; $_['six_footer_about'] = 'O nás'; $_['six_footer_care'] = 'Péče o zákazníky'; $_['six_footer_info'] = 'Informace'; $_['six_footer_account'] = 'Účet';
 $_['six_product_code'] = 'Kód'; $_['six_weight'] = 'Hmotnost'; $_['six_stock'] = 'Dostupnost'; $_['six_in_stock'] = 'Skladem'; $_['six_preorder'] = 'Na objednávku'; $_['six_add_to_bag'] = 'Přidat do košíku';
 $_['six_hint_title'] = 'Naznačit dárek'; $_['six_send_hint'] = 'Odeslat nápovědu'; $_['six_may_like'] = 'Mohlo by se vám líbit';
 $_['six_quiz_title'] = 'Najděte svůj okamžik'; $_['six_start'] = 'Začít'; $_['six_next'] = 'Pokračovat'; $_['six_back'] = 'Zpět'; $_['six_result'] = 'Váš okamžik';
@@ -70,3 +70,9 @@ $_['six_contact_hours_value'] = 'Pondělí–pátek · 10:00–18:00';
 $_['six_contact_submit'] = 'Napsat ateliéru';
 $_['six_gemstone'] = 'Drahokam'; $_['six_stone_shape'] = 'Tvar kamene'; $_['six_ring_size'] = 'Velikost prstenu (EU)'; $_['six_jewelry_style'] = 'Styl';
 $_['six_sort_carat_asc'] = 'Karáty: vzestupně'; $_['six_sort_carat_desc'] = 'Karáty: sestupně'; $_['six_sort_weight_asc'] = 'Hmotnost: vzestupně'; $_['six_sort_weight_desc'] = 'Hmotnost: sestupně'; $_['six_sort_name_asc'] = 'Název: A–Z';
+$_['six_checkout_kicker'] = 'Bezpečná objednávka';
+$_['six_checkout_intro'] = 'Ještě několik údajů a váš šperk se vydá na cestu z našeho ateliéru k vám.';
+$_['six_checkout_help_title'] = 'Můžeme pomoci?';
+$_['six_checkout_help_copy'] = 'Náš ateliér vám poradí s velikostí, doručením i posledními detaily.';
+$_['six_checkout_assurance_title'] = 'Váš šperk, pečlivě připravený.';
+$_['six_checkout_assurance_copy'] = 'Každou objednávku kontrolujeme, ručně balíme a pojišťujeme na celou cestu.';

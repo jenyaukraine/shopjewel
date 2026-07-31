@@ -16,7 +16,7 @@ $_['six_collections'] = 'Kollektionen'; $_['six_collections_title'] = 'Zeitlose 
 $_['six_moment_yes'] = 'Ja'; $_['six_moment_forever'] = 'Für immer'; $_['six_moment_new_life'] = 'Neues Leben'; $_['six_moment_victory'] = 'Mein Sieg'; $_['six_moment_deserve'] = 'Ich verdiene es'; $_['six_moment_with_me'] = 'Bei mir';
 $_['six_specials'] = 'Private Angebote'; $_['six_lab_title'] = 'Dieselbe Brillanz. Ein moderner Ursprung.'; $_['six_shop_lab'] = 'Labordiamanten shoppen'; $_['six_discover_more'] = 'Mehr entdecken';
 $_['six_story_title'] = 'Ein Leben wird in Momenten erinnert.'; $_['six_read_story'] = 'Unsere Geschichte'; $_['six_follow'] = 'Folge uns auf Instagram';
-$_['six_newsletter_title'] = 'Willkommen in der Welt von Six Moments'; $_['six_newsletter_copy'] = 'Entdecke neue Kollektionen, exklusive Veröffentlichungen und private Angebote zuerst'; $_['six_join'] = 'Jetzt beitreten';
+$_['six_newsletter_title'] = 'Willkommen in der Welt von Six Moments'; $_['six_newsletter_copy'] = 'Entdecke neue Kollektionen, exklusive Veröffentlichungen und private Angebote zuerst'; $_['six_newsletter_gift'] = 'Willkommensgeschenk'; $_['six_newsletter_first_order'] = 'Für deine erste Bestellung'; $_['six_newsletter_note'] = 'Dein persönlicher Code kommt per E-Mail. Du kannst dich jederzeit abmelden.'; $_['six_join'] = 'Jetzt beitreten';
 $_['six_footer_about'] = 'Über uns'; $_['six_footer_care'] = 'Kundenservice'; $_['six_footer_info'] = 'Informationen'; $_['six_footer_account'] = 'Konto'; $_['six_shipping'] = 'Versand & Lieferung'; $_['six_returns'] = 'Rückgabe & Umtausch';
 $_['six_product_code'] = 'Artikelnummer'; $_['six_weight'] = 'Gewicht'; $_['six_stock'] = 'Verfügbarkeit'; $_['six_in_stock'] = 'Auf Lager'; $_['six_preorder'] = 'Auf Bestellung'; $_['six_add_to_bag'] = 'In den Warenkorb';
 $_['six_hint_title'] = 'Geschenk-Hinweis senden'; $_['six_hint_copy'] = 'Sende diskret einen Hinweis zu diesem Schmuckstück.'; $_['six_send_hint'] = 'Hinweis senden'; $_['six_may_like'] = 'Das könnte dir gefallen';
@@ -71,3 +71,9 @@ $_['six_contact_hours_value'] = 'Montag–Freitag · 10:00–18:00';
 $_['six_contact_submit'] = 'Dem Atelier schreiben';
 $_['six_gemstone'] = 'Edelstein'; $_['six_stone_shape'] = 'Steinform'; $_['six_ring_size'] = 'Ringgröße (EU)'; $_['six_jewelry_style'] = 'Stil';
 $_['six_sort_carat_asc'] = 'Karat: aufsteigend'; $_['six_sort_carat_desc'] = 'Karat: absteigend'; $_['six_sort_weight_asc'] = 'Gewicht: aufsteigend'; $_['six_sort_weight_desc'] = 'Gewicht: absteigend'; $_['six_sort_name_asc'] = 'Name: A–Z';
+$_['six_checkout_kicker'] = 'Sicherer Checkout';
+$_['six_checkout_intro'] = 'Nur noch wenige Angaben, dann beginnt die Reise Ihres Schmuckstücks aus unserem Atelier zu Ihnen.';
+$_['six_checkout_help_title'] = 'Dürfen wir helfen?';
+$_['six_checkout_help_copy'] = 'Unser Atelier berät Sie gern zu Größe, Lieferung oder letzten Details.';
+$_['six_checkout_assurance_title'] = 'Sorgfältig für Sie vorbereitet.';
+$_['six_checkout_assurance_copy'] = 'Jede Bestellung wird geprüft, von Hand verpackt und vollständig versichert versendet.';

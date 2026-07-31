@@ -24,8 +24,8 @@ class Theme extends \Opencart\System\Engine\Controller {
             $data['title'] = '6MOMENTS Jewelry';
         }
 
-        $data['six_stylesheet'] = 'extension/sixmoments/catalog/view/stylesheet/sixmoments.css?v=1.2.2';
-        $data['six_script'] = 'extension/sixmoments/catalog/view/javascript/sixmoments.js?v=1.2.4';
+        $data['six_stylesheet'] = 'extension/sixmoments/catalog/view/stylesheet/sixmoments.css?v=1.2.3';
+        $data['six_script'] = 'extension/sixmoments/catalog/view/javascript/sixmoments.js?v=1.2.6';
         $data['six_favicon'] = '/image/catalog/sixmoments/favicon.svg?v=2';
         $data['six_og_image'] = '/image/catalog/sixmoments/og-store.png';
         $data['six_home'] = $this->url->link('common/home', 'language=' . $this->config->get('config_language'));
@@ -64,7 +64,7 @@ class Theme extends \Opencart\System\Engine\Controller {
         if (!$this->enabled()) return;
         $route = 'extension/sixmoments/common/footer';
         $this->words($data);
-        $data['six_script'] = 'extension/sixmoments/catalog/view/javascript/sixmoments.js?v=1.2.4';
+        $data['six_script'] = 'extension/sixmoments/catalog/view/javascript/sixmoments.js?v=1.2.6';
         $lang = 'language=' . $this->config->get('config_language');
         $data['six_home'] = $this->url->link('common/home', $lang);
         $data['six_about_url'] = $this->url->link('extension/sixmoments/page/about', $lang);
@@ -155,6 +155,18 @@ class Theme extends \Opencart\System\Engine\Controller {
         $product_id = (int)($data['product_id'] ?? 0);
         $this->load->model('catalog/product');
         $info = $product_id ? $this->model_catalog_product->getProduct($product_id) : [];
+        $image = html_entity_decode((string)($info['image'] ?? ''), ENT_QUOTES, 'UTF-8');
+
+        // OpenCart's configured 500 px thumbnail is visibly soft in the large
+        // product gallery. Serve the uploaded original for both the preview and
+        // zoom so the browser never has to upscale a compressed cache derivative.
+        if ($image !== '' && is_file(DIR_IMAGE . $image)) {
+            $image_path = implode('/', array_map('rawurlencode', explode('/', ltrim(str_replace('\\', '/', $image), '/'))));
+            $original_image = rtrim(HTTP_SERVER, '/') . '/image/' . $image_path;
+            $data['thumb'] = $original_image;
+            $data['popup'] = $original_image;
+        }
+
         $data['six_product_weight'] = $this->displayWeight($info);
         $data['six_tags'] = array_filter(array_map('trim', explode(',', (string)($info['tag'] ?? ''))));
         $data['six_moment'] = $this->momentFromTags($data['six_tags']);
@@ -274,6 +286,17 @@ class Theme extends \Opencart\System\Engine\Controller {
         $lang = 'language=' . $this->config->get('config_language');
         $data['continue'] = $this->url->link('extension/sixmoments/page/catalog', $lang);
         $data['six_shipping_url'] = $this->url->link('extension/sixmoments/page/shipping', $lang);
+    }
+
+    public function checkout(string &$route, array &$data, string &$code = '', string &$output = ''): void {
+        if (!$this->enabled()) return;
+
+        $route = 'extension/sixmoments/checkout/checkout';
+        $this->words($data);
+        $lang = 'language=' . $this->config->get('config_language');
+        $data['six_cart_url'] = $this->url->link('checkout/cart', $lang);
+        $data['six_catalog_url'] = $this->url->link('extension/sixmoments/page/catalog', $lang);
+        $data['six_contact_url'] = $this->url->link('information/contact', $lang);
     }
 
     public function blog(string &$route, array &$data, string &$code = '', string &$output = ''): void {

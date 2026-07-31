@@ -16,7 +16,7 @@ $_['six_collections'] = 'Коллекции'; $_['six_collections_title'] = 'О�
 $_['six_moment_yes'] = 'Да'; $_['six_moment_forever'] = 'Навсегда'; $_['six_moment_new_life'] = 'Новая жизнь'; $_['six_moment_victory'] = 'Моя победа'; $_['six_moment_deserve'] = 'Я заслуживаю'; $_['six_moment_with_me'] = 'С собой';
 $_['six_specials'] = 'Спецпредложения'; $_['six_specials_title'] = 'Выбрано для этого момента'; $_['six_lab_kicker'] = 'Лабораторные бриллианты'; $_['six_lab_title'] = 'То же сияние. Современное происхождение.'; $_['six_shop_lab'] = 'Смотреть лабораторные'; $_['six_discover_more'] = 'Узнать больше';
 $_['six_story_kicker'] = 'Наша философия'; $_['six_story_title'] = 'Жизнь запоминается моментами.'; $_['six_read_story'] = 'Читать нашу историю'; $_['six_follow'] = 'Подписывайтесь на Instagram'; $_['six_follow_copy'] = 'Вневременное вдохновение и эксклюзивные новинки';
-$_['six_newsletter_title'] = 'Присоединяйтесь к миру Six Moments'; $_['six_newsletter_copy'] = 'Первыми узнавайте о новых коллекциях, эксклюзивных релизах и закрытых предложениях'; $_['six_newsletter_placeholder'] = 'Ваш email'; $_['six_join'] = 'Присоединиться';
+$_['six_newsletter_title'] = 'Присоединяйтесь к миру Six Moments'; $_['six_newsletter_copy'] = 'Первыми узнавайте о новых коллекциях, эксклюзивных релизах и закрытых предложениях'; $_['six_newsletter_placeholder'] = 'Ваш email'; $_['six_newsletter_gift'] = 'Приветственный подарок'; $_['six_newsletter_first_order'] = 'На первый заказ'; $_['six_newsletter_note'] = 'Персональный код придёт на вашу почту. Отписаться можно в любое время.'; $_['six_join'] = 'Присоединиться';
 $_['six_footer_about'] = 'О нас'; $_['six_footer_care'] = 'Покупателям'; $_['six_footer_info'] = 'Информация'; $_['six_footer_account'] = 'Аккаунт'; $_['six_shipping'] = 'Доставка'; $_['six_returns'] = 'Возврат и обмен'; $_['six_faq'] = 'Вопросы и ответы'; $_['six_care'] = 'Уход за украшениями'; $_['six_size_guide'] = 'Размерная сетка';
 $_['six_product_code'] = 'Артикул'; $_['six_weight'] = 'Вес'; $_['six_stock'] = 'Наличие'; $_['six_in_stock'] = 'В наличии'; $_['six_preorder'] = 'Под заказ'; $_['six_add_to_bag'] = 'Добавить в корзину';
 $_['six_hint_title'] = 'Намекнуть на подарок'; $_['six_hint_copy'] = 'Отправьте близкому деликатную подсказку об этом украшении.'; $_['six_sender_name'] = 'Ваше имя'; $_['six_sender_email'] = 'Ваш email'; $_['six_recipient_name'] = 'Имя получателя'; $_['six_recipient_email'] = 'Email получателя'; $_['six_message'] = 'Личное сообщение'; $_['six_send_hint'] = 'Отправить намек'; $_['six_may_like'] = 'Может понравиться';
@@ -75,3 +75,9 @@ $_['six_contact_hours_value'] = 'Понедельник—пятница · 10:0
 $_['six_contact_submit'] = 'Написать в мастерскую';
 $_['six_gemstone'] = 'Камень'; $_['six_stone_shape'] = 'Форма огранки'; $_['six_ring_size'] = 'Размер кольца (EU)'; $_['six_jewelry_style'] = 'Стиль';
 $_['six_sort_carat_asc'] = 'Каратность: по возрастанию'; $_['six_sort_carat_desc'] = 'Каратность: по убыванию'; $_['six_sort_weight_asc'] = 'Вес: по возрастанию'; $_['six_sort_weight_desc'] = 'Вес: по убыванию'; $_['six_sort_name_asc'] = 'Название: А–Я';
+$_['six_checkout_kicker'] = 'Безопасное оформление';
+$_['six_checkout_intro'] = 'Ещё несколько деталей — и украшение отправится из нашей мастерской к вам.';
+$_['six_checkout_help_title'] = 'Нужна помощь?';
+$_['six_checkout_help_copy'] = 'Мастерская поможет с размером, доставкой и любыми финальными деталями.';
+$_['six_checkout_assurance_title'] = 'Ваше украшение — с особой заботой.';
+$_['six_checkout_assurance_copy'] = 'Каждый заказ проходит проверку, упаковывается вручную и полностью страхуется на время доставки.';

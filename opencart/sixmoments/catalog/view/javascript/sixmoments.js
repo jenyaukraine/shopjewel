@@ -127,6 +127,172 @@
   const filterToggle = document.querySelector('[data-six-filter-toggle]');
   if (filterPanel && filterToggle) filterToggle.addEventListener('click', () => filterPanel.classList.toggle('is-open'));
 
+  // Product imagery: keep the preview edge-to-edge and open a real, controllable lightbox.
+  const productGallery = document.querySelector('[data-six-product-gallery]');
+  if (productGallery) setupProductZoom(productGallery);
+  function setupProductZoom(gallery) {
+    const trigger = gallery.querySelector('[data-six-zoom-open]');
+    const dialog = gallery.querySelector('[data-six-zoom]');
+    const stage = gallery.querySelector('[data-six-zoom-stage]');
+    const image = gallery.querySelector('[data-six-zoom-image]');
+    const preview = trigger && trigger.querySelector('.product-photo--detail');
+    const closeButton = gallery.querySelector('[data-six-zoom-close]');
+    const zoomInButton = gallery.querySelector('[data-six-zoom-in]');
+    const zoomOutButton = gallery.querySelector('[data-six-zoom-out]');
+    const resetButton = gallery.querySelector('[data-six-zoom-reset]');
+    const level = gallery.querySelector('[data-six-zoom-level]');
+    if (!trigger || !dialog || !stage || !image || !closeButton) return;
+
+    const minScale = 1;
+    const maxScale = 4;
+    const zoomStep = .5;
+    let scale = minScale;
+    let panX = 0;
+    let panY = 0;
+    let dragPointer = null;
+    let lastX = 0;
+    let lastY = 0;
+    let moved = false;
+    let returnFocus = trigger;
+
+    function clamp(value, minimum, maximum) {
+      return Math.min(maximum, Math.max(minimum, value));
+    }
+
+    function applyTransform() {
+      const bounds = stage.getBoundingClientRect();
+      const maxX = bounds.width * (scale - 1) / 2;
+      const maxY = bounds.height * (scale - 1) / 2;
+      panX = clamp(panX, -maxX, maxX);
+      panY = clamp(panY, -maxY, maxY);
+      image.style.transform = 'translate3d(' + panX + 'px,' + panY + 'px,0) scale(' + scale + ')';
+      stage.classList.toggle('is-zoomed', scale > minScale);
+      if (level) level.textContent = Math.round(scale * 100) + '%';
+      if (zoomOutButton) zoomOutButton.disabled = scale <= minScale;
+      if (zoomInButton) zoomInButton.disabled = scale >= maxScale;
+      if (resetButton) resetButton.disabled = scale <= minScale;
+    }
+
+    function setScale(nextScale, clientX, clientY) {
+      const next = clamp(nextScale, minScale, maxScale);
+      if (next === scale) return;
+      const bounds = stage.getBoundingClientRect();
+      const pointX = typeof clientX === 'number' ? clientX - bounds.left - bounds.width / 2 : 0;
+      const pointY = typeof clientY === 'number' ? clientY - bounds.top - bounds.height / 2 : 0;
+      const ratio = next / scale;
+      panX = pointX - ratio * (pointX - panX);
+      panY = pointY - ratio * (pointY - panY);
+      scale = next;
+      if (scale === minScale) { panX = 0; panY = 0; }
+      applyTransform();
+    }
+
+    function resetZoom() {
+      scale = minScale;
+      panX = 0;
+      panY = 0;
+      applyTransform();
+    }
+
+    function openZoom(event) {
+      if (event) event.preventDefault();
+      returnFocus = document.activeElement || trigger;
+      image.src = trigger.getAttribute('href') || image.src;
+      resetZoom();
+      dialog.classList.add('is-open');
+      dialog.setAttribute('aria-hidden', 'false');
+      body.classList.add('product-zoom-is-open');
+      window.setTimeout(() => closeButton.focus(), 30);
+    }
+
+    function closeZoom() {
+      dialog.classList.remove('is-open');
+      dialog.setAttribute('aria-hidden', 'true');
+      body.classList.remove('product-zoom-is-open');
+      resetZoom();
+      if (returnFocus && returnFocus.focus) returnFocus.focus();
+    }
+
+    trigger.addEventListener('click', openZoom);
+    trigger.addEventListener('pointermove', (event) => {
+      const bounds = trigger.getBoundingClientRect();
+      trigger.style.setProperty('--zoom-x', ((event.clientX - bounds.left) / bounds.width * 100) + '%');
+      trigger.style.setProperty('--zoom-y', ((event.clientY - bounds.top) / bounds.height * 100) + '%');
+    });
+    closeButton.addEventListener('click', closeZoom);
+    dialog.addEventListener('click', (event) => { if (event.target === dialog) closeZoom(); });
+    if (zoomInButton) zoomInButton.addEventListener('click', () => setScale(scale + zoomStep));
+    if (zoomOutButton) zoomOutButton.addEventListener('click', () => setScale(scale - zoomStep));
+    if (resetButton) resetButton.addEventListener('click', resetZoom);
+
+    stage.addEventListener('wheel', (event) => {
+      event.preventDefault();
+      setScale(scale + (event.deltaY < 0 ? zoomStep : -zoomStep), event.clientX, event.clientY);
+    }, { passive: false });
+    stage.addEventListener('click', (event) => {
+      if (moved) { moved = false; return; }
+      if (scale === minScale) setScale(2.5, event.clientX, event.clientY);
+    });
+    stage.addEventListener('pointerdown', (event) => {
+      if (scale === minScale || !event.isPrimary) return;
+      dragPointer = event.pointerId;
+      lastX = event.clientX;
+      lastY = event.clientY;
+      moved = false;
+      stage.setPointerCapture(event.pointerId);
+      stage.classList.add('is-dragging');
+    });
+    stage.addEventListener('pointermove', (event) => {
+      if (dragPointer !== event.pointerId) return;
+      const deltaX = event.clientX - lastX;
+      const deltaY = event.clientY - lastY;
+      if (Math.abs(deltaX) + Math.abs(deltaY) > 2) moved = true;
+      panX += deltaX;
+      panY += deltaY;
+      lastX = event.clientX;
+      lastY = event.clientY;
+      applyTransform();
+    });
+    function endDrag(event) {
+      if (dragPointer !== event.pointerId) return;
+      dragPointer = null;
+      stage.classList.remove('is-dragging');
+      if (stage.hasPointerCapture(event.pointerId)) stage.releasePointerCapture(event.pointerId);
+    }
+    stage.addEventListener('pointerup', endDrag);
+    stage.addEventListener('pointercancel', endDrag);
+
+    gallery.querySelectorAll('[data-six-zoom-source]').forEach((source) => source.addEventListener('click', (event) => {
+      event.preventDefault();
+      gallery.querySelectorAll('[data-six-zoom-source]').forEach((item) => item.removeAttribute('aria-current'));
+      source.setAttribute('aria-current', 'true');
+      trigger.setAttribute('href', source.getAttribute('href') || trigger.getAttribute('href'));
+      if (preview && source.getAttribute('href')) preview.src = source.getAttribute('href');
+    }));
+
+    document.addEventListener('keydown', (event) => {
+      if (!dialog.classList.contains('is-open')) return;
+      if (event.key === 'Escape') { closeZoom(); return; }
+      if (event.key === '+' || event.key === '=') { event.preventDefault(); setScale(scale + zoomStep); }
+      if (event.key === '-') { event.preventDefault(); setScale(scale - zoomStep); }
+      if (event.key === '0') { event.preventDefault(); resetZoom(); }
+      if (event.key === 'ArrowLeft') { event.preventDefault(); panX += 40; applyTransform(); }
+      if (event.key === 'ArrowRight') { event.preventDefault(); panX -= 40; applyTransform(); }
+      if (event.key === 'ArrowUp') { event.preventDefault(); panY += 40; applyTransform(); }
+      if (event.key === 'ArrowDown') { event.preventDefault(); panY -= 40; applyTransform(); }
+      if (event.key === 'Tab') {
+        const focusable = Array.from(dialog.querySelectorAll('button:not(:disabled)'));
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }
+    });
+
+    applyTransform();
+  }
+
   // Give every successful add-to-bag action the same tactile, branded response.
   const pendingCartTriggers = [];
   const cartFlightTimes = new WeakMap();
@@ -225,37 +391,6 @@
     animation.finished.then(() => pulseCartTarget(target)).catch(() => {}).finally(() => flight.remove());
   }
 
-  async function submitProductCard(form, button) {
-    if (!button || button.disabled) return;
-    const action = button.getAttribute('formaction') || form.getAttribute('action');
-    if (!action) return;
-    let redirecting = false;
-    button.disabled = true;
-    button.setAttribute('aria-busy', 'true');
-    try {
-      const response = await fetch(action.replaceAll('&amp;', '&'), {
-        method: (button.getAttribute('formmethod') || form.getAttribute('method') || 'POST').toUpperCase(),
-        body: new FormData(form),
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-      });
-      const json = await response.json();
-      if (json.success) {
-        flyToBag(button, json.total, true);
-      } else if (json.redirect) {
-        // Let the full bag animation land before opening required product options.
-        redirecting = true;
-        window.setTimeout(() => { window.location.href = json.redirect; }, 1350);
-      }
-    } catch {
-      button.classList.remove('is-sending-to-bag');
-    } finally {
-      if (!redirecting) {
-        button.disabled = false;
-        button.removeAttribute('aria-busy');
-      }
-    }
-  }
-
   document.addEventListener('click', (event) => {
     const button = event.target.closest('button, input[type="submit"]');
     if (!button) return;
@@ -265,8 +400,7 @@
       markCartTrigger(button, false);
       flyToBag(button, null, false);
     } else if (button.id === 'button-cart' || action.includes('checkout/cart.add')) {
-      const isProductCard = form && form.matches('.card-footer[data-oc-toggle="ajax"]');
-      markCartTrigger(button, !isProductCard);
+      markCartTrigger(button, true);
       flyToBag(button, null, false);
     }
   }, true);
@@ -275,14 +409,6 @@
     const form = event.target;
     const button = event.submitter || form.querySelector('button[type="submit"], input[type="submit"]');
     const action = (button && button.getAttribute('formaction')) || form.getAttribute('action') || '';
-    if (form.matches('.card-footer[data-oc-toggle="ajax"]') && action.includes('checkout/cart.add')) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      markCartTrigger(button, false);
-      flyToBag(button, null, false);
-      submitProductCard(form, button);
-      return;
-    }
     if ((button && button.id === 'button-cart') || action.includes('checkout/cart.add')) markCartTrigger(button, true);
   }, true);
 

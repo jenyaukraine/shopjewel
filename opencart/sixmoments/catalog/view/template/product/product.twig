@@ -3,9 +3,27 @@
   <nav class="breadcrumbs">{% for breadcrumb in breadcrumbs %}<a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a>{% if not loop.last %}<span>/</span>{% endif %}{% endfor %}</nav>
   {{ content_top }}
   <section class="product-detail">
-    <div class="product-gallery">
-      {% if thumb %}<a class="product-visual" href="{{ popup }}"><img class="product-photo--detail" src="{{ thumb }}" alt="{{ heading_title }}"><span class="product-zoom-hint">＋ Zoom</span></a>{% endif %}
-      {% if images %}<div class="product-thumbnails">{% for image in images %}<a href="{{ image.popup }}"><img src="{{ image.thumb }}" alt="{{ heading_title }}"></a>{% endfor %}</div>{% endif %}
+    <div class="product-gallery" data-six-product-gallery>
+      {% if thumb %}
+        <a class="product-visual" href="{{ popup }}" data-six-zoom-open aria-controls="six-product-zoom" aria-haspopup="dialog">
+          <img class="product-photo product-photo--detail" src="{{ thumb }}" alt="{{ heading_title }}">
+          <span class="product-zoom-hint"><span aria-hidden="true">＋</span> Zoom</span>
+        </a>
+        <div id="six-product-zoom" class="product-zoom-dialog" data-six-zoom aria-hidden="true" role="dialog" aria-modal="true" aria-label="{{ heading_title }} — zoom">
+          <button class="product-zoom-close" type="button" data-six-zoom-close aria-label="Close zoom"><span aria-hidden="true">×</span></button>
+          <div class="product-zoom-stage" data-six-zoom-stage>
+            <img class="product-zoom-image" data-six-zoom-image src="{{ popup }}" alt="{{ heading_title }}" draggable="false">
+          </div>
+          <div class="product-zoom-toolbar" aria-label="Zoom controls">
+            <button type="button" data-six-zoom-out aria-label="Zoom out">−</button>
+            <output data-six-zoom-level aria-live="polite">100%</output>
+            <button type="button" data-six-zoom-in aria-label="Zoom in">＋</button>
+            <button class="product-zoom-reset" type="button" data-six-zoom-reset>Fit</button>
+          </div>
+          <p class="product-zoom-help">Scroll or use ＋/− to zoom · drag to move · Esc to close</p>
+        </div>
+      {% endif %}
+      {% if images %}<div class="product-thumbnails">{% for image in images %}<a href="{{ image.popup }}" data-six-zoom-source><img src="{{ image.thumb }}" alt="{{ heading_title }}"></a>{% endfor %}</div>{% endif %}
     </div>
     <div class="product-copy">
       <p class="eyebrow">{{ six_moment }}</p><h1>{{ heading_title }}</h1>

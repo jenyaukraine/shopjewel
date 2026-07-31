@@ -2,10 +2,15 @@
   <footer class="site-footer">
     <section class="footer-signup">
       <div class="footer-signup-inner">
-        <div class="footer-signup-heading"><p class="eyebrow">{{ six_newsletter_kicker }}</p><h2>{{ six_newsletter_title }}</h2><p class="footer-signup-copy">{{ six_newsletter_copy }}</p></div>
+        <div class="footer-signup-heading"><p class="eyebrow"><span aria-hidden="true"></span>{{ six_newsletter_kicker }}</p><h2>{{ six_newsletter_title }}</h2><p class="footer-signup-copy">{{ six_newsletter_copy }}</p></div>
         <div class="footer-signup-card">
+          <div class="footer-offer-heading">
+            <span class="footer-mail-icon" aria-hidden="true">&#9993;</span>
+            <div class="footer-offer-copy"><p>{{ six_newsletter_gift }}</p><span>{{ six_newsletter_first_order }}</span></div>
+            <strong>&minus;15%</strong>
+          </div>
           <form action="{{ six_newsletter_action }}" method="post" data-six-ajax-form><label class="sr-only" for="six-email">{{ six_newsletter_placeholder }}</label><input id="six-email" name="email" type="email" placeholder="{{ six_newsletter_placeholder }}" required><input type="hidden" name="consent" value="1"><button type="submit"><span>{{ six_join }}</span><span>↗</span></button></form>
-          <p class="footer-signup-note">{{ six_newsletter_copy }}</p><p class="six-form-status" role="status"></p>
+          <p class="footer-signup-note">{{ six_newsletter_note }}</p><p class="six-form-status" role="status"></p>
         </div>
       </div>
     </section>
