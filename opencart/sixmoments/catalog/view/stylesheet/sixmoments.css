@@ -82,10 +82,15 @@ html, body { overflow-x: hidden; }
 .option-values input { position:absolute; opacity:0; }
 .option-values span { min-height:46px; display:grid; place-items:center; padding:8px 15px; border:1px solid var(--line); }
 .option-values input:checked + span { color:#fff; background:var(--ink); border-color:var(--ink); }
-.quantity-row { display:grid; grid-template-columns:auto 80px 1fr; align-items:center; gap:12px; margin-top:25px; }
+.product-copy { --purchase-leading: 152px; }
+.quantity-row { display:grid; grid-template-columns:48px 80px minmax(0,1fr); align-items:center; gap:12px; margin-top:25px; }
 .quantity-row .add-button { margin:0; }
-.product-secondary-actions { margin-top:12px; text-align:center; }
-.product-secondary-actions button { border:0; background:transparent; text-decoration:underline; }
+.product-secondary-actions { margin:10px 0 0 var(--purchase-leading); }
+.product-secondary-actions button { width:100%; min-height:48px; display:flex; align-items:center; justify-content:center; gap:11px; padding:0 24px; border:1px solid var(--ink); color:var(--ink); background:transparent; font-size:10px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; transition:color .25s, background .25s, transform .25s; }
+.product-secondary-actions button:hover { color:#fff; background:var(--ink); transform:translateY(-2px); }
+.product-secondary-actions button:active { transform:translateY(0); }
+.wishlist-icon { width:17px; height:17px; flex:0 0 17px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; transition:fill .25s; }
+.product-secondary-actions button:hover .wishlist-icon { fill:currentColor; }
 .product-accordion > div { padding-bottom:20px; color:var(--muted); font:15px/1.7 var(--serif); }
 .recommendations { padding:80px 4vw; }
 .story-page { max-width:1500px; margin:auto; padding:80px 5vw 130px; }
@@ -141,6 +146,7 @@ html, body { overflow-x: hidden; }
   .comparison-row { grid-template-columns:1fr; gap:7px; }
   .quantity-row { grid-template-columns:70px 1fr; }
   .quantity-row label { grid-column:1/-1; }
+  .product-copy { --purchase-leading: 0px; }
   .quiz-options { grid-template-columns:1fr; }
 }
 

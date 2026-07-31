@@ -73,6 +73,23 @@ test("OpenCart product cards keep the platform AJAX cart handler active", async 
   assert.match(controller, /sixmoments\.js\?v=1\.2\.6/);
 });
 
+test("OpenCart checkout uses the branded responsive purchase flow", async () => {
+  const [template, stylesheet, controller, installer] = await Promise.all([
+    readFile(new URL("../opencart/sixmoments/catalog/view/template/checkout/checkout.twig", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/sixmoments/catalog/view/stylesheet/sixmoments.css", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/sixmoments/catalog/controller/event/theme.php", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/sixmoments/admin/model/module/sixmoments.php", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(template, /class="checkout-page"/);
+  assert.match(template, /class="checkout-page-grid"/);
+  assert.match(template, /id="checkout-(?:register|shipping-method|payment-method|confirm)"/);
+  assert.match(stylesheet, /\.checkout-page-grid\s*\{[^}]*grid-template-columns:/s);
+  assert.match(stylesheet, /@media \(max-width: 820px\)[\s\S]*?\.checkout-page-grid\s*\{[^}]*grid-template-columns:\s*1fr/s);
+  assert.match(controller, /extension\/sixmoments\/checkout\/checkout/);
+  assert.match(installer, /catalog\/view\/checkout\/checkout\/before/);
+});
+
 test("OpenCart product zoom fills the preview and provides an interactive lightbox", async () => {
   const [template, stylesheet, script] = await Promise.all([
     readFile(new URL("../opencart/sixmoments/catalog/view/template/product/product.twig", import.meta.url), "utf8"),

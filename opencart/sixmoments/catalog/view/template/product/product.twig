@@ -47,7 +47,7 @@
         <input type="hidden" name="product_id" value="{{ product_id }}" id="input-product-id">
         <div id="error-quantity" class="invalid-feedback"></div>
       </form>
-      <form method="post" data-oc-toggle="ajax" class="product-secondary-actions"><button type="submit" formaction="{{ wishlist_add }}">♡ {{ six_wishlist }}</button><input type="hidden" name="product_id" value="{{ product_id }}"></form>
+      <form method="post" data-oc-toggle="ajax" class="product-secondary-actions"><button type="submit" formaction="{{ wishlist_add }}"><svg class="wishlist-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.7a5.5 5.5 0 0 0-7.8 0L12 5.8l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21.3l7.8-7.7 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg><span>{{ six_wishlist }}</span></button><input type="hidden" name="product_id" value="{{ product_id }}"></form>
       <ul class="product-details-list"><li><strong>{{ stock }}</strong></li><li><a href="{{ six_shipping_url }}">{{ six_delivery }}</a></li><li>{{ six_packaging }}</li></ul>
       <details class="product-accordion" open><summary>{{ six_description }}</summary><div>{{ description|raw }}</div></details>
       {% if attribute_groups %}<details class="product-accordion"><summary>{{ six_details }}</summary><dl class="specification-block">{% for group in attribute_groups %}{% for attribute in group.attribute %}<div><dt>{{ attribute.name }}</dt><dd>{{ attribute.text }}</dd></div>{% endfor %}{% endfor %}</dl></details>{% endif %}
