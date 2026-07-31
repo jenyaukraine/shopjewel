@@ -18,16 +18,18 @@ class Theme extends \Opencart\System\Engine\Controller {
         $route = 'extension/sixmoments/common/header';
         $this->words($data);
 
+        if (($data['title'] ?? '') === 'Your Store') {
+            $data['title'] = '6MOMENTS Jewelry';
+        }
+
         $data['six_stylesheet'] = 'extension/sixmoments/catalog/view/stylesheet/sixmoments.css';
         $data['six_script'] = 'extension/sixmoments/catalog/view/javascript/sixmoments.js';
         $data['six_home'] = $this->url->link('common/home', 'language=' . $this->config->get('config_language'));
-        $data['six_catalog'] = $this->url->link('product/search', 'language=' . $this->config->get('config_language'));
-        $data['six_about'] = $this->url->link('extension/sixmoments/page/about', 'language=' . $this->config->get('config_language'));
-        $data['six_diamonds'] = $this->url->link('extension/sixmoments/page/diamonds', 'language=' . $this->config->get('config_language'));
-        $data['six_quiz'] = $this->url->link('extension/sixmoments/page/quiz', 'language=' . $this->config->get('config_language'));
-        $data['six_shipping'] = $this->url->link('extension/sixmoments/page/shipping', 'language=' . $this->config->get('config_language'));
-        $data['six_faq'] = $this->url->link('extension/sixmoments/page/faq', 'language=' . $this->config->get('config_language'));
-        $data['six_journal'] = $this->url->link('cms/blog', 'language=' . $this->config->get('config_language'));
+        $data['six_catalog_url'] = $this->url->link('product/search', 'language=' . $this->config->get('config_language'));
+        $data['six_about_url'] = $this->url->link('extension/sixmoments/page/about', 'language=' . $this->config->get('config_language'));
+        $data['six_diamonds_url'] = $this->url->link('extension/sixmoments/page/diamonds', 'language=' . $this->config->get('config_language'));
+        $data['six_quiz_url'] = $this->url->link('extension/sixmoments/page/quiz', 'language=' . $this->config->get('config_language'));
+        $data['six_journal_url'] = $this->url->link('cms/blog', 'language=' . $this->config->get('config_language'));
         $data['six_special'] = $this->url->link('product/special', 'language=' . $this->config->get('config_language'));
         $data['six_cart_count'] = $this->cart->countProducts();
         $data['six_language_code'] = $this->config->get('config_language');
@@ -49,16 +51,16 @@ class Theme extends \Opencart\System\Engine\Controller {
         $this->words($data);
         $lang = 'language=' . $this->config->get('config_language');
         $data['six_home'] = $this->url->link('common/home', $lang);
-        $data['six_about'] = $this->url->link('extension/sixmoments/page/about', $lang);
-        $data['six_diamonds'] = $this->url->link('extension/sixmoments/page/diamonds', $lang);
-        $data['six_shipping'] = $this->url->link('extension/sixmoments/page/shipping', $lang);
-        $data['six_faq'] = $this->url->link('extension/sixmoments/page/faq', $lang);
-        $data['six_journal'] = $this->url->link('cms/blog', $lang);
-        $data['six_catalog'] = $this->url->link('product/search', $lang);
-        $data['six_contact'] = $this->url->link('information/contact', $lang);
-        $data['six_privacy'] = $this->url->link('extension/sixmoments/page/privacy', $lang);
-        $data['six_imprint'] = $this->url->link('extension/sixmoments/page/imprint', $lang);
-        $data['six_terms'] = $this->url->link('extension/sixmoments/page/terms', $lang);
+        $data['six_about_url'] = $this->url->link('extension/sixmoments/page/about', $lang);
+        $data['six_diamonds_url'] = $this->url->link('extension/sixmoments/page/diamonds', $lang);
+        $data['six_shipping_url'] = $this->url->link('extension/sixmoments/page/shipping', $lang);
+        $data['six_faq_url'] = $this->url->link('extension/sixmoments/page/faq', $lang);
+        $data['six_journal_url'] = $this->url->link('cms/blog', $lang);
+        $data['six_catalog_url'] = $this->url->link('product/search', $lang);
+        $data['six_contact_url'] = $this->url->link('information/contact', $lang);
+        $data['six_privacy_url'] = $this->url->link('extension/sixmoments/page/privacy', $lang);
+        $data['six_imprint_url'] = $this->url->link('extension/sixmoments/page/imprint', $lang);
+        $data['six_terms_url'] = $this->url->link('extension/sixmoments/page/terms', $lang);
         $data['six_newsletter_action'] = $this->url->link('extension/sixmoments/newsletter.subscribe', $lang);
         $data['six_instagram'] = $this->config->get('module_sixmoments_instagram');
         $data['six_email'] = $this->config->get('module_sixmoments_email');
