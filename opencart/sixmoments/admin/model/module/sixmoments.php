@@ -41,6 +41,8 @@ class Sixmoments extends \Opencart\System\Engine\Model {
             ['sixmoments_category', 'catalog/view/product/category/before', 'extension/sixmoments/event/theme.listing'],
             ['sixmoments_search', 'catalog/view/product/search/before', 'extension/sixmoments/event/theme.listing'],
             ['sixmoments_special', 'catalog/view/product/special/before', 'extension/sixmoments/event/theme.listing'],
+            ['sixmoments_cart', 'catalog/view/checkout/cart/before', 'extension/sixmoments/event/theme.cart'],
+            ['sixmoments_cart_list', 'catalog/view/checkout/cart_list/before', 'extension/sixmoments/event/theme.cartList'],
             ['sixmoments_blog', 'catalog/view/cms/blog/before', 'extension/sixmoments/event/theme.blog'],
             ['sixmoments_blog_info', 'catalog/view/cms/blog_info/before', 'extension/sixmoments/event/theme.blogInfo'],
             ['sixmoments_information', 'catalog/view/information/information/before', 'extension/sixmoments/event/theme.information'],
@@ -373,7 +375,7 @@ class Sixmoments extends \Opencart\System\Engine\Model {
 
     public function uninstall(): void {
         $this->load->model('setting/event');
-        foreach (['sixmoments_header','sixmoments_footer','sixmoments_home','sixmoments_product','sixmoments_product_thumb','sixmoments_category','sixmoments_search','sixmoments_special','sixmoments_blog','sixmoments_blog_info','sixmoments_information','sixmoments_contact'] as $code) {
+        foreach (['sixmoments_header','sixmoments_footer','sixmoments_home','sixmoments_product','sixmoments_product_thumb','sixmoments_category','sixmoments_search','sixmoments_special','sixmoments_cart','sixmoments_cart_list','sixmoments_blog','sixmoments_blog_info','sixmoments_information','sixmoments_contact'] as $code) {
             $this->model_setting_event->deleteEventByCode($code);
         }
 
