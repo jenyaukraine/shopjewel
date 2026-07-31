@@ -1,53 +1,53 @@
-# 6MOMENTS
+# 6MOMENTS for OpenCart
 
-Fine-jewelry storefront built with Next.js, vinext, and Cloudflare Workers.
+Продакшен работает на чистом OpenCart `4.1.0.3`. В продакшен-сборку код 6MOMENTS попадает только из расширения `opencart/sixmoments` и при каждом релизе накладывается поверх неизменённого ядра OpenCart.
 
-## Commerce MVP
+## Архитектура
 
-- Filterable and searchable catalog with type, moment, metal, stone, availability, delivery, and price controls.
-- Product attributes, configurable variants, engraving, gift hints, bundles, and recommendations.
-- Persistent shopping bag and independent USD, EUR, CZK, and UAH display currencies.
-- Browser-based CSV catalog workspace at `/admin/catalog`.
+- `sixmoments-store` — PHP/Apache с официальным исходным кодом OpenCart и текущей версией модуля.
+- `sixmoments-db` — MySQL 8.4.
+- Docker volumes хранят БД, загруженные изображения и файлы цифровых товаров независимо от релиза контейнера. Код ядра и vendor-зависимости никогда не берутся из volume.
+- Caddy остаётся общим edge-прокси и отправляет трафик в `sixmoments-store:3000`.
 
-The CSV workspace validates and previews these columns before publishing:
+При первой загрузке с пустой БД контейнер запускает штатный CLI-инсталлятор OpenCart. На последующих запусках он только пересоздаёт конфигурацию из переменных окружения и сохраняет данные магазина.
 
-```text
-id,slug,sku,title,category,moment,price,old_price,metal,fineness,stone_type,availability,delivery_days,weight,carat,stone_count,image,subtitle,description
+## Локальный запуск
+
+```powershell
+Copy-Item .env.example .env
+# Замените все пароли и OPENCART_ADMIN_EMAIL в .env.
+docker network inspect web-edge 2>$null; if ($LASTEXITCODE) { docker network create web-edge }
+docker compose --env-file .env -f docker-compose.yml -f docker-compose.local.yml up -d --build
 ```
 
-Imported records persist on the current device. The catalog data model is intentionally API-ready so the same fields can be moved to a production database and shared with a mobile application.
+Магазин будет доступен на `http://localhost:8080/`.
 
-## Local development
+После первой установки откройте `/admin/`, затем один раз установите и включите `6MOMENTS Storefront Suite` в разделе Extensions → Extensions → Modules. Последующие деплои заменяют файлы уже установленного модуля и не требуют его переустановки.
 
-Requires Node.js 22.13 or newer.
+## Проверка и пакет модуля
 
-```bash
-npm ci
-npm run dev
+CI проверяет `install.json`, выполняет `php -l` для всех PHP-файлов, собирает чистый Docker-образ и публикует артефакт `sixmoments.ocmod.zip`. Такой же пакет локально можно получить командой:
+
+```powershell
+Compress-Archive -Path opencart/sixmoments/* -DestinationPath sixmoments.ocmod.zip -Force
 ```
 
-## Validation
+## Продакшен-деплой
 
-```bash
-npm run lint
-npx tsc --noEmit
-npm test
-```
+Push в `main`, затрагивающий Docker-инфраструктуру или `opencart/sixmoments`, запускает workflow `.github/workflows/deploy-production.yml`. Перед заменой контейнера он создаёт дамп MySQL, собирает образ из чистого OpenCart и текущего модуля, затем проверяет публичный URL.
 
-`npm test` creates the production build and verifies the rendered home,
-collection, and story pages.
+Repository variables:
 
-## Production container
+- `DEPLOY_ENABLED=true`
+- `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_PATH`
+- `PRODUCTION_URL`
+- `OPENCART_ADMIN_EMAIL`
+- опционально `OPENCART_ADMIN_USERNAME`
 
-The included Docker and Compose files run the site on port 3000 and connect it
-to the shared external `web-edge` network:
+Production secrets:
 
-```bash
-docker network inspect web-edge >/dev/null 2>&1 || docker network create web-edge
-docker compose up -d --build
-```
+- `DEPLOY_SSH_KEY`, `DEPLOY_KNOWN_HOSTS`
+- `OPENCART_DB_PASSWORD`, `OPENCART_DB_ROOT_PASSWORD`
+- `OPENCART_ADMIN_PASSWORD` (от 5 до 20 символов — ограничение CLI-инсталлятора OpenCart 4.1)
 
-The included Caddy configuration routes
-`https://katya-dev.duckdns.org/` to the `sixmoments-store` container. Merge that
-site block into the shared Caddy configuration and reload Caddy after the
-container becomes healthy.
+Бэкапы БД хранятся в `$DEPLOY_PATH/backups` 14 дней. Значения admin-переменных используются только при первой установке; дальнейшие учётные данные живут в БД OpenCart.

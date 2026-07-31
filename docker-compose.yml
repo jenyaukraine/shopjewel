@@ -1,34 +1,79 @@
+name: sixmoments
+
 services:
-  sixmoments:
-    build:
-      context: .
-    image: sixmoments-store:latest
-    container_name: sixmoments-store
+  db:
+    image: mysql:8.4
+    container_name: sixmoments-db
     restart: unless-stopped
     environment:
-      NODE_ENV: production
-      PORT: 3000
-      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
-      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
-      ADMIN_SESSION_SECRET: ${ADMIN_SESSION_SECRET:-}
-      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-}
-    expose:
-      - "3000"
+      MYSQL_DATABASE: ${OPENCART_DB_NAME:-opencart}
+      MYSQL_USER: ${OPENCART_DB_USER:-opencart}
+      MYSQL_PASSWORD: ${OPENCART_DB_PASSWORD:?Set OPENCART_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${OPENCART_DB_ROOT_PASSWORD:?Set OPENCART_DB_ROOT_PASSWORD}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
     networks:
-      - edge
-    mem_limit: 512m
-    cpus: 0.75
+      - backend
+    volumes:
+      - opencart-db:/var/lib/mysql
+    mem_limit: 768m
     pids_limit: 256
     security_opt:
       - no-new-privileges:true
+
+  opencart:
+    build:
+      context: .
+      args:
+        OPENCART_VERSION: ${OPENCART_VERSION:-4.1.0.3}
+    image: sixmoments-opencart:${MODULE_IMAGE_TAG:-latest}
+    container_name: sixmoments-store
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      OPENCART_HTTP_SERVER: ${OPENCART_HTTP_SERVER:?Set OPENCART_HTTP_SERVER}
+      OPENCART_ADMIN_USERNAME: ${OPENCART_ADMIN_USERNAME:-admin}
+      OPENCART_ADMIN_PASSWORD: ${OPENCART_ADMIN_PASSWORD:?Set OPENCART_ADMIN_PASSWORD}
+      OPENCART_ADMIN_EMAIL: ${OPENCART_ADMIN_EMAIL:?Set OPENCART_ADMIN_EMAIL}
+      OPENCART_DB_HOST: db
+      OPENCART_DB_PORT: 3306
+      OPENCART_DB_NAME: ${OPENCART_DB_NAME:-opencart}
+      OPENCART_DB_USER: ${OPENCART_DB_USER:-opencart}
+      OPENCART_DB_PASSWORD: ${OPENCART_DB_PASSWORD:?Set OPENCART_DB_PASSWORD}
+      OPENCART_DB_PREFIX: ${OPENCART_DB_PREFIX:-oc_}
+    expose:
+      - "3000"
+    networks:
+      - backend
+      - edge
     volumes:
-      - sixmoments-data:/app/.wrangler
+      - opencart-image:/var/www/html/image
+      - opencart-download:/var/www/html/system/storage/download
+    mem_limit: 768m
+    pids_limit: 256
+    security_opt:
+      - no-new-privileges:true
 
 networks:
+  backend:
+    internal: true
   edge:
     name: web-edge
     external: true
 
 volumes:
-  sixmoments-data:
+  opencart-db:
+    name: sixmoments-opencart-db
+  opencart-image:
+    name: sixmoments-opencart-image
+  opencart-download:
+    name: sixmoments-opencart-download

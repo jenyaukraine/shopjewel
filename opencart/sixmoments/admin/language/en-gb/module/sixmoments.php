@@ -1,0 +1,23 @@
+<?php
+$_['heading_title'] = '6MOMENTS Storefront Suite';
+$_['text_extension'] = 'Extensions';
+$_['text_success'] = 'Success: 6MOMENTS settings have been saved.';
+$_['text_edit'] = 'Configure the storefront';
+$_['text_installed'] = 'The storefront, languages, currencies and service modules are installed automatically when this module is enabled.';
+$_['entry_status'] = 'Status';
+$_['entry_instagram'] = 'Instagram URL';
+$_['entry_email'] = 'Atelier email';
+$_['entry_phone'] = 'Phone';
+$_['entry_catalog_category'] = 'Main catalog category ID';
+$_['entry_lab_category'] = 'Lab-grown category ID';
+$_['entry_quiz_rules'] = 'Quiz rules (JSON)';
+$_['entry_stripe_key'] = 'Stripe secret key';
+$_['entry_stripe_webhook'] = 'Stripe webhook signing secret';
+$_['entry_stripe_status'] = 'Stripe Checkout status';
+$_['entry_dhl_cost'] = 'DHL flat rate';
+$_['entry_dpd_cost'] = 'DPD flat rate';
+$_['help_stripe'] = 'Use sk_test_ while testing. The value is stored in OpenCart settings and is never sent to the browser.';
+$_['button_save'] = 'Save';
+$_['button_back'] = 'Back';
+$_['error_permission'] = 'Warning: You do not have permission to modify 6MOMENTS.';
+$_['error_json'] = 'Quiz rules must contain valid JSON.';

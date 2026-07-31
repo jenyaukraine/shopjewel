@@ -1,13 +1,23 @@
-name: Deploy production
+name: Validate and deploy OpenCart module
 
 on:
   push:
     branches:
       - main
+    paths:
+      - ".github/workflows/deploy-production.yml"
+      - ".dockerignore"
+      - ".env.example"
+      - "Caddyfile"
+      - "Dockerfile"
+      - "docker-compose.yml"
+      - "docker-compose.local.yml"
+      - "docker/**"
+      - "opencart/sixmoments/**"
   workflow_dispatch:
 
 concurrency:
-  group: production
+  group: production-opencart
   cancel-in-progress: false
 
 permissions:
@@ -17,36 +27,58 @@ env:
   DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
   DEPLOY_USER: ${{ vars.DEPLOY_USER }}
   DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
-  PRODUCTION_URL: https://katya-dev.duckdns.org/
+  PRODUCTION_URL: ${{ vars.PRODUCTION_URL || 'https://katya-dev.duckdns.org/' }}
+  OPENCART_VERSION: "4.1.0.3"
 
 jobs:
   validate:
-    name: Validate
+    name: Validate module and image
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v7
+      - name: Validate extension manifest
+        run: |
+          set -Eeuo pipefail
+          jq --exit-status '
+            .name == "6MOMENTS Storefront Suite" and
+            (.version | test("^[0-9]+\\.[0-9]+\\.[0-9]+$")) and
+            (.author | length > 0)
+          ' opencart/sixmoments/install.json >/dev/null
+
+      - name: Check PHP syntax
+        run: |
+          set -Eeuo pipefail
+          docker run --rm \
+            --volume "$PWD/opencart/sixmoments:/module:ro" \
+            php:8.3-cli \
+            sh -ec 'find /module -type f -name "*.php" -exec php -l {} \;'
+
+      - name: Build installable module package
+        run: |
+          set -Eeuo pipefail
+          cd opencart/sixmoments
+          zip -qr ../../sixmoments.ocmod.zip .
+          unzip -l ../../sixmoments.ocmod.zip
+
+      - name: Build clean OpenCart image with module overlay
+        run: |
+          set -Eeuo pipefail
+          docker build \
+            --build-arg "OPENCART_VERSION=$OPENCART_VERSION" \
+            --tag "sixmoments-opencart:${GITHUB_SHA}" \
+            .
+
+      - name: Upload module package
+        uses: actions/upload-artifact@v6
         with:
-          node-version: "22.13.0"
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run lint
-        run: npm run lint
-
-      - name: Check TypeScript
-        run: npx tsc --noEmit
-
-      - name: Build and test
-        run: npm test
+          name: sixmoments-opencart-module
+          path: sixmoments.ocmod.zip
+          if-no-files-found: error
 
   deploy:
-    name: Deploy to Hetzner
+    name: Deploy module to Hetzner
     needs: validate
     if: vars.DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
@@ -61,10 +93,10 @@ jobs:
         env:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
-          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
-          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
-          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-          ADMIN_SESSION_SECRET: ${{ secrets.ADMIN_SESSION_SECRET }}
+          OPENCART_DB_PASSWORD: ${{ secrets.OPENCART_DB_PASSWORD }}
+          OPENCART_DB_ROOT_PASSWORD: ${{ secrets.OPENCART_DB_ROOT_PASSWORD }}
+          OPENCART_ADMIN_PASSWORD: ${{ secrets.OPENCART_ADMIN_PASSWORD }}
+          OPENCART_ADMIN_EMAIL: ${{ vars.OPENCART_ADMIN_EMAIL }}
         run: |
           set -Eeuo pipefail
           test -n "$DEPLOY_HOST" || { echo "Missing repository variable DEPLOY_HOST"; exit 1; }
@@ -73,10 +105,10 @@ jobs:
           test "$DEPLOY_PATH" != "/" || { echo "DEPLOY_PATH cannot be /"; exit 1; }
           test -n "$DEPLOY_SSH_KEY" || { echo "Missing production secret DEPLOY_SSH_KEY"; exit 1; }
           test -n "$DEPLOY_KNOWN_HOSTS" || { echo "Missing production secret DEPLOY_KNOWN_HOSTS"; exit 1; }
-          test -n "$STRIPE_SECRET_KEY" || { echo "Missing production secret STRIPE_SECRET_KEY"; exit 1; }
-          test -n "$STRIPE_WEBHOOK_SECRET" || { echo "Missing production secret STRIPE_WEBHOOK_SECRET"; exit 1; }
-          test -n "$ADMIN_PASSWORD" || { echo "Missing production secret ADMIN_PASSWORD"; exit 1; }
-          test -n "$ADMIN_SESSION_SECRET" || { echo "Missing production secret ADMIN_SESSION_SECRET"; exit 1; }
+          test -n "$OPENCART_DB_PASSWORD" || { echo "Missing production secret OPENCART_DB_PASSWORD"; exit 1; }
+          test -n "$OPENCART_DB_ROOT_PASSWORD" || { echo "Missing production secret OPENCART_DB_ROOT_PASSWORD"; exit 1; }
+          test -n "$OPENCART_ADMIN_PASSWORD" || { echo "Missing production secret OPENCART_ADMIN_PASSWORD"; exit 1; }
+          test -n "$OPENCART_ADMIN_EMAIL" || { echo "Missing repository variable OPENCART_ADMIN_EMAIL"; exit 1; }
 
       - name: Configure SSH
         env:
@@ -89,48 +121,49 @@ jobs:
           printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
           chmod 600 "$HOME/.ssh/deploy_key" "$HOME/.ssh/known_hosts"
 
-      - name: Package committed source
-        run: git archive --format=tar.gz --output=shopjewel.tar.gz "$GITHUB_SHA"
+      - name: Package deployment source
+        run: git archive --format=tar.gz --output=sixmoments-opencart.tar.gz "$GITHUB_SHA"
 
       - name: Prepare protected runtime settings
         env:
-          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
-          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
-          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-          ADMIN_SESSION_SECRET: ${{ secrets.ADMIN_SESSION_SECRET }}
+          OPENCART_DB_PASSWORD: ${{ secrets.OPENCART_DB_PASSWORD }}
+          OPENCART_DB_ROOT_PASSWORD: ${{ secrets.OPENCART_DB_ROOT_PASSWORD }}
+          OPENCART_ADMIN_PASSWORD: ${{ secrets.OPENCART_ADMIN_PASSWORD }}
+          OPENCART_ADMIN_EMAIL: ${{ vars.OPENCART_ADMIN_EMAIL }}
+          OPENCART_ADMIN_USERNAME: ${{ vars.OPENCART_ADMIN_USERNAME || 'admin' }}
         run: |
           set -Eeuo pipefail
           umask 077
           {
-            printf 'STRIPE_SECRET_KEY=%s\n' "$STRIPE_SECRET_KEY"
-            printf 'STRIPE_WEBHOOK_SECRET=%s\n' "$STRIPE_WEBHOOK_SECRET"
-            printf 'ADMIN_PASSWORD=%s\n' "$ADMIN_PASSWORD"
-            printf 'ADMIN_SESSION_SECRET=%s\n' "$ADMIN_SESSION_SECRET"
-            printf 'NEXT_PUBLIC_SITE_URL=%s\n' "$PRODUCTION_URL"
+            printf 'OPENCART_VERSION=%s\n' "$OPENCART_VERSION"
+            printf 'OPENCART_HTTP_SERVER=%s\n' "$PRODUCTION_URL"
+            printf 'OPENCART_DB_NAME=opencart\n'
+            printf 'OPENCART_DB_USER=opencart\n'
+            printf 'OPENCART_DB_PASSWORD=%s\n' "$OPENCART_DB_PASSWORD"
+            printf 'OPENCART_DB_ROOT_PASSWORD=%s\n' "$OPENCART_DB_ROOT_PASSWORD"
+            printf 'OPENCART_DB_PREFIX=oc_\n'
+            printf 'OPENCART_ADMIN_USERNAME=%s\n' "$OPENCART_ADMIN_USERNAME"
+            printf 'OPENCART_ADMIN_PASSWORD=%s\n' "$OPENCART_ADMIN_PASSWORD"
+            printf 'OPENCART_ADMIN_EMAIL=%s\n' "$OPENCART_ADMIN_EMAIL"
+            printf 'MODULE_IMAGE_TAG=%s\n' "$GITHUB_SHA"
           } > .env.runtime
 
       - name: Upload release
         run: |
           set -Eeuo pipefail
-          scp \
-            -i "$HOME/.ssh/deploy_key" \
-            -o IdentitiesOnly=yes \
-            shopjewel.tar.gz \
-            "$DEPLOY_USER@$DEPLOY_HOST:/tmp/shopjewel-$GITHUB_SHA.tar.gz"
-          scp \
-            -i "$HOME/.ssh/deploy_key" \
-            -o IdentitiesOnly=yes \
+          scp -i "$HOME/.ssh/deploy_key" -o IdentitiesOnly=yes \
+            sixmoments-opencart.tar.gz \
+            "$DEPLOY_USER@$DEPLOY_HOST:/tmp/sixmoments-$GITHUB_SHA.tar.gz"
+          scp -i "$HOME/.ssh/deploy_key" -o IdentitiesOnly=yes \
             .env.runtime \
-            "$DEPLOY_USER@$DEPLOY_HOST:/tmp/shopjewel-$GITHUB_SHA.env"
+            "$DEPLOY_USER@$DEPLOY_HOST:/tmp/sixmoments-$GITHUB_SHA.env"
 
-      - name: Build and restart production container
+      - name: Deploy clean OpenCart with current module
         run: |
           set -Eeuo pipefail
-          ssh \
-            -i "$HOME/.ssh/deploy_key" \
-            -o IdentitiesOnly=yes \
+          ssh -i "$HOME/.ssh/deploy_key" -o IdentitiesOnly=yes \
             "$DEPLOY_USER@$DEPLOY_HOST" \
-            "DEPLOY_PATH='$DEPLOY_PATH' RELEASE_SHA='$GITHUB_SHA' ARCHIVE='/tmp/shopjewel-$GITHUB_SHA.tar.gz' RUNTIME_ENV='/tmp/shopjewel-$GITHUB_SHA.env' bash -s" <<'REMOTE'
+            "DEPLOY_PATH='$DEPLOY_PATH' RELEASE_SHA='$GITHUB_SHA' ARCHIVE='/tmp/sixmoments-$GITHUB_SHA.tar.gz' RUNTIME_ENV='/tmp/sixmoments-$GITHUB_SHA.env' bash -s" <<'REMOTE'
           set -Eeuo pipefail
 
           case "$DEPLOY_PATH" in
@@ -138,13 +171,23 @@ jobs:
           esac
 
           release_dir="$DEPLOY_PATH/releases/$RELEASE_SHA"
-          mkdir -p "$release_dir"
+          mkdir -p "$release_dir" "$DEPLOY_PATH/backups"
           tar -xzf "$ARCHIVE" -C "$release_dir"
           mv "$RUNTIME_ENV" "$release_dir/.env.runtime"
           chmod 600 "$release_dir/.env.runtime"
-          cd "$release_dir"
 
-          docker compose --env-file .env.runtime -p sixmoments build --pull
+          if docker container inspect sixmoments-db >/dev/null 2>&1; then
+            backup="$DEPLOY_PATH/backups/opencart-$(date -u +%Y%m%dT%H%M%SZ).sql.gz"
+            docker exec sixmoments-db sh -c \
+              'exec mysqldump --single-transaction --no-tablespaces -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE"' \
+              | gzip > "$backup"
+            find "$DEPLOY_PATH/backups" -type f -name 'opencart-*.sql.gz' -mtime +14 -delete
+          fi
+
+          cd "$release_dir"
+          docker network inspect web-edge >/dev/null 2>&1 || docker network create web-edge
+          docker compose --env-file .env.runtime -p sixmoments build --pull opencart
+          docker compose --env-file .env.runtime -p sixmoments up -d db
 
           if docker container inspect sixmoments-store >/dev/null 2>&1; then
             docker rm -f sixmoments-store
@@ -159,12 +202,12 @@ jobs:
       - name: Verify production
         run: |
           set -Eeuo pipefail
-          for attempt in $(seq 1 24); do
+          for attempt in $(seq 1 36); do
             if curl --fail --silent --show-error --max-time 15 "$PRODUCTION_URL" >/dev/null; then
               echo "Production is healthy: $PRODUCTION_URL"
               exit 0
             fi
-            echo "Waiting for production ($attempt/24)"
+            echo "Waiting for OpenCart ($attempt/36)"
             sleep 5
           done
           echo "Production did not become healthy in time"

@@ -1,0 +1,10 @@
+{{ header }}
+<section class="interior-hero catalog-hero"><div><p class="eyebrow">{{ six_collections }}</p><h1>{{ heading_title }}</h1><div class="catalog-description">{{ description }}</div></div></section>
+<div id="product-listing" class="catalog-layout container-fluid">
+  {{ content_top }}
+  {% if categories %}<nav class="category-pills">{% for category in categories %}<a href="{{ category.href }}">{{ category.name }}</a>{% endfor %}</nav>{% endif %}
+  <div class="catalog-toolbar"><strong>{{ products|length }} pieces</strong><div><label>{{ six_sort }} <select onchange="location=this.value">{% for item in sorts %}<option value="{{ item.href }}"{% if item.value == sort ~ '-' ~ order %} selected{% endif %}>{{ item.text }}</option>{% endfor %}</select></label><label>{{ entry_show }} <select onchange="location=this.value">{% for item in limits %}<option value="{{ item.href }}"{% if item.value == limit %} selected{% endif %}>{{ item.text }}</option>{% endfor %}</select></label></div></div>
+  {% if products %}<div class="collection-grid product-grid">{% for product in products %}{{ product }}{% endfor %}</div><div class="pagination-shell">{{ pagination }}<p>{{ results }}</p></div>{% else %}<p class="empty-state">{{ six_no_products }}</p>{% endif %}
+  {{ content_bottom }}
+</div>
+{{ footer }}

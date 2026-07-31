@@ -1,0 +1,2 @@
+<div class="text-end"><button type="button" id="button-confirm" class="btn btn-primary">{{ button_confirm }}</button></div>
+<script>$('#button-confirm').on('click',function(){$.ajax({url:'{{ confirm }}',dataType:'json',beforeSend:function(){$('#button-confirm').prop('disabled',true);},complete:function(){$('#button-confirm').prop('disabled',false);},success:function(json){if(json.error){$('#alert').prepend('<div class="alert alert-danger">'+json.error+'</div>');}if(json.redirect){location=json.redirect;}}});});</script>

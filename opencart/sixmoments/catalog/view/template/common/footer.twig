@@ -1,0 +1,25 @@
+  </main>
+  <footer class="site-footer">
+    <section class="footer-signup">
+      <div class="footer-signup-inner">
+        <div class="footer-signup-heading"><p class="eyebrow">{{ six_newsletter_kicker }}</p><h2>{{ six_newsletter_title }}</h2><p class="footer-signup-copy">{{ six_newsletter_copy }}</p></div>
+        <div class="footer-signup-card">
+          <form action="{{ six_newsletter_action }}" method="post" data-six-ajax-form><label class="sr-only" for="six-email">{{ six_newsletter_placeholder }}</label><input id="six-email" name="email" type="email" placeholder="{{ six_newsletter_placeholder }}" required><input type="hidden" name="consent" value="1"><button type="submit"><span>{{ six_join }}</span><span>↗</span></button></form>
+          <p class="footer-signup-note">{{ six_newsletter_copy }}</p><p class="six-form-status" role="status"></p>
+        </div>
+      </div>
+    </section>
+    <div class="footer-main">
+      <div class="footer-brand"><a class="wordmark wordmark--footer" href="{{ six_home }}">6MOMENTS</a><p>{{ six_story_copy }}</p><ul><li>◇ {{ six_contact }}</li><li>◎ {{ six_shipping }}</li><li>✉ <a href="mailto:{{ six_email }}">{{ six_email }}</a></li></ul><div class="footer-socials"><a href="{{ six_instagram }}" target="_blank" rel="noopener">IG</a><a href="{{ six_journal }}">J</a></div></div>
+      <nav class="footer-column"><h3>{{ six_footer_about }}</h3><a href="{{ six_about }}">{{ six_about }}</a><a href="{{ six_about }}#craft">Craftsmanship</a><a href="{{ six_diamonds }}">{{ six_diamonds }}</a><a href="{{ six_journal }}">{{ six_journal }}</a><a href="{{ six_contact }}">{{ six_contact }}</a></nav>
+      <nav class="footer-column"><h3>{{ six_footer_care }}</h3><a href="{{ six_shipping }}">{{ six_shipping }}</a><a href="{{ six_terms }}#returns">{{ six_returns }}</a><a href="{{ six_faq }}">{{ six_faq }}</a><a href="{{ six_faq }}#care">{{ six_care }}</a><a href="{{ six_faq }}#size">{{ six_size_guide }}</a></nav>
+      <nav class="footer-column"><h3>{{ six_footer_info }}</h3><a href="{{ six_privacy }}">{{ six_privacy }}</a><a href="{{ six_terms }}">{{ six_terms }}</a><a href="{{ six_shipping }}#payment">{{ six_payment }}</a><a href="{{ six_terms }}#warranty">{{ six_warranty }}</a><a href="{{ order }}">{{ six_track }}</a></nav>
+      <nav class="footer-column"><h3>{{ six_footer_account }}</h3><a href="{{ account }}">{{ six_account }}</a><a href="{{ wishlist }}">{{ six_wishlist }}</a><a href="{{ order }}">{{ six_order_history }}</a><a href="{{ account }}">{{ six_login }}</a><a href="{{ newsletter }}">{{ six_newsletter }}</a></nav>
+    </div>
+    <div class="footer-bottom"><p>© {{ six_year }} 6MOMENTS. {{ six_copyright }}</p><nav><a href="{{ six_privacy }}">{{ six_privacy }}</a><a href="{{ six_imprint }}">{{ six_imprint_title }}</a></nav><p>Where moments become legacy</p></div>
+  </footer>
+</div>
+{{ cookie }}
+<script src="{{ bootstrap }}"></script><script src="{{ six_script }}"></script>
+{% for script in scripts %}<script src="{{ script.href }}"></script>{% endfor %}
+</body></html>

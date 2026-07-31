@@ -1,0 +1,4 @@
+services:
+  opencart:
+    ports:
+      - "127.0.0.1:${OPENCART_HOST_PORT:-8080}:3000"
