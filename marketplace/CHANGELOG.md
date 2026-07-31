@@ -24,7 +24,7 @@
 ## 2.1.0 — 2026-07-31
 
 - OpenCart 4.0.2.3 and 4.1.x compatibility.
-- Auto, Light and Dark storefront modes with a saved visitor preference.
+- Consistent polished light storefront styling.
 - Page Builder, Mega Menu, progressive catalog filters and optional One Page Checkout.
 - Reviewed AI Product Description and AI SEO workflows through a configurable HTTPS provider.
 - Core-safe event integration without replacing OpenCart files.

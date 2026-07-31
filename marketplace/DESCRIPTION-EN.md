@@ -8,7 +8,7 @@ NOVERAILE is a storefront suite for visual catalogs such as fashion, beauty, jew
 - Catalog-driven Mega Menu and a configurable native menu output slot.
 - Progressive catalog filters for facets, price, stock, sorting and pagination, with browser-history and a no-JavaScript fallback.
 - Optional responsive One Page Checkout.
-- Auto, Light and Dark color modes with a saved visitor preference.
+- Consistent polished light storefront styling.
 - Responsive home, catalog, product, cart, checkout, account, blog and information templates.
 - Search suggestions, product zoom, gift hints, newsletter consent capture and product bundles.
 - Optional demo catalog installed by a separate administrator action; a regular installation does not delete or replace merchant catalog data.

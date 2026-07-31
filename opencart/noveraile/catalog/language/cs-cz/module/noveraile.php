@@ -1,8 +1,4 @@
 <?php
-$_['six_theme_toggle'] = 'Přepnout světlý nebo tmavý motiv';
-$_['six_theme_title'] = 'Vzhled';
-$_['six_theme_light'] = 'Světlý motiv';
-$_['six_theme_dark'] = 'Tmavý motiv';
 require DIR_EXTENSION . 'noveraile/catalog/language/en-gb/module/noveraile.php';
 $_['six_catalog_moment_01'] = 'Okamžik 01 — Slib';
 $_['six_catalog_moment_02'] = 'Okamžik 02 — Spojení';

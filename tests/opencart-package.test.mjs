@@ -43,8 +43,8 @@ test("mobile categories are deduplicated and use semantic jewellery icons", asyn
   assert.match(event, /\$category_names\s*=\s*\[\]/);
   assert.match(event, /mb_strtolower/);
   assert.match(event, /'icon'\s*=>\s*\$this->categoryIcon\(\$name\)/);
-  assert.match(event, /noveraile\.css\?v=2\.2\.0\.7/);
-  assert.match(event, /noveraile\.js\?v=2\.2\.0\.3/);
+  assert.match(event, /noveraile\.css\?v=2\.2\.0\.8/);
+  assert.match(event, /noveraile\.js\?v=2\.2\.0\.4/);
   assert.match(header, /class="mobile-category-icon"/);
   assert.match(header, /category\.icon == 'earring'/);
   assert.match(header, /class="mobile-main-icon"/);
@@ -53,9 +53,7 @@ test("mobile categories are deduplicated and use semantic jewellery icons", asyn
   assert.doesNotMatch(header, />⌂ \{\{ text_home \}\}/);
   assert.match(stylesheet, /\.mobile-category-icon svg/);
   assert.match(stylesheet, /\.mobile-main-icon svg/);
-  assert.match(stylesheet, /html\[data-theme="dark"\] \.mobile-drawer-header\s*\{[^}]*background:\s*#201e1b/);
-  assert.match(stylesheet, /html\[data-theme="dark"\] \.mobile-category-icon\s*\{[^}]*background:\s*transparent;[^}]*border:\s*0/);
-  assert.match(stylesheet, /html\[data-theme="dark"\] \.mobile-category-icon svg\s*\{[^}]*stroke:\s*currentColor/);
+  assert.doesNotMatch(stylesheet, /data-theme|theme-toggle|prefers-color-scheme/);
 });
 
 test("product listing presents unique image-led category cards", async () => {
@@ -76,21 +74,20 @@ test("product listing presents unique image-led category cards", async () => {
   assert.match(stylesheet, /linear-gradient\(180deg,rgba\(18,15,12,\.05\)/);
 });
 
-test("mobile theme control is a labelled, stateful switch", async () => {
-  const [header, stylesheet, script] = await Promise.all([
+test("storefront is light-only and ships no theme control", async () => {
+  const [header, stylesheet, script, admin, settings, adminTemplate] = await Promise.all([
     readFile(path.join(root, "catalog/view/template/common/header.twig"), "utf8"),
     readFile(path.join(root, "catalog/view/stylesheet/noveraile.css"), "utf8"),
     readFile(path.join(root, "catalog/view/javascript/noveraile.js"), "utf8"),
+    readFile(path.join(root, "admin/controller/module/noveraile.php"), "utf8"),
+    readFile(path.join(root, "admin/model/module/noveraile.php"), "utf8"),
+    readFile(path.join(root, "admin/view/template/module/noveraile.twig"), "utf8"),
   ]);
 
-  assert.match(header, /class="mobile-theme-toggle"[^>]+role="switch"[^>]+aria-checked="false"/);
-  assert.match(header, /data-six-theme-label/);
-  assert.match(header, /class="mobile-theme-switch-knob"/);
-  assert.match(stylesheet, /\.mobile-theme-switch-knob\s*\{/);
-  assert.match(stylesheet, /html\[data-theme="dark"\] \.mobile-theme-switch-knob\s*\{[^}]*translateX/);
-  assert.match(stylesheet, /> button:not\(\.mobile-theme-toggle\)/);
-  assert.match(script, /setAttribute\('aria-checked', String\(isDark\)\)/);
-  assert.match(script, /button\.dataset\.darkLabel/);
+  assert.match(header, /name="color-scheme" content="light"/);
+  for (const source of [header, stylesheet, script, admin, settings, adminTemplate]) {
+    assert.doesNotMatch(source, /data-theme|theme-toggle|noveraile-theme|prefers-color-scheme|module_noveraile_color_mode/);
+  }
 });
 
 test("mobile catalog and cart keep primary content above the fold", async () => {
@@ -163,10 +160,10 @@ test("all six sales-readiness promises are implemented and release-checked", asy
   assert.match(admin, /version_compare\(VERSION, '4\.0\.2\.3', '<'\)/);
   assert.match(workflow, /opencart: \["4\.0\.2\.3", "4\.1\.0\.3"\]/);
 
-  assert.match(header, /data-theme=/);
-  assert.match(header, /data-six-theme-toggle/);
-  assert.match(script, /localStorage\.setItem\('noveraile-theme'/);
-  assert.match(stylesheet, /html\[data-theme="dark"\]/);
+  assert.match(header, /name="color-scheme" content="light"/);
+  assert.doesNotMatch(header, /data-theme|data-six-theme-toggle/);
+  assert.doesNotMatch(script, /noveraile-theme|prefers-color-scheme/);
+  assert.doesNotMatch(stylesheet, /data-theme|theme-toggle/);
 
   assert.match(header, /name="viewport"/);
   assert.match(stylesheet, /@media \(max-width: 360px\)/);

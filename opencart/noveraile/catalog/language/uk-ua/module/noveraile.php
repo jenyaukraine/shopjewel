@@ -1,8 +1,4 @@
 <?php
-$_['six_theme_toggle'] = 'Перемкнути світлу або темну тему';
-$_['six_theme_title'] = 'Оформлення';
-$_['six_theme_light'] = 'Світла тема';
-$_['six_theme_dark'] = 'Темна тема';
 require DIR_EXTENSION . 'noveraile/catalog/language/en-gb/module/noveraile.php';
 $_['six_catalog_moment_01'] = 'Момент 01 — Обіцянка';
 $_['six_catalog_moment_02'] = 'Момент 02 — Союз';

@@ -1,8 +1,4 @@
 <?php
-$_['six_theme_toggle'] = 'Helles oder dunkles Design wechseln';
-$_['six_theme_title'] = 'Darstellung';
-$_['six_theme_light'] = 'Helles Design';
-$_['six_theme_dark'] = 'Dunkles Design';
 require DIR_EXTENSION . 'noveraile/catalog/language/en-gb/module/noveraile.php';
 $_['six_catalog_moment_01'] = 'Moment 01 — Versprechen';
 $_['six_catalog_moment_02'] = 'Moment 02 — Verbindung';

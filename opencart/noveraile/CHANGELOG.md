@@ -25,7 +25,7 @@
 ## 2.1.0 — 2026-07-31
 
 - Added OpenCart 4.0.2.3 compatibility alongside OpenCart 4.1.x.
-- Added Auto, Light and Dark modes with a persistent visitor switch.
+- Added a consistent polished storefront appearance.
 - Added Page Builder, Mega Menu, progressive catalog filters and optional One Page Checkout.
 - Added reviewed AI Product Description and AI SEO workflows through a configurable HTTPS provider.
 - Added LCP image priority, lazy loading, stable dimensions and deferred below-fold rendering.

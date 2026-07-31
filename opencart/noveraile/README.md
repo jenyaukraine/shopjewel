@@ -35,7 +35,7 @@ The separate demo action creates five languages (English, German, Czech, Russian
 
 ## Included features
 
-- Auto, Light and Dark color modes with a persistent visitor switch.
+- A consistent light storefront presentation.
 - Core Web Vitals foundations: priority LCP media, lazy below-fold images, stable media sizing and deferred long-page rendering.
 - Configurable Blog route and optional native OpenCart/MegaMenu output; canonical links, analytics and registered module assets remain intact.
 - Visual Page Builder for reordering and disabling homepage sections, plus editable hero copy.
