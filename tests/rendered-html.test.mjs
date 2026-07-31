@@ -55,6 +55,17 @@ test("OpenCart benefits use the storefront line icons instead of placeholder gly
   assert.doesNotMatch(benefits, /[◇◎✦○]/);
 });
 
+test("OpenCart hero carousel never serves the legacy image with baked-in text", async () => {
+  const controller = await readFile(
+    new URL("../opencart/sixmoments/catalog/controller/event/theme.php", import.meta.url),
+    "utf8",
+  );
+
+  const heroSlides = controller.match(/\$data\['six_hero_slides'\]\s*=\s*\[[\s\S]*?\n\s*\];/)?.[0] ?? "";
+  assert.match(heroSlides, /editorial\/lab-grown-diamond\.png/);
+  assert.doesNotMatch(heroSlides, /hero-6moments\.webp/);
+});
+
 test("OpenCart product cards keep the platform AJAX cart handler active", async () => {
   const [script, controller] = await Promise.all([
     readFile(

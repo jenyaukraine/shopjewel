@@ -101,7 +101,7 @@ class Theme extends \Opencart\System\Engine\Controller {
         $data['six_asset'] = '/image/catalog/sixmoments/';
         $data['six_hero_slides'] = [
             ['image' => $data['six_asset'] . 'hero-6moments-v2.png', 'mobile' => $data['six_asset'] . 'hero-6moments-mobile.png', 'position' => '58% 48%', 'kicker' => $data['six_hero_kicker'], 'title' => $data['six_hero_title']],
-            ['image' => $data['six_asset'] . 'hero-6moments.webp', 'mobile' => $data['six_asset'] . 'hero-6moments.webp', 'position' => '50% 52%', 'kicker' => $data['six_hero2_kicker'], 'title' => $data['six_hero2_title']],
+            ['image' => $data['six_asset'] . 'editorial/lab-grown-diamond.png', 'mobile' => $data['six_asset'] . 'editorial/lab-grown-diamond-mobile.png', 'position' => '58% 50%', 'kicker' => $data['six_hero2_kicker'], 'title' => $data['six_hero2_title']],
             ['image' => $data['six_asset'] . 'about-quote-jewelry.webp', 'mobile' => $data['six_asset'] . 'about-quote-jewelry.webp', 'position' => '50% 48%', 'kicker' => $data['six_hero3_kicker'], 'title' => $data['six_hero3_title']]
         ];
         $data['six_moments'] = [
