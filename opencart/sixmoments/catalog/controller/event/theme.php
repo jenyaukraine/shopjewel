@@ -22,7 +22,7 @@ class Theme extends \Opencart\System\Engine\Controller {
             $data['title'] = '6MOMENTS Jewelry';
         }
 
-        $data['six_stylesheet'] = 'extension/sixmoments/catalog/view/stylesheet/sixmoments.css?v=1.1.6';
+        $data['six_stylesheet'] = 'extension/sixmoments/catalog/view/stylesheet/sixmoments.css?v=1.1.7';
         $data['six_script'] = 'extension/sixmoments/catalog/view/javascript/sixmoments.js?v=1.1.7';
         $data['six_favicon'] = '/image/catalog/sixmoments/favicon.svg';
         $data['six_og_image'] = '/image/catalog/sixmoments/og-store.png';
@@ -253,6 +253,23 @@ class Theme extends \Opencart\System\Engine\Controller {
         $route = 'extension/sixmoments/information/contact';
         $this->words($data);
         $data['six_contact_email'] = $this->config->get('module_sixmoments_email') ?: $this->config->get('config_email');
+    }
+
+    public function cart(string &$route, array &$data, string &$code = '', string &$output = ''): void {
+        if (!$this->enabled()) return;
+
+        $route = 'extension/sixmoments/checkout/cart';
+        $this->words($data);
+    }
+
+    public function cartList(string &$route, array &$data, string &$code = '', string &$output = ''): void {
+        if (!$this->enabled()) return;
+
+        $route = 'extension/sixmoments/checkout/cart_list';
+        $this->words($data);
+        $lang = 'language=' . $this->config->get('config_language');
+        $data['continue'] = $this->url->link('extension/sixmoments/page/catalog', $lang);
+        $data['six_shipping_url'] = $this->url->link('extension/sixmoments/page/shipping', $lang);
     }
 
     public function blog(string &$route, array &$data, string &$code = '', string &$output = ''): void {
