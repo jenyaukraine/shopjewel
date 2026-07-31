@@ -9,6 +9,7 @@ class Catalog extends \Opencart\System\Engine\Model {
         $carat_sort = $carat_attribute_id
             ? "COALESCE((SELECT CAST(REPLACE(`pa_sort`.`text`, ',', '.') AS DECIMAL(10,3)) FROM `" . DB_PREFIX . "product_attribute` `pa_sort` WHERE `pa_sort`.`product_id` = `p`.`product_id` AND `pa_sort`.`attribute_id` = '" . $carat_attribute_id . "' AND `pa_sort`.`language_id` = '" . (int)$this->config->get('config_language_id') . "' LIMIT 1), 0)"
             : '0';
+        $weight_sort = "(`p`.`weight` / NULLIF(COALESCE((SELECT `wc_sort`.`value` FROM `" . DB_PREFIX . "weight_class` `wc_sort` WHERE `wc_sort`.`weight_class_id` = `p`.`weight_class_id` LIMIT 1), 1), 0))";
         $sorts = [
             'popular' => 'COALESCE((SELECT SUM(`op`.`quantity`) FROM `' . DB_PREFIX . 'order_product` `op` WHERE `op`.`product_id` = `p`.`product_id`), 0) DESC, `p`.`sort_order` ASC',
             'price-asc' => '`effective_price` ASC, `pd`.`name` ASC',
@@ -16,8 +17,8 @@ class Catalog extends \Opencart\System\Engine\Model {
             'newest' => '`p`.`date_added` DESC, `p`.`product_id` DESC',
             'carat-asc' => $carat_sort . ' ASC, `pd`.`name` ASC',
             'carat-desc' => $carat_sort . ' DESC, `pd`.`name` ASC',
-            'weight-asc' => '`p`.`weight` ASC, `pd`.`name` ASC',
-            'weight-desc' => '`p`.`weight` DESC, `pd`.`name` ASC',
+            'weight-asc' => $weight_sort . ' ASC, `pd`.`name` ASC',
+            'weight-desc' => $weight_sort . ' DESC, `pd`.`name` ASC',
             'name-asc' => '`pd`.`name` ASC'
         ];
         $sql .= ' ORDER BY ' . ($sorts[$filter['sort'] ?? 'popular'] ?? $sorts['popular']);
