@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 async function render(path = "/") {
@@ -41,6 +42,17 @@ test("server-renders the finished storefront", async () => {
   assert.match(html, /https:\/\/katya-dev\.duckdns\.org\/og-store\.png/);
   assert.doesNotMatch(html, /_vinext\/image/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/i);
+});
+
+test("OpenCart benefits use the storefront line icons instead of placeholder glyphs", async () => {
+  const template = await readFile(
+    new URL("../opencart/sixmoments/catalog/view/template/common/home.twig", import.meta.url),
+    "utf8",
+  );
+
+  const benefits = template.match(/<section class="benefits-strip"[\s\S]*?<\/section>/)?.[0] ?? "";
+  assert.equal((benefits.match(/<svg class="line-icon"/g) ?? []).length, 4);
+  assert.doesNotMatch(benefits, /[◇◎✦○]/);
 });
 
 test("server-renders product attributes and story routes", async () => {

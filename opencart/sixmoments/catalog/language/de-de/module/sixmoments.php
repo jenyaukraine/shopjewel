@@ -69,3 +69,5 @@ $_['six_contact_consultations_label'] = 'Beratung';
 $_['six_contact_consultations_value'] = 'Online · weltweit';
 $_['six_contact_hours_value'] = 'Montag–Freitag · 10:00–18:00';
 $_['six_contact_submit'] = 'Dem Atelier schreiben';
+$_['six_gemstone'] = 'Edelstein'; $_['six_stone_shape'] = 'Steinform'; $_['six_ring_size'] = 'Ringgröße (EU)'; $_['six_jewelry_style'] = 'Stil';
+$_['six_sort_carat_asc'] = 'Karat: aufsteigend'; $_['six_sort_carat_desc'] = 'Karat: absteigend'; $_['six_sort_weight_asc'] = 'Gewicht: aufsteigend'; $_['six_sort_weight_desc'] = 'Gewicht: absteigend'; $_['six_sort_name_asc'] = 'Name: A–Z';

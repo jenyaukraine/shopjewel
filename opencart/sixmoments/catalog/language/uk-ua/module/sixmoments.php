@@ -73,3 +73,5 @@ $_['six_contact_consultations_label'] = 'Консультації';
 $_['six_contact_consultations_value'] = 'Онлайн · у всьому світі';
 $_['six_contact_hours_value'] = 'Понеділок—п’ятниця · 10:00—18:00';
 $_['six_contact_submit'] = 'Написати майстерні';
+$_['six_gemstone'] = 'Камінь'; $_['six_stone_shape'] = 'Форма огранювання'; $_['six_ring_size'] = 'Розмір каблучки (EU)'; $_['six_jewelry_style'] = 'Стиль';
+$_['six_sort_carat_asc'] = 'Каратність: за зростанням'; $_['six_sort_carat_desc'] = 'Каратність: за спаданням'; $_['six_sort_weight_asc'] = 'Вага: за зростанням'; $_['six_sort_weight_desc'] = 'Вага: за спаданням'; $_['six_sort_name_asc'] = 'Назва: А–Я';

@@ -73,3 +73,5 @@ $_['six_contact_consultations_label'] = 'Консультации';
 $_['six_contact_consultations_value'] = 'Онлайн · по всему миру';
 $_['six_contact_hours_value'] = 'Понедельник—пятница · 10:00—18:00';
 $_['six_contact_submit'] = 'Написать в мастерскую';
+$_['six_gemstone'] = 'Камень'; $_['six_stone_shape'] = 'Форма огранки'; $_['six_ring_size'] = 'Размер кольца (EU)'; $_['six_jewelry_style'] = 'Стиль';
+$_['six_sort_carat_asc'] = 'Каратность: по возрастанию'; $_['six_sort_carat_desc'] = 'Каратность: по убыванию'; $_['six_sort_weight_asc'] = 'Вес: по возрастанию'; $_['six_sort_weight_desc'] = 'Вес: по убыванию'; $_['six_sort_name_asc'] = 'Название: А–Я';

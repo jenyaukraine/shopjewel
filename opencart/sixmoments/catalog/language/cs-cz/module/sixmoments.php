@@ -68,3 +68,5 @@ $_['six_contact_consultations_label'] = 'Konzultace';
 $_['six_contact_consultations_value'] = 'Online · po celém světě';
 $_['six_contact_hours_value'] = 'Pondělí–pátek · 10:00–18:00';
 $_['six_contact_submit'] = 'Napsat ateliéru';
+$_['six_gemstone'] = 'Drahokam'; $_['six_stone_shape'] = 'Tvar kamene'; $_['six_ring_size'] = 'Velikost prstenu (EU)'; $_['six_jewelry_style'] = 'Styl';
+$_['six_sort_carat_asc'] = 'Karáty: vzestupně'; $_['six_sort_carat_desc'] = 'Karáty: sestupně'; $_['six_sort_weight_asc'] = 'Hmotnost: vzestupně'; $_['six_sort_weight_desc'] = 'Hmotnost: sestupně'; $_['six_sort_name_asc'] = 'Název: A–Z';

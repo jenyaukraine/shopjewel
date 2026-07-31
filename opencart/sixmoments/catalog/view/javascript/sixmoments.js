@@ -115,7 +115,7 @@
           const response = await fetch(suggestUrl);
           const json = await response.json();
           suggestions.innerHTML = (json.results || []).map((item) => '<a href="' + escapeHtml(item.href) + '"><img src="' + escapeHtml(item.image) + '" alt=""><span><strong>' + escapeHtml(item.name) + '</strong><small>' + escapeHtml(item.model) + '</small></span><b>' + escapeHtml(item.price) + '</b></a>').join('');
-        } catch (_) { suggestions.innerHTML = ''; }
+        } catch { suggestions.innerHTML = ''; }
       }, 220);
     });
   }
@@ -126,6 +126,128 @@
   const filterPanel = document.querySelector('[data-six-filters]');
   const filterToggle = document.querySelector('[data-six-filter-toggle]');
   if (filterPanel && filterToggle) filterToggle.addEventListener('click', () => filterPanel.classList.toggle('is-open'));
+
+  // Give every successful add-to-bag action the same tactile, branded response.
+  const pendingCartTriggers = [];
+  let lastQueuedTrigger = null;
+  let lastQueuedAt = 0;
+
+  function markCartTrigger(button, queueForAjax) {
+    if (!button) return;
+    button.classList.remove('is-sending-to-bag');
+    void button.offsetWidth;
+    button.classList.add('is-sending-to-bag');
+    window.setTimeout(() => button.classList.remove('is-sending-to-bag'), 2400);
+
+    if (!queueForAjax) return;
+    const now = Date.now();
+    if (lastQueuedTrigger === button && now - lastQueuedAt < 500) return;
+    pendingCartTriggers.push(button);
+    lastQueuedTrigger = button;
+    lastQueuedAt = now;
+  }
+
+  function cartCountFromTotal(total) {
+    const match = String(total || '').match(/^\s*(\d+)/);
+    return match ? match[1] : '';
+  }
+
+  function updateCartBadge(total, trigger) {
+    let count = cartCountFromTotal(total);
+    if (!count) {
+      const current = Number.parseInt(document.querySelector('.bag span')?.textContent || '0', 10) || 0;
+      const quantity = Number.parseInt(trigger?.form?.querySelector('[name="quantity"]')?.value || '1', 10) || 1;
+      count = String(current + quantity);
+    }
+    document.querySelectorAll('.bag span').forEach((badge) => { badge.textContent = count; });
+  }
+
+  function pulseCartTarget(target) {
+    if (!target) return;
+    const badge = target.querySelector('span');
+    target.classList.remove('six-bag-received');
+    if (badge) badge.classList.remove('six-bag-count-pulse');
+    void target.offsetWidth;
+    target.classList.add('six-bag-received');
+    if (badge) badge.classList.add('six-bag-count-pulse');
+    window.setTimeout(() => {
+      target.classList.remove('six-bag-received');
+      if (badge) badge.classList.remove('six-bag-count-pulse');
+    }, 700);
+  }
+
+  function flyToBag(trigger, total) {
+    if (!trigger || !trigger.isConnected) return;
+    updateCartBadge(total, trigger);
+    trigger.classList.remove('is-sending-to-bag');
+    trigger.classList.add('is-added-to-bag');
+    window.setTimeout(() => trigger.classList.remove('is-added-to-bag'), 850);
+
+    const target = document.querySelector('.site-header .bag') || document.querySelector('.bag');
+    if (!target || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      pulseCartTarget(target);
+      return;
+    }
+
+    const sourceRect = trigger.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const size = 64;
+    const startX = sourceRect.left + sourceRect.width / 2 - size / 2;
+    const startY = sourceRect.top + sourceRect.height / 2 - size / 2;
+    const deltaX = targetRect.left + targetRect.width / 2 - (startX + size / 2);
+    const deltaY = targetRect.top + targetRect.height / 2 - (startY + size / 2);
+    const arc = Math.max(90, Math.min(240, Math.abs(deltaY) * .32));
+    const flight = document.createElement('span');
+    flight.className = 'six-cart-flight';
+    flight.setAttribute('aria-hidden', 'true');
+    flight.style.left = startX + 'px';
+    flight.style.top = startY + 'px';
+    flight.innerHTML = '<span class="six-cart-flight__spark six-cart-flight__spark--one"></span><span class="six-cart-flight__spark six-cart-flight__spark--two"></span><span class="six-cart-flight__bag"><span class="six-cart-flight__handle"></span><i class="six-cart-flight__item six-cart-flight__item--one"></i><i class="six-cart-flight__item six-cart-flight__item--two"></i><i class="six-cart-flight__item six-cart-flight__item--three"></i><span class="six-cart-flight__body"></span></span>';
+    document.body.appendChild(flight);
+    requestAnimationFrame(() => flight.classList.add('is-active'));
+
+    const animation = flight.animate([
+      { transform: 'translate3d(0,0,0) scale(.35) rotate(-8deg)', opacity: 0, offset: 0 },
+      { transform: 'translate3d(0,-12px,0) scale(1.08) rotate(3deg)', opacity: 1, offset: .16 },
+      { transform: 'translate3d(0,-12px,0) scale(1) rotate(0)', opacity: 1, offset: .34 },
+      { transform: 'translate3d(' + (deltaX * .42) + 'px,' + (deltaY * .42 - arc) + 'px,0) scale(.86) rotate(-10deg)', opacity: 1, offset: .64 },
+      { transform: 'translate3d(' + deltaX + 'px,' + deltaY + 'px,0) scale(.3) rotate(8deg)', opacity: 1, offset: .91 },
+      { transform: 'translate3d(' + deltaX + 'px,' + deltaY + 'px,0) scale(.08) rotate(8deg)', opacity: 0, offset: 1 }
+    ], { duration: 1300, easing: 'cubic-bezier(.2,.72,.18,1)', fill: 'forwards' });
+
+    animation.finished.then(() => pulseCartTarget(target)).catch(() => {}).finally(() => flight.remove());
+  }
+
+  document.addEventListener('click', (event) => {
+    const button = event.target.closest('button, input[type="submit"]');
+    if (!button) return;
+    const form = button.form;
+    const action = button.getAttribute('formaction') || (form && form.getAttribute('action')) || '';
+    if (button.matches('[data-six-bundle-add]')) {
+      markCartTrigger(button, false);
+    } else if (button.id === 'button-cart' || action.includes('checkout/cart.add')) {
+      markCartTrigger(button, true);
+    }
+  }, true);
+
+  document.addEventListener('submit', (event) => {
+    const form = event.target;
+    const button = event.submitter || form.querySelector('button[type="submit"], input[type="submit"]');
+    const action = (button && button.getAttribute('formaction')) || form.getAttribute('action') || '';
+    if ((button && button.id === 'button-cart') || action.includes('checkout/cart.add')) markCartTrigger(button, true);
+  }, true);
+
+  if (window.jQuery) {
+    window.jQuery(document).on('ajaxSuccess.sixBagFlight', function (_event, xhr, settings) {
+      if (!String(settings.url || '').includes('checkout/cart.add')) return;
+      let json = xhr.responseJSON;
+      if (!json) {
+        try { json = JSON.parse(xhr.responseText || '{}'); } catch { json = {}; }
+      }
+      const trigger = pendingCartTriggers.shift();
+      if (json.success && trigger) flyToBag(trigger, json.total);
+    });
+  }
 
   document.querySelectorAll('[data-six-bundle-add]').forEach((button) => button.addEventListener('click', async () => {
     const form = document.querySelector('#form-product');
@@ -144,7 +266,8 @@
       const bundleJson = await bundleResponse.json();
       if (status) status.textContent = bundleJson.success || bundleJson.error || '';
       if (bundleJson.total) document.querySelectorAll('.bag span').forEach((element) => { element.textContent = bundleJson.total; });
-    } catch (_) { if (status) status.textContent = 'Please try again.'; }
+      if (bundleJson.success) flyToBag(button, bundleJson.total);
+    } catch { if (status) status.textContent = 'Please try again.'; }
     finally { button.disabled = false; }
   }));
 
@@ -158,7 +281,7 @@
       const json = await response.json();
       if (status) status.textContent = json.success || json.error || '';
       if (json.success) form.reset();
-    } catch (_) {
+    } catch {
       if (status) status.textContent = 'Please try again.';
     } finally {
       if (button) button.disabled = false;
@@ -187,7 +310,7 @@
     const progress = root.querySelector('.quiz-progress span');
     const results = root.querySelector('.quiz-results');
     let rules = {};
-    try { rules = JSON.parse(root.dataset.rules || '{}'); } catch (_) {}
+    try { rules = JSON.parse(root.dataset.rules || '{}'); } catch {}
     let index = 0;
     next.addEventListener('click', () => {
       const selected = steps[index].querySelector('input:checked');

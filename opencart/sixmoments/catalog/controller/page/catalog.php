@@ -10,12 +10,12 @@ class Catalog extends \Opencart\System\Engine\Controller {
         $allowed = [
             'type' => ['rings','earrings','necklaces','bracelets','wedding'],
             'moment' => ['engagement','wedding','motherhood','career','self-purchase','milestone'],
-            'metal' => ['white-gold','yellow-gold','rose-gold'],
-            'fineness' => ['585','750'],
-            'stone' => ['natural','lab-grown'],
+            'metal' => ['white-gold','yellow-gold','rose-gold','platinum'],
+            'fineness' => ['585','750','950'],
+            'stone' => ['natural','lab-grown','no-stones'],
             'availability' => ['ready','preorder'],
             'delivery' => ['delivery-3','delivery-10'],
-            'sort' => ['popular','price-asc','price-desc','newest']
+            'sort' => ['popular','price-asc','price-desc','newest','carat-asc','carat-desc','weight-asc','weight-desc','name-asc']
         ];
         $filter = ['q' => trim((string)($this->request->get['q'] ?? ''))];
         foreach ($allowed as $key => $values) {
@@ -31,13 +31,32 @@ class Catalog extends \Opencart\System\Engine\Controller {
             $data[$key] = $display_value;
         }
 
+        foreach (['carat_min', 'carat_max'] as $key) {
+            $value = isset($this->request->get[$key]) && is_numeric($this->request->get[$key])
+                ? min(20, max(0, (float)$this->request->get[$key]))
+                : '';
+            $filter[$key] = $value;
+            $data[$key] = $value;
+        }
+
+        $this->load->model('extension/sixmoments/catalog');
+        $facets = $this->model_extension_sixmoments_catalog->getAttributeFacets();
+        foreach (['gemstone' => 'gemstones', 'stone_shape' => 'stone_shapes', 'style' => 'styles'] as $key => $data_key) {
+            $data[$data_key] = $facets[$key] ?? [];
+            $values = array_column($data[$data_key], 'value');
+            $value = trim((string)($this->request->get[$key] ?? ''));
+            $filter[$key] = in_array($value, $values, true) ? $value : '';
+        }
+        $data['ring_sizes'] = $this->model_extension_sixmoments_catalog->getRingSizes();
+        $ring_size = trim((string)($this->request->get['ring_size'] ?? ''));
+        $filter['ring_size'] = in_array($ring_size, array_column($data['ring_sizes'], 'value'), true) ? $ring_size : '';
+
         $page = max(1, (int)($this->request->get['page'] ?? 1));
         $limit = 12;
         $filter['start'] = ($page - 1) * $limit;
         $filter['limit'] = $limit;
         if (!$filter['sort']) $filter['sort'] = 'popular';
 
-        $this->load->model('extension/sixmoments/catalog');
         $this->load->model('catalog/product');
         $data['products'] = [];
         foreach ($this->model_extension_sixmoments_catalog->getProductIds($filter) as $product_id) {
@@ -77,7 +96,10 @@ class Catalog extends \Opencart\System\Engine\Controller {
 
         $data['sorts'] = [
             ['value'=>'popular','name'=>$data['six_sort_popular']], ['value'=>'price-asc','name'=>$data['six_sort_price_asc']],
-            ['value'=>'price-desc','name'=>$data['six_sort_price_desc']], ['value'=>'newest','name'=>$data['six_sort_newest']]
+            ['value'=>'price-desc','name'=>$data['six_sort_price_desc']], ['value'=>'newest','name'=>$data['six_sort_newest']],
+            ['value'=>'carat-asc','name'=>$data['six_sort_carat_asc']], ['value'=>'carat-desc','name'=>$data['six_sort_carat_desc']],
+            ['value'=>'weight-asc','name'=>$data['six_sort_weight_asc']], ['value'=>'weight-desc','name'=>$data['six_sort_weight_desc']],
+            ['value'=>'name-asc','name'=>$data['six_sort_name_asc']]
         ];
         foreach ($data['sorts'] as &$sort) $sort['href'] = $this->filterUrl(['sort' => $sort['value'], 'page' => null]);
 

@@ -180,27 +180,31 @@ class Sixmoments extends \Opencart\System\Engine\Model {
     private function seedCatalog(): void {
         $catalog_version = $this->db->query("SELECT `value` FROM `" . DB_PREFIX . "setting` WHERE `store_id` = '0' AND `key` = 'module_sixmoments_catalog_version' LIMIT 1");
         $catalog_version_number = $catalog_version->num_rows ? (int)$catalog_version->row['value'] : 0;
-        if ($catalog_version_number >= 3) {
+        if ($catalog_version_number >= 5) {
             return;
         }
 
         // Catalog migration v3 corrects jewelry weights that were originally
         // entered as grams while OpenCart's configured class is kilograms.
         if ($catalog_version_number >= 2) {
-            $weights = [
-                '6M-RI-001' => 0.0028,
-                '6M-WE-002' => 0.0039,
-                '6M-NE-003' => 0.0021,
-                '6M-EA-004' => 0.0042,
-                '6M-BR-005' => 0.0026,
-                '6M-RI-006' => 0.0084,
-                '6M-SE-007' => 3.1
-            ];
-            $weight_class_id = (int)$this->config->get('config_weight_class_id');
-            foreach ($weights as $model => $weight) {
-                $this->db->query("UPDATE `" . DB_PREFIX . "product` SET `weight` = '" . (float)$weight . "', `weight_class_id` = '" . $weight_class_id . "' WHERE `model` = '" . $this->db->escape($model) . "'");
+            if ($catalog_version_number < 3) {
+                $weights = [
+                    '6M-RI-001' => 0.0028,
+                    '6M-WE-002' => 0.0039,
+                    '6M-NE-003' => 0.0021,
+                    '6M-EA-004' => 0.0042,
+                    '6M-BR-005' => 0.0026,
+                    '6M-RI-006' => 0.0084,
+                    '6M-SE-007' => 3.1
+                ];
+                $weight_class_id = (int)$this->config->get('config_weight_class_id');
+                foreach ($weights as $model => $weight) {
+                    $this->db->query("UPDATE `" . DB_PREFIX . "product` SET `weight` = '" . (float)$weight . "', `weight_class_id` = '" . $weight_class_id . "' WHERE `model` = '" . $this->db->escape($model) . "'");
+                }
             }
-            $this->model_setting_setting->editValue('module_sixmoments', 'module_sixmoments_catalog_version', '3');
+
+            $this->installJewelryAttributes();
+            $this->model_setting_setting->editValue('module_sixmoments', 'module_sixmoments_catalog_version', '5');
             return;
         }
 
@@ -218,13 +222,20 @@ class Sixmoments extends \Opencart\System\Engine\Model {
         }
 
         foreach ($legacy_option_ids as $option_id) {
-            $this->model_catalog_option->deleteOption($option_id);
+            $in_use = $this->db->query("SELECT `product_option_id` FROM `" . DB_PREFIX . "product_option` WHERE `option_id` = '" . $option_id . "' LIMIT 1");
+            if (!$in_use->num_rows) {
+                $this->model_catalog_option->deleteOption($option_id);
+            }
         }
 
         $this->load->model('catalog/category');
         $legacy_categories = $this->db->query("SELECT DISTINCT CAST(`value` AS UNSIGNED) AS `category_id` FROM `" . DB_PREFIX . "seo_url` WHERE `key` = 'category_id' AND `keyword` LIKE 'sixmoments-%'");
         foreach ($legacy_categories->rows as $category) {
-            $this->model_catalog_category->deleteCategory((int)$category['category_id']);
+            $category_id = (int)$category['category_id'];
+            $in_use = $this->db->query("SELECT `product_id` FROM `" . DB_PREFIX . "product_to_category` WHERE `category_id` = '" . $category_id . "' LIMIT 1");
+            if (!$in_use->num_rows) {
+                $this->model_catalog_category->deleteCategory($category_id);
+            }
         }
 
         $this->load->model('localisation/language');
@@ -340,12 +351,127 @@ class Sixmoments extends \Opencart\System\Engine\Model {
             ]);
         }
 
+        $this->installJewelryAttributes();
         $this->model_setting_setting->editValue('module_sixmoments', 'module_sixmoments_catalog_category_id', $category_ids['rings']);
         if ($catalog_version->num_rows) {
-            $this->model_setting_setting->editValue('module_sixmoments', 'module_sixmoments_catalog_version', '3');
+            $this->model_setting_setting->editValue('module_sixmoments', 'module_sixmoments_catalog_version', '5');
         } else {
-            $this->db->query("INSERT INTO `" . DB_PREFIX . "setting` SET `store_id` = '0', `code` = 'module_sixmoments', `key` = 'module_sixmoments_catalog_version', `value` = '3', `serialized` = '0'");
+            $this->db->query("INSERT INTO `" . DB_PREFIX . "setting` SET `store_id` = '0', `code` = 'module_sixmoments', `key` = 'module_sixmoments_catalog_version', `value` = '5', `serialized` = '0'");
         }
+    }
+
+    /**
+     * Install a real OpenCart attribute set for jewelry facets. Product tags
+     * remain useful for editorial navigation, while these records are the
+     * merchant-editable source for attribute filters and attribute sorting.
+     */
+    private function installJewelryAttributes(): void {
+        $this->load->model('localisation/language');
+        $language_ids = [];
+        foreach (['en-gb', 'de-de', 'cs-cz', 'ru-ru', 'uk-ua'] as $code) {
+            $language = $this->model_localisation_language->getLanguageByCode($code);
+            if ($language) $language_ids[$code] = (int)$language['language_id'];
+        }
+        if (!$language_ids) return;
+
+        $group_names = [
+            'en-gb' => 'Jewelry specifications', 'de-de' => 'Schmuckdetails',
+            'cs-cz' => 'Parametry šperku', 'ru-ru' => 'Характеристики украшения',
+            'uk-ua' => 'Характеристики прикраси'
+        ];
+        $existing_group = $this->db->query("SELECT `attribute_group_id` FROM `" . DB_PREFIX . "attribute_group_description` WHERE `name` = 'Jewelry specifications' LIMIT 1");
+        if ($existing_group->num_rows) {
+            $attribute_group_id = (int)$existing_group->row['attribute_group_id'];
+        } else {
+            $this->load->model('catalog/attribute_group');
+            $descriptions = [];
+            foreach ($language_ids as $code => $language_id) {
+                $descriptions[$language_id] = ['name' => $group_names[$code] ?? $group_names['en-gb']];
+            }
+            $attribute_group_id = $this->model_catalog_attribute_group->addAttributeGroup([
+                'attribute_group_description' => $descriptions,
+                'sort_order' => 1
+            ]);
+        }
+
+        $attribute_names = [
+            'metal' => ['Metal color', 'Metallfarbe', 'Barva kovu', 'Цвет металла', 'Колір металу'],
+            'fineness' => ['Fineness', 'Feingehalt', 'Ryzost', 'Проба', 'Проба'],
+            'gemstone' => ['Gemstone', 'Edelstein', 'Drahokam', 'Камень', 'Камінь'],
+            'stone_origin' => ['Stone origin', 'Steinherkunft', 'Původ kamene', 'Происхождение камня', 'Походження каменю'],
+            'carat' => ['Total carat weight', 'Gesamtkaratgewicht', 'Celková karátová hmotnost', 'Общая каратность', 'Загальна каратність'],
+            'stone_shape' => ['Stone shape', 'Steinform', 'Tvar kamene', 'Форма огранки', 'Форма огранювання'],
+            'style' => ['Jewelry style', 'Schmuckstil', 'Styl šperku', 'Стиль украшения', 'Стиль прикраси']
+        ];
+        $codes = array_keys($language_ids);
+        $this->load->model('catalog/attribute');
+        $attribute_ids = [];
+        foreach ($attribute_names as $key => $names) {
+            $name = $names[0];
+            $existing = $this->db->query("SELECT `a`.`attribute_id` FROM `" . DB_PREFIX . "attribute` `a` INNER JOIN `" . DB_PREFIX . "attribute_description` `ad` ON (`ad`.`attribute_id` = `a`.`attribute_id`) WHERE `a`.`attribute_group_id` = '" . $attribute_group_id . "' AND `ad`.`name` = '" . $this->db->escape($name) . "' LIMIT 1");
+            if ($existing->num_rows) {
+                $attribute_ids[$key] = (int)$existing->row['attribute_id'];
+                continue;
+            }
+
+            $descriptions = [];
+            foreach ($codes as $index => $code) {
+                $descriptions[$language_ids[$code]] = ['name' => $names[$index] ?? $name];
+            }
+            $attribute_ids[$key] = $this->model_catalog_attribute->addAttribute([
+                'attribute_group_id' => $attribute_group_id,
+                'attribute_description' => $descriptions,
+                'sort_order' => count($attribute_ids) + 1
+            ]);
+        }
+
+        $translations = [
+            'yellow-gold' => ['Yellow gold', 'Gelbgold', 'Žluté zlato', 'Жёлтое золото', 'Жовте золото'],
+            'platinum' => ['Platinum', 'Platin', 'Platina', 'Платина', 'Платина'],
+            'diamond' => ['Diamond', 'Diamant', 'Diamant', 'Бриллиант', 'Діамант'],
+            'no-stones' => ['No stones', 'Ohne Steine', 'Bez kamenů', 'Без камней', 'Без каменів'],
+            'lab-grown' => ['Lab-grown', 'Laborgezüchtet', 'Laboratorní', 'Лабораторный', 'Лабораторний'],
+            'natural' => ['Natural', 'Natürlich', 'Přírodní', 'Натуральный', 'Натуральний'],
+            'not-applicable' => ['Not applicable', 'Nicht zutreffend', 'Nevztahuje se', 'Не применяется', 'Не застосовується'],
+            'round' => ['Round', 'Rund', 'Kulatý', 'Круглая', 'Кругла'],
+            'solitaire' => ['Solitaire', 'Solitär', 'Solitér', 'Солитер', 'Солітер'],
+            'wedding-band' => ['Wedding band', 'Ehering', 'Snubní prsten', 'Обручальное кольцо', 'Обручка'],
+            'pendant' => ['Pendant', 'Anhänger', 'Přívěsek', 'Подвеска', 'Підвіска'],
+            'hoops' => ['Hoops', 'Creolen', 'Kruhy', 'Кольца', 'Кільця'],
+            'chain-bracelet' => ['Chain bracelet', 'Kettenarmband', 'Řetízkový náramek', 'Цепочный браслет', 'Ланцюжковий браслет'],
+            'signet' => ['Signet', 'Siegelring', 'Pečetní prsten', 'Перстень', 'Перстень']
+        ];
+        $specs = [
+            '6M-RI-001' => ['metal'=>'yellow-gold','fineness'=>'750','gemstone'=>'diamond','stone_origin'=>'lab-grown','carat'=>'0.50','stone_shape'=>'round','style'=>'solitaire'],
+            '6M-WE-002' => ['metal'=>'yellow-gold','fineness'=>'750','gemstone'=>'no-stones','stone_origin'=>'not-applicable','carat'=>'0','stone_shape'=>'not-applicable','style'=>'wedding-band'],
+            '6M-NE-003' => ['metal'=>'yellow-gold','fineness'=>'750','gemstone'=>'diamond','stone_origin'=>'natural','carat'=>'0.10','stone_shape'=>'round','style'=>'pendant'],
+            '6M-EA-004' => ['metal'=>'yellow-gold','fineness'=>'750','gemstone'=>'no-stones','stone_origin'=>'not-applicable','carat'=>'0','stone_shape'=>'not-applicable','style'=>'hoops'],
+            '6M-BR-005' => ['metal'=>'yellow-gold','fineness'=>'750','gemstone'=>'diamond','stone_origin'=>'natural','carat'=>'0.15','stone_shape'=>'round','style'=>'chain-bracelet'],
+            '6M-RI-006' => ['metal'=>'platinum','fineness'=>'950','gemstone'=>'no-stones','stone_origin'=>'not-applicable','carat'=>'0','stone_shape'=>'not-applicable','style'=>'signet']
+        ];
+
+        $this->load->model('catalog/product');
+        foreach ($specs as $model => $values) {
+            $product = $this->db->query("SELECT `product_id` FROM `" . DB_PREFIX . "product` WHERE `model` = '" . $this->db->escape($model) . "' LIMIT 1");
+            if (!$product->num_rows) continue;
+            $product_id = (int)$product->row['product_id'];
+            foreach ($values as $key => $value) {
+                $attribute_id = (int)$attribute_ids[$key];
+                $this->model_catalog_product->deleteAttributes($product_id, $attribute_id);
+                foreach ($codes as $index => $code) {
+                    $text = in_array($key, ['fineness', 'carat'], true) ? $value : ($translations[$value][$index] ?? $value);
+                    $this->model_catalog_product->addAttribute($product_id, $attribute_id, $language_ids[$code], ['text' => $text]);
+                }
+            }
+        }
+
+        $ring_option = $this->db->query("SELECT `option_id` FROM `" . DB_PREFIX . "option_description` WHERE LOWER(`name`) IN ('ring size','ringgröße','velikost prstenu','размер кольца','розмір каблучки') ORDER BY `option_id` DESC LIMIT 1");
+        $attribute_map = ['group' => $attribute_group_id] + $attribute_ids;
+        $settings = ['module_sixmoments_attribute_map' => json_encode($attribute_map)];
+        if ($ring_option->num_rows) {
+            $settings['module_sixmoments_ring_size_option_id'] = (string)(int)$ring_option->row['option_id'];
+        }
+        $this->installDefaultSettings('module_sixmoments', $settings);
     }
 
     private function seedArticles(): void {

@@ -2,6 +2,8 @@
 namespace Opencart\Catalog\Controller\Extension\Sixmoments\Event;
 
 class Theme extends \Opencart\System\Engine\Controller {
+    private ?int $gram_weight_class_id = null;
+
     private function enabled(): bool {
         return (bool)$this->config->get('module_sixmoments_status');
     }
@@ -22,8 +24,8 @@ class Theme extends \Opencart\System\Engine\Controller {
             $data['title'] = '6MOMENTS Jewelry';
         }
 
-        $data['six_stylesheet'] = 'extension/sixmoments/catalog/view/stylesheet/sixmoments.css?v=1.1.8';
-        $data['six_script'] = 'extension/sixmoments/catalog/view/javascript/sixmoments.js?v=1.1.7';
+        $data['six_stylesheet'] = 'extension/sixmoments/catalog/view/stylesheet/sixmoments.css?v=1.2.2';
+        $data['six_script'] = 'extension/sixmoments/catalog/view/javascript/sixmoments.js?v=1.2.1';
         $data['six_favicon'] = '/image/catalog/sixmoments/favicon.svg?v=2';
         $data['six_og_image'] = '/image/catalog/sixmoments/og-store.png';
         $data['six_home'] = $this->url->link('common/home', 'language=' . $this->config->get('config_language'));
@@ -62,7 +64,7 @@ class Theme extends \Opencart\System\Engine\Controller {
         if (!$this->enabled()) return;
         $route = 'extension/sixmoments/common/footer';
         $this->words($data);
-        $data['six_script'] = 'extension/sixmoments/catalog/view/javascript/sixmoments.js?v=1.1.7';
+        $data['six_script'] = 'extension/sixmoments/catalog/view/javascript/sixmoments.js?v=1.2.1';
         $lang = 'language=' . $this->config->get('config_language');
         $data['six_home'] = $this->url->link('common/home', $lang);
         $data['six_about_url'] = $this->url->link('extension/sixmoments/page/about', $lang);
@@ -153,7 +155,7 @@ class Theme extends \Opencart\System\Engine\Controller {
         $product_id = (int)($data['product_id'] ?? 0);
         $this->load->model('catalog/product');
         $info = $product_id ? $this->model_catalog_product->getProduct($product_id) : [];
-        $data['six_product_weight'] = isset($info['weight']) ? $this->formatWeight((float)$info['weight']) : '—';
+        $data['six_product_weight'] = $this->displayWeight($info);
         $data['six_tags'] = array_filter(array_map('trim', explode(',', (string)($info['tag'] ?? ''))));
         $data['six_moment'] = $this->momentFromTags($data['six_tags']);
         $data['six_hint_action'] = $this->url->link('extension/sixmoments/hint.send', 'language=' . $this->config->get('config_language'));
@@ -199,7 +201,7 @@ class Theme extends \Opencart\System\Engine\Controller {
         $tags = array_filter(array_map('trim', explode(',', (string)($data['tag'] ?? ''))));
         $data['six_moment'] = $this->momentFromTags($tags);
         $data['six_sku'] = $data['model'] ?? '';
-        $data['six_product_weight'] = isset($data['weight']) ? $this->formatWeight((float)$data['weight']) : '—';
+        $data['six_product_weight'] = $this->displayWeight($data);
         $carat = $this->tagPrefix($tags, 'carat-');
         $stones = $this->tagPrefix($tags, 'stones-');
         $data['six_product_carat'] = $carat !== '' ? $carat . ' ct' : '—';
@@ -267,6 +269,8 @@ class Theme extends \Opencart\System\Engine\Controller {
 
         $route = 'extension/sixmoments/checkout/cart_list';
         $this->words($data);
+        // OpenCart rounds gram-scale jewelry weights to a misleading 0.00 kg.
+        $data['weight'] = '';
         $lang = 'language=' . $this->config->get('config_language');
         $data['continue'] = $this->url->link('extension/sixmoments/page/catalog', $lang);
         $data['six_shipping_url'] = $this->url->link('extension/sixmoments/page/shipping', $lang);
@@ -372,12 +376,34 @@ class Theme extends \Opencart\System\Engine\Controller {
         return $this->language->get('six_signature_piece');
     }
 
-    private function formatWeight(float $weight): string {
-        if ($weight >= 1000) {
-            return rtrim(rtrim(number_format($weight / 1000, 2, '.', ''), '0'), '.') . ' kg';
+    private function displayWeight(array $product): string {
+        $catalog_weights = [
+            '6M-RI-001' => '2.8 g', '6M-WE-002' => '3.9 g', '6M-NE-003' => '2.1 g',
+            '6M-EA-004' => '4.2 g', '6M-BR-005' => '2.6 g', '6M-RI-006' => '8.4 g',
+            '6M-SE-007' => '3.1 kg'
+        ];
+        $model = (string)($product['model'] ?? '');
+        if (isset($catalog_weights[$model])) return $catalog_weights[$model];
+        if (!isset($product['weight'])) return '—';
+
+        return $this->formatWeight(
+            (float)$product['weight'],
+            (int)($product['weight_class_id'] ?? $this->config->get('config_weight_class_id'))
+        );
+    }
+
+    private function formatWeight(float $weight, int $weight_class_id): string {
+        if ($this->gram_weight_class_id === null) {
+            $gram = $this->db->query("SELECT `weight_class_id` FROM `" . DB_PREFIX . "weight_class` ORDER BY ABS(`value` - 1000) ASC LIMIT 1");
+            $this->gram_weight_class_id = (int)($gram->row['weight_class_id'] ?? $weight_class_id);
         }
 
-        return rtrim(rtrim(number_format($weight, 2, '.', ''), '0'), '.') . ' g';
+        $grams = $this->weight->convert($weight, $weight_class_id, $this->gram_weight_class_id);
+        if ($grams >= 1000) {
+            return rtrim(rtrim(number_format($grams / 1000, 2, '.', ''), '0'), '.') . ' kg';
+        }
+
+        return rtrim(rtrim(number_format($grams, 2, '.', ''), '0'), '.') . ' g';
     }
 
     private function tagChoice(array $tags, array $choices): string {
