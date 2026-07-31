@@ -2,6 +2,7 @@
 
 ## 2.2.0 — 2026-07-31
 
+- Added a two-handle storefront price slider synchronized with the minimum and maximum price fields.
 - Added transactional multilingual CSV product import and full catalog export.
 - Added a downloadable CSV template, automatic delimiter detection and an import preview.
 - Refreshed the OpenCart administration workspace with clear catalog actions and live product statistics.

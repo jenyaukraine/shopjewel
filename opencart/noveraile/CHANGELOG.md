@@ -2,6 +2,7 @@
 
 ## 2.2.0 — 2026-07-31
 
+- Added an accessible two-handle price slider synchronized with the minimum and maximum price fields.
 - Added transactional multilingual CSV product import with automatic delimiter detection, row validation and create/update modes.
 - Added one-click full catalog export and a spreadsheet-ready CSV template.
 - Redesigned the module dashboard with a focused catalog workspace, live counts, drag-and-drop upload and a safe client-side preview.

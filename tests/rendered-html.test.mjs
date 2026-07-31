@@ -96,18 +96,23 @@ test("OpenCart in-stock labels use the storefront success color", async () => {
 });
 
 test("OpenCart checkout uses the branded responsive purchase flow", async () => {
-  const [template, stylesheet, controller, installer] = await Promise.all([
+  const [template, stylesheet, script, controller, installer] = await Promise.all([
     readFile(new URL("../opencart/noveraile/catalog/view/template/checkout/checkout.twig", import.meta.url), "utf8"),
     readFile(new URL("../opencart/noveraile/catalog/view/stylesheet/noveraile.css", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/noveraile/catalog/view/javascript/noveraile.js", import.meta.url), "utf8"),
     readFile(new URL("../opencart/noveraile/catalog/controller/event/theme.php", import.meta.url), "utf8"),
     readFile(new URL("../opencart/noveraile/admin/model/module/noveraile.php", import.meta.url), "utf8"),
   ]);
 
-  assert.match(template, /class="checkout-page"/);
+  assert.match(template, /data-six-simple-checkout/);
   assert.match(template, /class="checkout-page-grid"/);
-  assert.match(template, /id="checkout-(?:register|shipping-method|payment-method|confirm)"/);
+  assert.match(template, /id="checkout-delivery-step"[\s\S]*id="checkout-payment-step"[\s\S]*id="checkout-confirm"/);
+  assert.match(template, /class="checkout-page-roadmap"/);
   assert.match(stylesheet, /\.checkout-page-grid\s*\{[^}]*grid-template-columns:/s);
   assert.match(stylesheet, /@media \(max-width: 820px\)[\s\S]*?\.checkout-page-grid\s*\{[^}]*grid-template-columns:\s*1fr/s);
+  assert.match(stylesheet, /\.checkout-page-account-choice/);
+  assert.match(script, /guest\.click\(\)/);
+  assert.match(script, /checkout\/shipping_method\.save/);
   assert.match(controller, /extension\/noveraile\/checkout\/checkout/);
   assert.match(installer, /catalog\/view\/checkout\/checkout\/before/);
 });

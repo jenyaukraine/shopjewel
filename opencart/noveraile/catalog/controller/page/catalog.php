@@ -40,6 +40,14 @@ class Catalog extends \Opencart\System\Engine\Controller {
         }
 
         $this->load->model('extension/noveraile/catalog');
+        $price_bounds = $this->model_extension_noveraile_catalog->getPriceBounds();
+        $data['price_floor'] = max(0, (int)floor($this->currency->convert($price_bounds['min'], $this->config->get('config_currency'), $selected_currency)));
+        $data['price_ceiling'] = max($data['price_floor'] + 1, (int)ceil($this->currency->convert($price_bounds['max'], $this->config->get('config_currency'), $selected_currency)));
+        $data['price_slider_min'] = $data['price_min'] === '' ? $data['price_floor'] : min($data['price_ceiling'], max($data['price_floor'], (float)$data['price_min']));
+        $data['price_slider_max'] = $data['price_max'] === '' ? $data['price_ceiling'] : min($data['price_ceiling'], max($data['price_floor'], (float)$data['price_max']));
+        if ($data['price_slider_min'] > $data['price_slider_max']) {
+            $data['price_slider_min'] = $data['price_slider_max'];
+        }
         $facets = $this->model_extension_noveraile_catalog->getAttributeFacets();
         foreach (['gemstone' => 'gemstones', 'stone_shape' => 'stone_shapes', 'style' => 'styles'] as $key => $data_key) {
             $data[$data_key] = $facets[$key] ?? [];

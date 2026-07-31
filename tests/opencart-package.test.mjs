@@ -25,6 +25,14 @@ test("admin content remains adjacent to the OpenCart sidebar", async () => {
   assert.match(template, /\{\{ header \}\}\{\{ column_left \}\}\s*<div id="content">/);
 });
 
+test("desktop navigation keeps every primary link vertically aligned", async () => {
+  const stylesheet = await readFile(path.join(root, "catalog/view/stylesheet/noveraile.css"), "utf8");
+  const navigationRule = stylesheet.match(/\.desktop-nav\s*\{[^}]*\}/)?.[0] ?? "";
+
+  assert.match(navigationRule, /display:\s*flex/);
+  assert.match(navigationRule, /align-items:\s*center/);
+});
+
 test("premium suite ships working builder, mega menu, AJAX filters, one-page checkout and reviewed AI tools", async () => {
   const [admin, settings, adminTemplate, event, header, catalog, catalogTemplate, script, checkout] = await Promise.all([
     readFile(path.join(root, "admin/controller/module/noveraile.php"), "utf8"),
@@ -45,9 +53,15 @@ test("premium suite ships working builder, mega menu, AJAX filters, one-page che
   assert.match(admin, /\.noveraile-backup-/);
   assert.match(adminTemplate, /multipart\/form-data/);
   assert.match(event, /six_home_blocks/);
+  assert.match(event, /GROUP BY cd\.name/);
   assert.match(header, /class="mega-menu"/);
   assert.match(catalog, /catalog_results/);
   assert.match(catalogTemplate, /data-six-ajax-filter/);
+  assert.match(catalog, /getPriceBounds/);
+  assert.match(catalogTemplate, /data-six-price-range/);
+  assert.match(catalogTemplate, /data-six-price-lower/);
+  assert.match(catalogTemplate, /data-six-price-upper/);
+  assert.match(script, /--range-start/);
   assert.match(script, /history\.pushState/);
   assert.match(checkout, /checkout-page-grid/);
   assert.match(admin, /function aiGenerate\(/);

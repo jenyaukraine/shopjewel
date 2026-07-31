@@ -37,8 +37,8 @@ class Theme extends \Opencart\System\Engine\Controller {
             $data['title'] = $data['six_brand_name'];
         }
 
-        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.2.0';
-        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.2.0';
+        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.2.0.2';
+        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.2.0.1';
         $data['six_favicon'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/favicon.svg?v=2';
         $data['six_og_image'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/og-store.png';
         $data['six_color_mode'] = in_array($this->config->get('module_noveraile_color_mode'), ['light', 'dark'], true) ? $this->config->get('module_noveraile_color_mode') : 'auto';
@@ -65,7 +65,9 @@ class Theme extends \Opencart\System\Engine\Controller {
         $data['six_mega_menu_title'] = (string)($this->config->get('module_noveraile_mega_menu_title') ?: $data['six_catalog']);
         $data['six_mega_menu_promo_text'] = (string)($this->config->get('module_noveraile_mega_menu_promo_text') ?: $data['six_specials']);
         $data['six_mega_menu_promo_url'] = (string)($this->config->get('module_noveraile_mega_menu_promo_url') ?: $data['six_special']);
-        $category_query = $this->db->query("SELECT c.category_id, cd.name, c.sort_order, COUNT(DISTINCT p.product_id) AS product_total FROM `" . DB_PREFIX . "category` c INNER JOIN `" . DB_PREFIX . "category_description` cd ON (cd.category_id = c.category_id) INNER JOIN `" . DB_PREFIX . "product_to_category` p2c ON (p2c.category_id = c.category_id) INNER JOIN `" . DB_PREFIX . "product` p ON (p.product_id = p2c.product_id AND p.status = '1') WHERE c.status = '1' AND cd.language_id = '" . (int)$this->config->get('config_language_id') . "' GROUP BY c.category_id, cd.name, c.sort_order ORDER BY c.sort_order ASC, cd.name ASC LIMIT 12");
+        // Demo upgrades can leave more than one category record with the same
+        // translated name. Present each customer-facing category only once.
+        $category_query = $this->db->query("SELECT MIN(c.category_id) AS category_id, cd.name, MIN(c.sort_order) AS sort_order, COUNT(DISTINCT p.product_id) AS product_total FROM `" . DB_PREFIX . "category` c INNER JOIN `" . DB_PREFIX . "category_description` cd ON (cd.category_id = c.category_id) INNER JOIN `" . DB_PREFIX . "product_to_category` p2c ON (p2c.category_id = c.category_id) INNER JOIN `" . DB_PREFIX . "product` p ON (p.product_id = p2c.product_id AND p.status = '1') WHERE c.status = '1' AND cd.language_id = '" . (int)$this->config->get('config_language_id') . "' GROUP BY cd.name ORDER BY MIN(c.sort_order) ASC, cd.name ASC LIMIT 12");
         foreach ($category_query->rows as $category) {
             $data['six_categories'][] = [
                 'name' => $category['name'],

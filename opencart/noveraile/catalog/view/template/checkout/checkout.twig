@@ -1,5 +1,10 @@
 {{ header }}
-<section id="checkout-checkout" class="checkout-page">
+<section id="checkout-checkout" class="checkout-page" data-six-simple-checkout
+  data-guest-label="{{ six_checkout_guest_label|e('html_attr') }}"
+  data-account-label="{{ six_checkout_account_label|e('html_attr') }}"
+  data-continue-label="{{ six_checkout_continue_label|e('html_attr') }}"
+  data-optional-label="{{ six_checkout_optional_label|e('html_attr') }}"
+  data-note-label="{{ six_checkout_note_label|e('html_attr') }}">
   <div class="checkout-page-shell">
     <nav class="checkout-page-progress" aria-label="{{ heading_title }}">
       <a href="{{ six_cart_url }}"><i>01</i>{{ six_bag }}</a>
@@ -18,12 +23,20 @@
       </div>
     </header>
 
+    <div class="checkout-page-roadmap" aria-label="{{ heading_title }}">
+      <div><i aria-hidden="true">1</i><p><strong>{{ six_checkout_contact_step }}</strong><span>{{ six_checkout_contact_step_copy }}</span></p></div>
+      <div><i aria-hidden="true">2</i><p><strong>{{ six_checkout_delivery_step }}</strong><span>{{ six_checkout_delivery_step_copy }}</span></p></div>
+      <div><i aria-hidden="true">3</i><p><strong>{{ six_checkout_payment_step }}</strong><span>{{ six_checkout_payment_step_copy }}</span></p></div>
+    </div>
+
     <div class="checkout-page-grid">
       <div class="checkout-page-details">
         {{ content_top }}
         {% if register %}<section id="checkout-register" class="checkout-page-section">{{ register }}</section>{% endif %}
         {% if payment_address %}<section id="checkout-payment-address" class="checkout-page-section">{{ payment_address }}</section>{% endif %}
         {% if shipping_address %}<section id="checkout-shipping-address" class="checkout-page-section">{{ shipping_address }}</section>{% endif %}
+        {% if shipping_method %}<section id="checkout-delivery-step" class="checkout-page-section checkout-page-choice">{{ shipping_method }}</section>{% endif %}
+        <section id="checkout-payment-step" class="checkout-page-section checkout-page-choice">{{ payment_method }}</section>
         <div class="checkout-page-help">
           <span aria-hidden="true">◎</span>
           <p><strong>{{ six_checkout_help_title }}</strong>{{ six_checkout_help_copy }} <a href="{{ six_contact_url }}">{{ six_contact }} →</a></p>
@@ -35,8 +48,6 @@
           <div><p class="eyebrow">NOVERAILE</p><h2>{{ six_cart_summary }}</h2></div>
           <span aria-hidden="true">◇</span>
         </div>
-        {% if shipping_method %}<div id="checkout-shipping-method" class="checkout-page-method">{{ shipping_method }}</div>{% endif %}
-        <div id="checkout-payment-method" class="checkout-page-method">{{ payment_method }}</div>
         <div id="checkout-confirm" class="checkout-page-confirm">{{ confirm }}</div>
         <div class="checkout-page-assurance">
           <span aria-hidden="true">◇</span>

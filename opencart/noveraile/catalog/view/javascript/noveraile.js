@@ -195,6 +195,54 @@
   }
   bindFilterToggle();
 
+  document.querySelectorAll('[data-six-price-range]').forEach((range) => {
+    const numberLower = range.querySelector('input[name="price_min"]');
+    const numberUpper = range.querySelector('input[name="price_max"]');
+    const sliderLower = range.querySelector('[data-six-price-lower]');
+    const sliderUpper = range.querySelector('[data-six-price-upper]');
+    const slider = range.querySelector('.price-range__slider');
+    if (!numberLower || !numberUpper || !sliderLower || !sliderUpper || !slider) return;
+
+    const floor = Number(range.dataset.min || sliderLower.min || 0);
+    const ceiling = Number(range.dataset.max || sliderUpper.max || floor + 1);
+    const span = Math.max(1, ceiling - floor);
+    const clamp = (value) => Math.min(ceiling, Math.max(floor, Number(value)));
+    const paint = () => {
+      const lower = clamp(sliderLower.value);
+      const upper = clamp(sliderUpper.value);
+      slider.style.setProperty('--range-start', ((lower - floor) / span * 100) + '%');
+      slider.style.setProperty('--range-end', ((upper - floor) / span * 100) + '%');
+    };
+    const publish = (input, value) => {
+      input.value = String(value);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+
+    sliderLower.addEventListener('input', () => {
+      const value = Math.min(clamp(sliderLower.value), clamp(sliderUpper.value));
+      sliderLower.value = String(value);
+      publish(numberLower, value);
+      paint();
+    });
+    sliderUpper.addEventListener('input', () => {
+      const value = Math.max(clamp(sliderUpper.value), clamp(sliderLower.value));
+      sliderUpper.value = String(value);
+      publish(numberUpper, value);
+      paint();
+    });
+    numberLower.addEventListener('input', () => {
+      const value = numberLower.value === '' ? floor : clamp(numberLower.value);
+      sliderLower.value = String(Math.min(value, clamp(sliderUpper.value)));
+      paint();
+    });
+    numberUpper.addEventListener('input', () => {
+      const value = numberUpper.value === '' ? ceiling : clamp(numberUpper.value);
+      sliderUpper.value = String(Math.max(value, clamp(sliderLower.value)));
+      paint();
+    });
+    paint();
+  });
+
   if (ajaxFilterForm && catalogResults) {
     let filterTimer;
     const buildFormUrl = () => {
@@ -579,6 +627,98 @@
       if (button) button.disabled = false;
     }
   }));
+
+  const simpleCheckout = document.querySelector('[data-six-simple-checkout]');
+  if (simpleCheckout) setupSimpleCheckout(simpleCheckout);
+  function setupSimpleCheckout(root) {
+    const guest = root.querySelector('#input-guest');
+    const account = root.querySelector('#input-register');
+    const guestChoice = guest && guest.closest('.form-check');
+    const accountChoice = account && account.closest('.form-check');
+    const choiceRow = guestChoice && guestChoice.parentElement === accountChoice?.parentElement ? guestChoice.parentElement : null;
+
+    if (guestChoice && root.dataset.guestLabel) guestChoice.querySelector('label').textContent = root.dataset.guestLabel;
+    if (accountChoice && root.dataset.accountLabel) accountChoice.querySelector('label').textContent = root.dataset.accountLabel;
+    if (choiceRow) {
+      choiceRow.classList.add('checkout-page-account-choice');
+      choiceRow.insertBefore(guestChoice, accountChoice);
+    }
+
+    // Keep account creation available, but make the shortest checkout the default.
+    if (guest && account?.checked) guest.click();
+
+    const registerButton = root.querySelector('#button-register');
+    if (registerButton && root.dataset.continueLabel) registerButton.textContent = root.dataset.continueLabel;
+
+    const autocomplete = {
+      firstname: 'given-name', lastname: 'family-name', email: 'email',
+      shipping_company: 'organization', shipping_address_1: 'address-line1',
+      shipping_address_2: 'address-line2', shipping_city: 'address-level2',
+      shipping_postcode: 'postal-code', shipping_country_id: 'country', shipping_zone_id: 'address-level1'
+    };
+    Object.entries(autocomplete).forEach(([name, value]) => {
+      const field = root.querySelector(`[name="${name}"]`);
+      if (field) field.setAttribute('autocomplete', value);
+    });
+
+    const optionalInputs = ['shipping_company', 'shipping_address_2']
+      .map((name) => root.querySelector(`[name="${name}"]`))
+      .filter(Boolean);
+    const optionalFields = optionalInputs.map((input) => input.closest('.col')).filter(Boolean);
+    const optionalRow = optionalFields[0]?.parentElement;
+    if (optionalFields.length && optionalRow && root.dataset.optionalLabel) {
+      const toggleCell = document.createElement('div');
+      const toggle = document.createElement('button');
+      const initiallyOpen = optionalInputs.some((input) => String(input.value || '').trim());
+      toggleCell.className = 'col-12 checkout-page-optional-cell';
+      toggle.className = 'checkout-page-optional-toggle';
+      toggle.type = 'button';
+      toggle.textContent = root.dataset.optionalLabel;
+      toggle.setAttribute('aria-expanded', String(initiallyOpen));
+      optionalFields.forEach((field) => { field.hidden = !initiallyOpen; });
+      toggle.addEventListener('click', () => {
+        const open = toggle.getAttribute('aria-expanded') !== 'true';
+        toggle.setAttribute('aria-expanded', String(open));
+        optionalFields.forEach((field) => { field.hidden = !open; });
+        if (open) optionalInputs[0]?.focus();
+      });
+      toggleCell.appendChild(toggle);
+      optionalRow.insertBefore(toggleCell, optionalFields[0]);
+    }
+
+    const note = root.querySelector('#checkout-payment-method .mb-2');
+    if (note && root.dataset.noteLabel) {
+      const details = document.createElement('details');
+      const summary = document.createElement('summary');
+      details.className = 'checkout-page-note';
+      summary.textContent = root.dataset.noteLabel;
+      details.appendChild(summary);
+      note.parentElement.insertBefore(details, note);
+      details.appendChild(note);
+    }
+
+    const openNextChoice = (selector) => {
+      const button = root.querySelector(selector);
+      if (!button || button.disabled) return;
+      button.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      window.setTimeout(() => button.click(), 260);
+    };
+    if (window.jQuery) {
+      window.jQuery(document).on('ajaxSuccess.sixSimpleCheckout', function (_event, xhr, settings) {
+        const url = String(settings.url || '');
+        let json = xhr.responseJSON;
+        if (!json) {
+          try { json = JSON.parse(xhr.responseText || '{}'); } catch { json = {}; }
+        }
+        if (!json.success) return;
+        if (url.includes('checkout/register.save') || url.includes('checkout/shipping_address.save')) {
+          openNextChoice('#button-shipping-methods');
+        } else if (url.includes('checkout/shipping_method.save')) {
+          openNextChoice('#button-payment-methods');
+        }
+      });
+    }
+  }
 
   const rail = document.querySelector('[data-six-rail]');
   if (rail && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {

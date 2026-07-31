@@ -32,6 +32,19 @@ class Catalog extends \Opencart\System\Engine\Model {
         return (int)($query->row['total'] ?? 0);
     }
 
+    public function getPriceBounds(): array {
+        $customer_group_id = (int)$this->config->get('config_customer_group_id');
+        $store_id = (int)$this->config->get('config_store_id');
+        $special = "(SELECT `product_id`, MIN(`price`) AS `price` FROM `" . DB_PREFIX . "product_discount` WHERE `customer_group_id` = '" . $customer_group_id . "' AND `special` = '1' AND (`date_start` = '0000-00-00' OR `date_start` <= NOW()) AND (`date_end` = '0000-00-00' OR `date_end` >= NOW()) GROUP BY `product_id`)";
+        $sql = "SELECT MIN(COALESCE(`ps`.`price`, `p`.`price`)) AS `price_min`, MAX(COALESCE(`ps`.`price`, `p`.`price`)) AS `price_max` FROM `" . DB_PREFIX . "product` `p` INNER JOIN `" . DB_PREFIX . "product_to_store` `p2s` ON (`p2s`.`product_id` = `p`.`product_id` AND `p2s`.`store_id` = '" . $store_id . "') LEFT JOIN " . $special . " `ps` ON (`ps`.`product_id` = `p`.`product_id`) WHERE `p`.`status` = '1' AND `p`.`date_available` <= NOW()";
+        $row = $this->db->query($sql)->row;
+
+        return [
+            'min' => max(0.0, (float)($row['price_min'] ?? 0)),
+            'max' => max(0.0, (float)($row['price_max'] ?? 0))
+        ];
+    }
+
     public function getCategories(): array {
         $sql = "SELECT DISTINCT `c`.`category_id`, `cd`.`name`, `c`.`sort_order` FROM `" . DB_PREFIX . "category` `c` INNER JOIN `" . DB_PREFIX . "category_description` `cd` ON (`cd`.`category_id` = `c`.`category_id` AND `cd`.`language_id` = '" . (int)$this->config->get('config_language_id') . "') INNER JOIN `" . DB_PREFIX . "product_to_category` `p2c` ON (`p2c`.`category_id` = `c`.`category_id`) INNER JOIN `" . DB_PREFIX . "product` `p` ON (`p`.`product_id` = `p2c`.`product_id` AND `p`.`status` = '1') WHERE `c`.`status` = '1' ORDER BY `c`.`sort_order` ASC, `cd`.`name` ASC";
         return $this->db->query($sql)->rows;
