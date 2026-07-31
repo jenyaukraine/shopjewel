@@ -48,3 +48,5 @@ Detected multiple renderers concurrently rendering the same context provider. Th
       at maybeCaptureError (workers/runner-worker/index.js:51:10)
 Detected multiple renderers concurrently rendering the same context provider. This is currently unsupported.
 Detected multiple renderers concurrently rendering the same context provider. This is currently unsupported.
+Detected multiple renderers concurrently rendering the same context provider. This is currently unsupported.
+Detected multiple renderers concurrently rendering the same context provider. This is currently unsupported.

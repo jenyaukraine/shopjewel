@@ -22,8 +22,8 @@ FROM php:8.3-apache-bookworm
 
 ARG OPENCART_VERSION
 
-LABEL org.opencontainers.image.title="6MOMENTS OpenCart" \
-      org.opencontainers.image.description="Clean OpenCart with the 6MOMENTS extension overlay" \
+LABEL org.opencontainers.image.title="NOVERAILE OpenCart" \
+      org.opencontainers.image.description="Clean OpenCart with the NOVERAILE extension overlay" \
       org.opencontainers.image.version="${OPENCART_VERSION}" \
       org.opencontainers.image.source="https://github.com/opencart/opencart"
 
@@ -58,18 +58,18 @@ RUN cp .htaccess.txt .htaccess \
         system/storage/upload
 
 # The core above stays pristine. Every release replaces only this overlay.
-COPY opencart/sixmoments/ /var/www/html/extension/sixmoments/
+COPY opencart/noveraile/ /var/www/html/extension/noveraile/
 COPY docker/opencart.ini /usr/local/etc/php/conf.d/opencart.ini
 COPY docker/apache-vhost.conf /etc/apache2/sites-available/000-default.conf
 COPY docker/render-config.php /usr/local/bin/render-opencart-config
-COPY docker/bootstrap-sixmoments.php /usr/local/bin/bootstrap-sixmoments.php
-COPY docker/entrypoint.sh /usr/local/bin/sixmoments-entrypoint
+COPY docker/bootstrap-noveraile.php /usr/local/bin/bootstrap-noveraile.php
+COPY docker/entrypoint.sh /usr/local/bin/noveraile-entrypoint
 
-RUN find /var/www/html/extension/sixmoments -type f -name '*.php' \
+RUN find /var/www/html/extension/noveraile -type f -name '*.php' \
         -exec php -l '{}' ';' \
-    && php -l /usr/local/bin/bootstrap-sixmoments.php \
-    && sed -i 's/\r$//' /usr/local/bin/sixmoments-entrypoint \
-    && chmod +x /usr/local/bin/sixmoments-entrypoint \
+    && php -l /usr/local/bin/bootstrap-noveraile.php \
+    && sed -i 's/\r$//' /usr/local/bin/noveraile-entrypoint \
+    && chmod +x /usr/local/bin/noveraile-entrypoint \
     && chown -R www-data:www-data \
         /var/www/html/config.php \
         /var/www/html/admin/config.php \
@@ -81,5 +81,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=15s --timeout=5s --start-period=90s --retries=5 \
     CMD curl --fail --silent --show-error http://127.0.0.1:3000/ > /dev/null || exit 1
 
-ENTRYPOINT ["sixmoments-entrypoint"]
+ENTRYPOINT ["noveraile-entrypoint"]
 CMD ["apache2-foreground"]

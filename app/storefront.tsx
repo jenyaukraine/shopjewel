@@ -106,7 +106,7 @@ const products: Product[] = [
   {
     id: "promise-solitaire",
     slug: "promise-solitaire",
-    sku: "6M-RI-001",
+    sku: "NVR-RI-001",
     category: "Кільця",
     moment: "Момент 01 — Обіцянка",
     title: "Солітер «Обіцянка»",
@@ -136,7 +136,7 @@ const products: Product[] = [
   {
     id: "union-band",
     slug: "union-band",
-    sku: "6M-WE-002",
+    sku: "NVR-WE-002",
     category: "Обручки",
     moment: "Момент 02 — Союз",
     title: "Обручка «Союз»",
@@ -164,7 +164,7 @@ const products: Product[] = [
   {
     id: "arrival-pendant",
     slug: "arrival-pendant",
-    sku: "6M-NE-003",
+    sku: "NVR-NE-003",
     category: "Підвіски",
     moment: "Момент 03 — Нова глава",
     title: "Підвіска «Нова глава»",
@@ -193,7 +193,7 @@ const products: Product[] = [
   {
     id: "becoming-hoops",
     slug: "becoming-hoops",
-    sku: "6M-EA-004",
+    sku: "NVR-EA-004",
     category: "Сережки",
     moment: "Момент 04 — Становлення",
     title: "Сережки «Становлення»",
@@ -222,7 +222,7 @@ const products: Product[] = [
   {
     id: "gratitude-bracelet",
     slug: "gratitude-bracelet",
-    sku: "6M-BR-005",
+    sku: "NVR-BR-005",
     category: "Браслети",
     moment: "Момент 05 — Вдячність",
     title: "Браслет «Вдячність»",
@@ -251,7 +251,7 @@ const products: Product[] = [
   {
     id: "legacy-signet",
     slug: "legacy-signet",
-    sku: "6M-RI-006",
+    sku: "NVR-RI-006",
     category: "Кільця",
     moment: "Момент 06 — Спадщина",
     title: "Перстень «Спадщина»",
@@ -279,7 +279,7 @@ const products: Product[] = [
   {
     id: "first-ride",
     slug: "first-ride",
-    sku: "6M-SE-007",
+    sku: "NVR-SE-007",
     category: "Спеціальні видання",
     moment: "Спецсерія — Перша поїздка",
     title: "Біговел «Перша поїздка»",
@@ -316,7 +316,7 @@ const routeCopy: Record<string, { eyebrow: string; title: string; copy: string }
   "/about": {
     eyebrow: "Наша філософія",
     title: "Життя запам’ятовується моментами.",
-    copy: "6MOMENTS створює сучасні реліквії для подій, що формують нас — не лише очікуваних, а й глибоко особистих.",
+    copy: "NOVERAILE створює сучасні реліквії для подій, що формують нас — не лише очікуваних, а й глибоко особистих.",
   },
   "/journal": {
     eyebrow: "Журнал",
@@ -336,7 +336,7 @@ const routeCopy: Record<string, { eyebrow: string; title: string; copy: string }
   "/imprint": {
     eyebrow: "Інформація",
     title: "Юридична інформація.",
-    copy: "Контактні дані та відомості про 6MOMENTS для клієнтів і партнерів.",
+    copy: "Контактні дані та відомості про NOVERAILE для клієнтів і партнерів.",
   },
   "/diamonds": {
     eyebrow: "Освідомлена розкіш",
@@ -348,8 +348,8 @@ const routeCopy: Record<string, { eyebrow: string; title: string; copy: string }
 const heroSlides = [
   {
     id: "signature",
-    image: "/hero-6moments-v2.png",
-    mobileImage: "/hero-6moments-mobile.png",
+    image: "/hero-noveraile-v2.png",
+    mobileImage: "/hero-noveraile-mobile.png",
     imagePosition: "58% 48%",
     kicker: "Авторська колекція",
     title: "Де моменти стають спадщиною.",
@@ -442,8 +442,8 @@ function Header({
     <>
       <div className="announcement">Безкоштовна застрахована доставка та повернення</div>
       <header className="site-header">
-        <Link className="wordmark" href="/" aria-label="6MOMENTS — головна">
-          6MOMENTS
+        <Link className="wordmark" href="/" aria-label="NOVERAILE — головна">
+          NOVERAILE
         </Link>
         <nav className="desktop-nav" aria-label="Основна навігація">
           <Link aria-current={path.startsWith("/collections") || path.startsWith("/products") ? "page" : undefined} href="/collections">
@@ -526,7 +526,7 @@ function Header({
             </button>
           </div>
           <div className="mobile-drawer-contact">
-            <a href="mailto:atelier@6moments.store">atelier@6moments.store</a>
+            <a href="mailto:atelier@noveraile.store">atelier@noveraile.store</a>
             <small>Онлайн-консультації · Пн—Пт, 10:00—18:00</small>
           </div>
         </aside>
@@ -730,7 +730,7 @@ function HomePage({
         <ProductGrid products={catalog} currency={currency} limit={3} onQuickAdd={onQuickAdd} />
       </section>
 
-      <section className="benefits-strip" aria-label="Переваги 6MOMENTS">
+      <section className="benefits-strip" aria-label="Переваги NOVERAILE">
         <article>
           <span className="benefit-icon"><LineIcon name="certificate" /></span>
           <h3>Сертифіковані діаманти GIA</h3>
@@ -878,7 +878,7 @@ function HomePage({
         <div className="brand-story-visual">
           <Image
             src="/editorial/journal-heirlooms.webp"
-            alt="Прикраси 6MOMENTS у світлій подарунковій композиції"
+            alt="Прикраси NOVERAILE у світлій подарунковій композиції"
             unoptimized
             width={1200}
             height={1200}
@@ -894,7 +894,7 @@ function HomePage({
             особистий вибір або вдячність людині, яка завжди поруч.
           </p>
           <p>
-            6MOMENTS створює сучасні реліквії із золота, платини та діамантів.
+            NOVERAILE створює сучасні реліквії із золота, платини та діамантів.
             Кожна прикраса задумана як частина вашої історії — для щоденного
             носіння, майбутніх спогадів і передачі наступному поколінню.
           </p>
@@ -910,7 +910,7 @@ function HomePage({
       <section className="inspiration-gallery" aria-labelledby="gallery-title">
         <div className="gallery-heading">
           <p className="editorial-script" aria-hidden="true">Натхнення</p>
-          <h2 id="gallery-title">Галерея 6MOMENTS</h2>
+          <h2 id="gallery-title">Галерея NOVERAILE</h2>
           <p>Матеріали, деталі та історії, з яких народжуються майбутні реліквії</p>
         </div>
         <div className="gallery-grid">
@@ -935,16 +935,16 @@ function HomePage({
         <div className="instagram-callout">
           <div>
             <p className="eyebrow">Instagram</p>
-            <h3>Щоденне натхнення 6MOMENTS</h3>
+            <h3>Щоденне натхнення NOVERAILE</h3>
             <p>Нові прикраси, деталі майстерні та особливі релізи — в офіційному профілі бренду.</p>
           </div>
           <a
             className="button button--light"
-            href="https://www.instagram.com/6moments_jewelry?igsh=MTdnaHg4eWo0YzlrNQ=="
+            href="https://www.instagram.com/noveraile_jewelry?igsh=MTdnaHg4eWo0YzlrNQ=="
             target="_blank"
             rel="noreferrer"
           >
-            @6moments_jewelry <span aria-hidden="true">↗</span>
+            @noveraile_jewelry <span aria-hidden="true">↗</span>
           </a>
         </div>
       </section>
@@ -1441,7 +1441,7 @@ function CatalogPage({
 
   return (
     <section className="catalog-shell">
-      <h1 className="sr-only">Колекція прикрас 6MOMENTS</h1>
+      <h1 className="sr-only">Колекція прикрас NOVERAILE</h1>
       <div className="catalog-toolbar">
         <label className="catalog-search">
           <span className="sr-only">Пошук у каталозі</span>
@@ -1630,7 +1630,7 @@ function CatalogManager({
         stoneCount: Number(read("stone_count")) || 0,
         image: read("image") || "/products/promise-solitaire.webp",
         subtitle: read("subtitle") || `${metal} · ${read("stone_type") || "ювелірний виріб"}`,
-        description: read("description") || "Продуманий виріб, імпортований до каталогу 6MOMENTS.",
+        description: read("description") || "Продуманий виріб, імпортований до каталогу NOVERAILE.",
         popularity: 50,
         isNew: true,
         options: [
@@ -1648,12 +1648,12 @@ function CatalogManager({
   function downloadTemplate() {
     const sample = [
       csvColumns.join(","),
-      'sample-ring,sample-ring,6M-RI-100,Зразок каблучки,Кільця,Момент 01 — Обіцянка,1450,1650,Жовте золото,750 / 18k,Лабораторний діамант,В наявності,3,2.4,0.3,1,/products/promise-solitaire.webp,Золото 18 каратів · діамант,Вишуканий зразок товару для імпорту з CSV.',
+      'sample-ring,sample-ring,NVR-RI-100,Зразок каблучки,Кільця,Момент 01 — Обіцянка,1450,1650,Жовте золото,750 / 18k,Лабораторний діамант,В наявності,3,2.4,0.3,1,/products/promise-solitaire.webp,Золото 18 каратів · діамант,Вишуканий зразок товару для імпорту з CSV.',
     ].join("\n");
     const url = window.URL.createObjectURL(new Blob([sample], { type: "text/csv;charset=utf-8" }));
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = "6moments-products-template.csv";
+    anchor.download = "noveraile-products-template.csv";
     anchor.click();
     window.URL.revokeObjectURL(url);
   }
@@ -1851,22 +1851,22 @@ function InteriorPage({
             <dl>
               <div><dt>Що зберігаємо</dt><dd>Контактні дані, адресу доставки, склад замовлення та обрані налаштування.</dd></div>
               <div><dt>Файли cookie</dt><dd>Вони допомагають зберегти кошик, валюту та покращити роботу сайту.</dd></div>
-              <div><dt>Ваші права</dt><dd>Ви можете попросити доступ, виправлення або видалення даних через atelier@6moments.store.</dd></div>
+              <div><dt>Ваші права</dt><dd>Ви можете попросити доступ, виправлення або видалення даних через atelier@noveraile.store.</dd></div>
             </dl>
           </div>
         </section>
       ) : path === "/imprint" ? (
         <section className="contact-layout">
           <div className="contact-details">
-            <p className="eyebrow">6MOMENTS</p>
+            <p className="eyebrow">NOVERAILE</p>
             <h2>Де моменти<br />стають спадщиною.</h2>
             <p>Ювелірний бренд і онлайн-майстерня. Детальні реєстраційні та податкові відомості будуть додані до запуску продажів.</p>
           </div>
           <div className="contact-details">
             <dl>
-              <div><dt>Email</dt><dd><a href="mailto:atelier@6moments.store">atelier@6moments.store</a></dd></div>
+              <div><dt>Email</dt><dd><a href="mailto:atelier@noveraile.store">atelier@noveraile.store</a></dd></div>
               <div><dt>Консультації</dt><dd>Онлайн · у всьому світі</dd></div>
-              <div><dt>Відповідальність за зміст</dt><dd>6MOMENTS Jewelry</dd></div>
+              <div><dt>Відповідальність за зміст</dt><dd>NOVERAILE Jewelry</dd></div>
             </dl>
           </div>
         </section>
@@ -1879,7 +1879,7 @@ function InteriorPage({
               Розкажіть, яку подію ви хочете зберегти, або просто з чого бажаєте почати. Ми особисто відповімо протягом двох робочих днів.
             </p>
             <dl>
-              <div><dt>Email</dt><dd><a href="mailto:atelier@6moments.store">atelier@6moments.store</a></dd></div>
+              <div><dt>Email</dt><dd><a href="mailto:atelier@noveraile.store">atelier@noveraile.store</a></dd></div>
               <div><dt>Консультації</dt><dd>Онлайн · у всьому світі</dd></div>
               <div><dt>Години роботи</dt><dd>Понеділок—п’ятниця · 10:00—18:00</dd></div>
             </dl>
@@ -2078,7 +2078,7 @@ function AdminOrdersPage() {
     return (
       <main className="admin-page admin-orders-page">
         <section className="admin-login">
-          <p className="eyebrow">6MOMENTS · приватна зона</p>
+          <p className="eyebrow">NOVERAILE · приватна зона</p>
           <h1>Вхід до замовлень</h1>
           <p>Ця сторінка містить персональні дані покупців і доступна лише команді магазину.</p>
           <form onSubmit={login}>
@@ -2087,7 +2087,7 @@ function AdminOrdersPage() {
             <button className="button button--dark" type="submit">Увійти</button>
           </form>
           {window.location.hostname === "localhost" && (
-            <small>Локальний MVP-пароль: sixmoments-demo</small>
+            <small>Локальний MVP-пароль: noveraile-demo</small>
           )}
         </section>
       </main>
@@ -2099,7 +2099,7 @@ function AdminOrdersPage() {
       <section className="admin-hero admin-orders-hero">
         <div>
           <p className="eyebrow">Комерційна панель</p>
-          <h1>Замовлення 6MOMENTS</h1>
+          <h1>Замовлення NOVERAILE</h1>
           <p>Оплати Stripe, клієнти, доставка та робочі статуси в одному місці.</p>
         </div>
         <div className="admin-hero-actions">
@@ -2321,7 +2321,7 @@ function CartDrawer({
             <button className="button button--dark checkout-button" type="submit" disabled={submitting}>
               {submitting ? "Переходимо до Stripe…" : "Оплатити безпечно карткою"}
             </button>
-            <p className="checkout-security">Дані картки вводяться лише на захищеній сторінці Stripe і не зберігаються на 6MOMENTS.</p>
+            <p className="checkout-security">Дані картки вводяться лише на захищеній сторінці Stripe і не зберігаються на NOVERAILE.</p>
             <button className="back-button" type="button" onClick={() => setCheckout(false)}>← Повернутися до кошика</button>
           </form>
         ) : items.length === 0 ? (
@@ -2385,7 +2385,7 @@ function Footer() {
           <div className="footer-signup-heading">
             <p className="eyebrow">
               <span aria-hidden="true" />
-              Приватний список 6MOMENTS
+              Приватний список NOVERAILE
             </p>
             <h2>
               Ваш перший момент — <em>особливий.</em>
@@ -2429,22 +2429,22 @@ function Footer() {
 
       <div className="footer-main">
         <div className="footer-brand">
-          <Link className="wordmark wordmark--footer" href="/">6MOMENTS</Link>
+          <Link className="wordmark wordmark--footer" href="/">NOVERAILE</Link>
           <p>Сучасні реліквії із золота, платини та діамантів для моментів, які хочеться зберегти.</p>
           <ul>
             <li><span aria-hidden="true">◇</span> Приватні консультації онлайн</li>
             <li><span aria-hidden="true">◎</span> Застрахована доставка по світу</li>
-            <li><span aria-hidden="true">✉</span> <a href="mailto:atelier@6moments.store">atelier@6moments.store</a></li>
+            <li><span aria-hidden="true">✉</span> <a href="mailto:atelier@noveraile.store">atelier@noveraile.store</a></li>
           </ul>
           <div className="footer-socials" aria-label="Соціальні мережі">
-            <a href="https://www.instagram.com/6moments_jewelry?igsh=MTdnaHg4eWo0YzlrNQ==" target="_blank" rel="noreferrer" aria-label="Instagram 6MOMENTS">IG</a>
+            <a href="https://www.instagram.com/noveraile_jewelry?igsh=MTdnaHg4eWo0YzlrNQ==" target="_blank" rel="noreferrer" aria-label="Instagram NOVERAILE">IG</a>
             <a href="https://www.pinterest.com/" target="_blank" rel="noreferrer" aria-label="Pinterest">P</a>
-            <Link href="/journal" aria-label="Журнал 6MOMENTS">J</Link>
+            <Link href="/journal" aria-label="Журнал NOVERAILE">J</Link>
           </div>
         </div>
 
-        <nav className="footer-column" aria-label="Про 6MOMENTS">
-          <h3>Про 6MOMENTS</h3>
+        <nav className="footer-column" aria-label="Про NOVERAILE">
+          <h3>Про NOVERAILE</h3>
           <Link href="/about">Наша історія</Link>
           <Link href="/about">Матеріали й майстерність</Link>
           <Link href="/diamonds">Лабораторні діаманти</Link>
@@ -2468,7 +2468,7 @@ function Footer() {
       </div>
 
       <div className="footer-bottom">
-        <p>© {new Date().getFullYear()} 6MOMENTS. Усі права захищені.</p>
+        <p>© {new Date().getFullYear()} NOVERAILE. Усі права захищені.</p>
         <nav aria-label="Юридична інформація">
           <Link href="/privacy">Конфіденційність</Link>
           <Link href="/imprint">Юридична інформація</Link>
@@ -2486,10 +2486,10 @@ function WelcomeOverlays() {
   const [subscribed, setSubscribed] = useState(false);
 
   useEffect(() => {
-    const cookieAccepted = window.localStorage.getItem("6moments-cookie-consent") === "accepted";
-    const newsletterDismissed = window.localStorage.getItem("6moments-early-access-dismissed") === "true";
-    const newsletterCompleted = window.localStorage.getItem("6moments-early-access-complete") === "true";
-    const newsletterDismissedThisVisit = window.sessionStorage.getItem("6moments-early-access-session-dismissed") === "true";
+    const cookieAccepted = window.localStorage.getItem("noveraile-cookie-consent") === "accepted";
+    const newsletterDismissed = window.localStorage.getItem("noveraile-early-access-dismissed") === "true";
+    const newsletterCompleted = window.localStorage.getItem("noveraile-early-access-complete") === "true";
+    const newsletterDismissedThisVisit = window.sessionStorage.getItem("noveraile-early-access-session-dismissed") === "true";
 
     const cookieTimer = window.setTimeout(() => setCookieOpen(!cookieAccepted), 0);
     const newsletterTimer = !newsletterDismissed && !newsletterCompleted && !newsletterDismissedThisVisit
@@ -2516,22 +2516,22 @@ function WelcomeOverlays() {
   });
 
   function closeNewsletter() {
-    window.sessionStorage.setItem("6moments-early-access-session-dismissed", "true");
+    window.sessionStorage.setItem("noveraile-early-access-session-dismissed", "true");
     if (neverShowAgain) {
-      window.localStorage.setItem("6moments-early-access-dismissed", "true");
+      window.localStorage.setItem("noveraile-early-access-dismissed", "true");
     }
     setNewsletterOpen(false);
   }
 
   function submitNewsletter(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    window.localStorage.setItem("6moments-early-access-complete", "true");
+    window.localStorage.setItem("noveraile-early-access-complete", "true");
     setSubscribed(true);
     window.setTimeout(() => setNewsletterOpen(false), 1200);
   }
 
   function acceptCookies() {
-    window.localStorage.setItem("6moments-cookie-consent", "accepted");
+    window.localStorage.setItem("noveraile-cookie-consent", "accepted");
     setCookieOpen(false);
   }
 
@@ -2628,15 +2628,15 @@ export function Storefront({ path }: { path: string }) {
   useEffect(() => {
     const timer = window.setTimeout(() => {
       try {
-        const saved = window.localStorage.getItem("6moments-cart");
+        const saved = window.localStorage.getItem("noveraile-cart");
         if (saved) setCart(JSON.parse(saved) as CartItem[]);
-        const savedCurrency = window.localStorage.getItem("6moments-currency") as CurrencyCode | null;
+        const savedCurrency = window.localStorage.getItem("noveraile-currency") as CurrencyCode | null;
         if (savedCurrency && savedCurrency in currencyRates) setCurrency(savedCurrency);
-        const savedProducts = window.localStorage.getItem("6moments-imported-products");
+        const savedProducts = window.localStorage.getItem("noveraile-imported-products");
         if (savedProducts) setImportedProducts(JSON.parse(savedProducts) as Product[]);
       } catch {
-        window.localStorage.removeItem("6moments-cart");
-        window.localStorage.removeItem("6moments-imported-products");
+        window.localStorage.removeItem("noveraile-cart");
+        window.localStorage.removeItem("noveraile-imported-products");
       }
       setCartLoaded(true);
       setCatalogLoaded(true);
@@ -2645,15 +2645,15 @@ export function Storefront({ path }: { path: string }) {
   }, []);
 
   useEffect(() => {
-    if (cartLoaded) window.localStorage.setItem("6moments-cart", JSON.stringify(cart));
+    if (cartLoaded) window.localStorage.setItem("noveraile-cart", JSON.stringify(cart));
   }, [cart, cartLoaded]);
 
   useEffect(() => {
-    window.localStorage.setItem("6moments-currency", currency);
+    window.localStorage.setItem("noveraile-currency", currency);
   }, [currency]);
 
   useEffect(() => {
-    if (catalogLoaded) window.localStorage.setItem("6moments-imported-products", JSON.stringify(importedProducts));
+    if (catalogLoaded) window.localStorage.setItem("noveraile-imported-products", JSON.stringify(importedProducts));
   }, [catalogLoaded, importedProducts]);
 
   const catalog = useMemo(() => {

@@ -143,7 +143,7 @@ function createOrderNumber(): string {
     String(date.getUTCMonth() + 1).padStart(2, "0"),
     String(date.getUTCDate()).padStart(2, "0"),
   ].join("");
-  return `6M-${day}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;
+  return `NVR-${day}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;
 }
 
 function errorResponse(error: string, status: number) {

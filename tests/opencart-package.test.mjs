@@ -3,35 +3,35 @@ import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 
-const root = path.resolve("opencart/sixmoments");
+const root = path.resolve("opencart/noveraile");
 
 test("OpenCart 4 package has valid marketplace metadata and entry points", async () => {
   const manifest = JSON.parse(await readFile(path.join(root, "install.json"), "utf8"));
-  assert.equal(manifest.name, "6MOMENTS Universal Commerce Suite");
+  assert.equal(manifest.name, "NOVERAILE Commerce Suite");
   assert.match(manifest.version, /^\d+\.\d+\.\d+$/);
-  assert.equal(manifest.author, "6MOMENTS");
+  assert.equal(manifest.author, "NOVERAILE");
   const required = [
-    "admin/controller/module/sixmoments.php",
-    "admin/language/en-gb/module/sixmoments.php",
-    "admin/view/template/module/sixmoments.twig",
+    "admin/controller/module/noveraile.php",
+    "admin/language/en-gb/module/noveraile.php",
+    "admin/view/template/module/noveraile.twig",
     "catalog/controller/event/theme.php",
-    "catalog/view/stylesheet/sixmoments.css",
+    "catalog/view/stylesheet/noveraile.css",
   ];
   await Promise.all(required.map((file) => readFile(path.join(root, file))));
 });
 
 test("premium suite ships working builder, mega menu, AJAX filters, one-page checkout and reviewed AI tools", async () => {
   const [admin, settings, event, header, catalog, catalogTemplate, script, checkout] = await Promise.all([
-    readFile(path.join(root, "admin/controller/module/sixmoments.php"), "utf8"),
-    readFile(path.join(root, "admin/model/module/sixmoments.php"), "utf8"),
+    readFile(path.join(root, "admin/controller/module/noveraile.php"), "utf8"),
+    readFile(path.join(root, "admin/model/module/noveraile.php"), "utf8"),
     readFile(path.join(root, "catalog/controller/event/theme.php"), "utf8"),
     readFile(path.join(root, "catalog/view/template/common/header.twig"), "utf8"),
     readFile(path.join(root, "catalog/controller/page/catalog.php"), "utf8"),
     readFile(path.join(root, "catalog/view/template/page/catalog.twig"), "utf8"),
-    readFile(path.join(root, "catalog/view/javascript/sixmoments.js"), "utf8"),
+    readFile(path.join(root, "catalog/view/javascript/noveraile.js"), "utf8"),
     readFile(path.join(root, "catalog/view/template/checkout/checkout.twig"), "utf8"),
   ]);
-  assert.match(settings, /module_sixmoments_page_builder/);
+  assert.match(settings, /module_noveraile_page_builder/);
   assert.match(event, /six_home_blocks/);
   assert.match(header, /class="mega-menu"/);
   assert.match(catalog, /catalog_results/);
@@ -46,19 +46,19 @@ test("premium suite ships working builder, mega menu, AJAX filters, one-page che
 test("all six sales-readiness promises are implemented and release-checked", async () => {
   const [manifestSource, admin, event, header, home, stylesheet, script, workflow, feedSource] = await Promise.all([
     readFile(path.join(root, "install.json"), "utf8"),
-    readFile(path.join(root, "admin/controller/module/sixmoments.php"), "utf8"),
+    readFile(path.join(root, "admin/controller/module/noveraile.php"), "utf8"),
     readFile(path.join(root, "catalog/controller/event/theme.php"), "utf8"),
     readFile(path.join(root, "catalog/view/template/common/header.twig"), "utf8"),
     readFile(path.join(root, "catalog/view/template/common/home.twig"), "utf8"),
-    readFile(path.join(root, "catalog/view/stylesheet/sixmoments.css"), "utf8"),
-    readFile(path.join(root, "catalog/view/javascript/sixmoments.js"), "utf8"),
+    readFile(path.join(root, "catalog/view/stylesheet/noveraile.css"), "utf8"),
+    readFile(path.join(root, "catalog/view/javascript/noveraile.js"), "utf8"),
     readFile(path.resolve(".github/workflows/opencart-compatibility.yml"), "utf8"),
-    readFile(path.resolve("public/updates/sixmoments.json"), "utf8"),
+    readFile(path.resolve("public/updates/noveraile.json"), "utf8"),
   ]);
   const manifest = JSON.parse(manifestSource);
   const feed = JSON.parse(feedSource);
 
-  assert.equal(manifest.version, "2.1.0");
+  assert.equal(manifest.version, "2.1.1");
   assert.equal(feed.version, manifest.version);
   assert.deepEqual(feed.opencart.tested, ["4.0.2.3", "4.1.0.3"]);
   assert.match(admin, /version_compare\(VERSION, '4\.0\.2\.3', '<'\)/);
@@ -66,7 +66,7 @@ test("all six sales-readiness promises are implemented and release-checked", asy
 
   assert.match(header, /data-theme=/);
   assert.match(header, /data-six-theme-toggle/);
-  assert.match(script, /localStorage\.setItem\('sixmoments-theme'/);
+  assert.match(script, /localStorage\.setItem\('noveraile-theme'/);
   assert.match(stylesheet, /html\[data-theme="dark"\]/);
 
   assert.match(header, /name="viewport"/);
@@ -83,12 +83,12 @@ test("all six sales-readiness promises are implemented and release-checked", asy
 
 test("marketplace install is opt-in and demo content is a separate action", async () => {
   const [controller, model] = await Promise.all([
-    readFile(path.join(root, "admin/controller/module/sixmoments.php"), "utf8"),
-    readFile(path.join(root, "admin/model/module/sixmoments.php"), "utf8"),
+    readFile(path.join(root, "admin/controller/module/noveraile.php"), "utf8"),
+    readFile(path.join(root, "admin/model/module/noveraile.php"), "utf8"),
   ]);
   assert.match(controller, /function installDemo\(/);
   assert.match(model, /bootstrap\(false\)/);
-  assert.match(model, /'module_sixmoments_status'\s*=>\s*\(int\)\$enable_storefront/);
+  assert.match(model, /'module_noveraile_status'\s*=>\s*\(int\)\$enable_storefront/);
   assert.match(model, /'shipping_dhl_status'\s*=>\s*0/);
   assert.match(model, /'shipping_dpd_status'\s*=>\s*0/);
 });
@@ -99,8 +99,8 @@ test("storefront catalog accepts normal merchant products", async () => {
     readFile(path.join(root, "catalog/model/catalog.php"), "utf8"),
     readFile(path.join(root, "catalog/controller/bundle.php"), "utf8"),
   ]);
-  assert.doesNotMatch(catalogModel, /`p`\.`model`\s+LIKE\s+'6M-%'/);
-  assert.doesNotMatch(eventController.match(/private function getSixmomentsProducts[\s\S]*?\n    }/)?.[0] ?? "", /model LIKE '6M-%'/);
+  assert.doesNotMatch(catalogModel, /`p`\.`model`\s+LIKE\s+'NVR-%'/);
+  assert.doesNotMatch(eventController.match(/private function getNoveraileProducts[\s\S]*?\n    }/)?.[0] ?? "", /model LIKE 'NVR-%'/);
   assert.doesNotMatch(bundleController, /str_starts_with/);
 });
 
@@ -114,8 +114,15 @@ test("extension source contains no development artifacts or live Stripe secrets"
   }
   const files = await walk(root);
   assert.equal(files.some((file) => /(?:^|[\\/])(?:\.env|\.DS_Store|Thumbs\.db)$|\.(?:log|map|psd)$/i.test(file)), false);
+  const combinedSource = [];
   for (const file of files.filter((name) => /\.(?:php|twig|js|json|md)$/i.test(name))) {
     const source = await readFile(file, "utf8");
+    combinedSource.push(source);
     assert.doesNotMatch(source, /sk_live_[A-Za-z0-9]+|whsec_[A-Za-z0-9]+/, file);
   }
+  const source = combinedSource.join("\n");
+  assert.doesNotMatch(source, /sixmoments|6MOMENTS|Veloura|katya-dev\.duckdns\.org|noveraile\.store/i);
+  assert.doesNotMatch(source, /value="\{\{\s*payment_stripe_(?:secret_key|webhook_secret)\s*\}\}"/);
+  assert.match(source, /function assertPublicHttpsEndpoint\(/);
+  assert.match(source, /FILTER_FLAG_NO_PRIV_RANGE\s*\|\s*FILTER_FLAG_NO_RES_RANGE/);
 });

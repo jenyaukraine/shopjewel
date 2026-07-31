@@ -1,9 +1,9 @@
-name: sixmoments
+name: noveraile
 
 services:
   db:
     image: mysql:8.4
-    container_name: sixmoments-db
+    container_name: noveraile-db
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: ${OPENCART_DB_NAME:-opencart}
@@ -33,8 +33,8 @@ services:
       context: .
       args:
         OPENCART_VERSION: ${OPENCART_VERSION:-4.1.0.3}
-    image: sixmoments-opencart:${MODULE_IMAGE_TAG:-latest}
-    container_name: sixmoments-store
+    image: noveraile-opencart:${MODULE_IMAGE_TAG:-latest}
+    container_name: noveraile-store
     restart: unless-stopped
     depends_on:
       db:
@@ -72,8 +72,8 @@ networks:
 
 volumes:
   opencart-db:
-    name: sixmoments-opencart-db
+    name: noveraile-opencart-db
   opencart-image:
-    name: sixmoments-opencart-image
+    name: noveraile-opencart-image
   opencart-download:
-    name: sixmoments-opencart-download
+    name: noveraile-opencart-download

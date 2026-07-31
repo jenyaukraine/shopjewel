@@ -30,7 +30,7 @@ test("server-renders the finished storefront", async () => {
 
   const html = await response.text();
   assert.match(html, /<html lang="uk"/i);
-  assert.match(html, /<title>6MOMENTS — Де моменти стають спадщиною<\/title>/i);
+  assert.match(html, /<title>NOVERAILE — Де моменти стають спадщиною<\/title>/i);
   assert.match(html, /Де моменти стають спадщиною\./);
   assert.match(html, /Найбажаніші/);
   assert.doesNotMatch(html, /class="intro"/);
@@ -46,7 +46,7 @@ test("server-renders the finished storefront", async () => {
 
 test("OpenCart benefits use the storefront line icons instead of placeholder glyphs", async () => {
   const template = await readFile(
-    new URL("../opencart/sixmoments/catalog/view/template/common/home.twig", import.meta.url),
+    new URL("../opencart/noveraile/catalog/view/template/common/home.twig", import.meta.url),
     "utf8",
   );
 
@@ -57,23 +57,23 @@ test("OpenCart benefits use the storefront line icons instead of placeholder gly
 
 test("OpenCart hero carousel never serves the legacy image with baked-in text", async () => {
   const controller = await readFile(
-    new URL("../opencart/sixmoments/catalog/controller/event/theme.php", import.meta.url),
+    new URL("../opencart/noveraile/catalog/controller/event/theme.php", import.meta.url),
     "utf8",
   );
 
   const heroSlides = controller.match(/\$data\['six_hero_slides'\]\s*=\s*\[[\s\S]*?\n\s*\];/)?.[0] ?? "";
   assert.match(heroSlides, /editorial\/lab-grown-diamond\.png/);
-  assert.doesNotMatch(heroSlides, /hero-6moments\.webp/);
+  assert.doesNotMatch(heroSlides, /hero-noveraile\.webp/);
 });
 
 test("OpenCart product cards keep the platform AJAX cart handler active", async () => {
   const [script, controller] = await Promise.all([
     readFile(
-      new URL("../opencart/sixmoments/catalog/view/javascript/sixmoments.js", import.meta.url),
+      new URL("../opencart/noveraile/catalog/view/javascript/noveraile.js", import.meta.url),
       "utf8",
     ),
     readFile(
-      new URL("../opencart/sixmoments/catalog/controller/event/theme.php", import.meta.url),
+      new URL("../opencart/noveraile/catalog/controller/event/theme.php", import.meta.url),
       "utf8",
     ),
   ]);
@@ -81,26 +81,26 @@ test("OpenCart product cards keep the platform AJAX cart handler active", async 
   assert.doesNotMatch(script, /stopImmediatePropagation\(\)/);
   assert.doesNotMatch(script, /function submitProductCard\b/);
   assert.match(script, /ajaxSuccess\.sixBagFlight/);
-  assert.match(controller, /sixmoments\.js\?v=\d+\.\d+\.\d+/);
+  assert.match(controller, /noveraile\.js\?v=\d+\.\d+\.\d+/);
 });
 
 test("OpenCart in-stock labels use the storefront success color", async () => {
   const [stylesheet, controller] = await Promise.all([
-    readFile(new URL("../opencart/sixmoments/catalog/view/stylesheet/sixmoments.css", import.meta.url), "utf8"),
-    readFile(new URL("../opencart/sixmoments/catalog/controller/event/theme.php", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/noveraile/catalog/view/stylesheet/noveraile.css", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/noveraile/catalog/controller/event/theme.php", import.meta.url), "utf8"),
   ]);
 
   assert.match(stylesheet, /--success:\s*#4e7658/);
   assert.match(stylesheet, /\.product-details-list li:first-child,[\s\S]*?li:first-child::before\s*\{\s*color:\s*var\(--success\)/);
-  assert.match(controller, /sixmoments\.css\?v=\d+\.\d+\.\d+/);
+  assert.match(controller, /noveraile\.css\?v=\d+\.\d+\.\d+/);
 });
 
 test("OpenCart checkout uses the branded responsive purchase flow", async () => {
   const [template, stylesheet, controller, installer] = await Promise.all([
-    readFile(new URL("../opencart/sixmoments/catalog/view/template/checkout/checkout.twig", import.meta.url), "utf8"),
-    readFile(new URL("../opencart/sixmoments/catalog/view/stylesheet/sixmoments.css", import.meta.url), "utf8"),
-    readFile(new URL("../opencart/sixmoments/catalog/controller/event/theme.php", import.meta.url), "utf8"),
-    readFile(new URL("../opencart/sixmoments/admin/model/module/sixmoments.php", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/noveraile/catalog/view/template/checkout/checkout.twig", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/noveraile/catalog/view/stylesheet/noveraile.css", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/noveraile/catalog/controller/event/theme.php", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/noveraile/admin/model/module/noveraile.php", import.meta.url), "utf8"),
   ]);
 
   assert.match(template, /class="checkout-page"/);
@@ -108,16 +108,16 @@ test("OpenCart checkout uses the branded responsive purchase flow", async () => 
   assert.match(template, /id="checkout-(?:register|shipping-method|payment-method|confirm)"/);
   assert.match(stylesheet, /\.checkout-page-grid\s*\{[^}]*grid-template-columns:/s);
   assert.match(stylesheet, /@media \(max-width: 820px\)[\s\S]*?\.checkout-page-grid\s*\{[^}]*grid-template-columns:\s*1fr/s);
-  assert.match(controller, /extension\/sixmoments\/checkout\/checkout/);
+  assert.match(controller, /extension\/noveraile\/checkout\/checkout/);
   assert.match(installer, /catalog\/view\/checkout\/checkout\/before/);
 });
 
 test("OpenCart account login uses the branded responsive client portal", async () => {
   const [template, stylesheet, controller, installer] = await Promise.all([
-    readFile(new URL("../opencart/sixmoments/catalog/view/template/account/login.twig", import.meta.url), "utf8"),
-    readFile(new URL("../opencart/sixmoments/catalog/view/stylesheet/sixmoments.css", import.meta.url), "utf8"),
-    readFile(new URL("../opencart/sixmoments/catalog/controller/event/theme.php", import.meta.url), "utf8"),
-    readFile(new URL("../opencart/sixmoments/admin/model/module/sixmoments.php", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/noveraile/catalog/view/template/account/login.twig", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/noveraile/catalog/view/stylesheet/noveraile.css", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/noveraile/catalog/controller/event/theme.php", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/noveraile/admin/model/module/noveraile.php", import.meta.url), "utf8"),
   ]);
 
   assert.match(template, /class="account-login__portal"/);
@@ -126,16 +126,16 @@ test("OpenCart account login uses the branded responsive client portal", async (
   assert.match(template, /autocomplete="current-password"/);
   assert.match(stylesheet, /\.account-login__portal\s*\{[^}]*grid-template-columns:/s);
   assert.match(stylesheet, /@media \(max-width: 760px\)[\s\S]*?\.account-login__portal\s*\{[^}]*grid-template-columns:\s*1fr/s);
-  assert.match(controller, /extension\/sixmoments\/account\/login/);
-  assert.match(controller, /sixmoments\.css\?v=\d+\.\d+\.\d+/);
+  assert.match(controller, /extension\/noveraile\/account\/login/);
+  assert.match(controller, /noveraile\.css\?v=\d+\.\d+\.\d+/);
   assert.match(installer, /catalog\/view\/account\/login\/before/);
 });
 
 test("OpenCart product zoom fills the preview and provides an interactive lightbox", async () => {
   const [template, stylesheet, script] = await Promise.all([
-    readFile(new URL("../opencart/sixmoments/catalog/view/template/product/product.twig", import.meta.url), "utf8"),
-    readFile(new URL("../opencart/sixmoments/catalog/view/stylesheet/sixmoments.css", import.meta.url), "utf8"),
-    readFile(new URL("../opencart/sixmoments/catalog/view/javascript/sixmoments.js", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/noveraile/catalog/view/template/product/product.twig", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/noveraile/catalog/view/stylesheet/noveraile.css", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/noveraile/catalog/view/javascript/noveraile.js", import.meta.url), "utf8"),
   ]);
 
   assert.match(template, /class="product-photo product-photo--detail"/);
@@ -222,7 +222,7 @@ test("server-renders Ukrainian legal information pages", async () => {
   assert.match(privacyHtml, /Політика конфіденційності/);
   assert.match(privacyHtml, /Ваші права/);
   assert.match(imprintHtml, /Юридична інформація/);
-  assert.match(imprintHtml, /6MOMENTS Jewelry/);
+  assert.match(imprintHtml, /NOVERAILE Jewelry/);
 });
 
 test("server-renders restored brand blocks and diamond education", async () => {
@@ -239,8 +239,8 @@ test("server-renders restored brand blocks and diamond education", async () => {
     diamondsResponse.text(),
   ]);
   assert.match(homeHtml, /Лабораторні[\s\S]*діаманти/);
-  assert.match(homeHtml, /@6moments_jewelry/);
-  assert.match(homeHtml, /atelier@6moments\.store/);
+  assert.match(homeHtml, /@noveraile_jewelry/);
+  assert.match(homeHtml, /atelier@noveraile\.store/);
   assert.match(homeHtml, /Останні історії/);
   assert.match(homeHtml, /Тиха архітектура каблучки/);
   assert.match(diamondsHtml, /Оберіть свій діамант/);
@@ -267,15 +267,15 @@ test("server-renders Stripe checkout outcomes and protected orders admin", async
   assert.match(cancelledHtml, /Оплату не завершено/);
   assert.match(cancelledHtml, /Ваш вибір збережено/);
   assert.match(adminHtml, /Комерційна панель/);
-  assert.match(adminHtml, /Замовлення 6MOMENTS/);
+  assert.match(adminHtml, /Замовлення NOVERAILE/);
 });
 
 test("OpenCart catalog keeps jewelry facets and attribute sorts wired", async () => {
   const [template, controller, model, installer] = await Promise.all([
-    readFile(new URL("../opencart/sixmoments/catalog/view/template/page/catalog.twig", import.meta.url), "utf8"),
-    readFile(new URL("../opencart/sixmoments/catalog/controller/page/catalog.php", import.meta.url), "utf8"),
-    readFile(new URL("../opencart/sixmoments/catalog/model/catalog.php", import.meta.url), "utf8"),
-    readFile(new URL("../opencart/sixmoments/admin/model/module/sixmoments.php", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/noveraile/catalog/view/template/page/catalog.twig", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/noveraile/catalog/controller/page/catalog.php", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/noveraile/catalog/model/catalog.php", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/noveraile/admin/model/module/noveraile.php", import.meta.url), "utf8"),
   ]);
 
   assert.match(template, /name="ring_size"/);
@@ -287,5 +287,5 @@ test("OpenCart catalog keeps jewelry facets and attribute sorts wired", async ()
   assert.match(model, /product_attribute/);
   assert.match(model, /product_option_value/);
   assert.match(installer, /installJewelryAttributes/);
-  assert.match(installer, /module_sixmoments_attribute_map/);
+  assert.match(installer, /module_noveraile_attribute_map/);
 });

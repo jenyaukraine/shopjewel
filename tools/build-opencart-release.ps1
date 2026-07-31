@@ -3,7 +3,7 @@ param([string]$OutputDirectory = '')
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
-$extensionRoot = Join-Path $repoRoot 'opencart\sixmoments'
+$extensionRoot = Join-Path $repoRoot 'opencart\noveraile'
 $marketplaceRoot = Join-Path $repoRoot 'marketplace'
 if (-not $OutputDirectory) { $OutputDirectory = Join-Path $repoRoot 'release' }
 $OutputDirectory = [System.IO.Path]::GetFullPath($OutputDirectory)
@@ -13,11 +13,11 @@ if ($manifest.version -notmatch '^\d+\.\d+\.\d+$') { throw 'install.json version
 
 $requiredFiles = @(
     'install.json',
-    'admin\controller\module\sixmoments.php',
-    'admin\language\en-gb\module\sixmoments.php',
-    'admin\view\template\module\sixmoments.twig',
+    'admin\controller\module\noveraile.php',
+    'admin\language\en-gb\module\noveraile.php',
+    'admin\view\template\module\noveraile.twig',
     'catalog\controller\event\theme.php',
-    'catalog\view\stylesheet\sixmoments.css'
+    'catalog\view\stylesheet\noveraile.css'
 )
 foreach ($relativePath in $requiredFiles) {
     if (-not (Test-Path -LiteralPath (Join-Path $extensionRoot $relativePath) -PathType Leaf)) { throw "Required extension file is missing: $relativePath" }
@@ -34,9 +34,9 @@ $secretMatches = Get-ChildItem -LiteralPath $extensionRoot -Recurse -File |
 if ($secretMatches) { throw "A possible production secret was found: $($secretMatches.Path -join ', ')" }
 
 New-Item -ItemType Directory -Force -Path $OutputDirectory | Out-Null
-$installerArchive = Join-Path $OutputDirectory 'sixmoments.ocmod.zip'
-$marketplaceArchive = Join-Path $OutputDirectory ("sixmoments-theme-{0}-marketplace.zip" -f $manifest.version)
-$stageDirectory = Join-Path $OutputDirectory '.sixmoments-marketplace-stage'
+$installerArchive = Join-Path $OutputDirectory 'noveraile.ocmod.zip'
+$marketplaceArchive = Join-Path $OutputDirectory ("noveraile-theme-{0}-marketplace.zip" -f $manifest.version)
+$stageDirectory = Join-Path $OutputDirectory '.noveraile-marketplace-stage'
 
 foreach ($target in @($installerArchive, $marketplaceArchive)) {
     if (Test-Path -LiteralPath $target) { Remove-Item -LiteralPath $target -Force }
@@ -62,7 +62,7 @@ try {
 }
 
 New-Item -ItemType Directory -Force -Path $stageDirectory | Out-Null
-Copy-Item -LiteralPath $installerArchive -Destination (Join-Path $stageDirectory 'sixmoments.ocmod.zip')
+Copy-Item -LiteralPath $installerArchive -Destination (Join-Path $stageDirectory 'noveraile.ocmod.zip')
 Copy-Item -LiteralPath (Join-Path $extensionRoot 'README.md') -Destination (Join-Path $stageDirectory 'DOCUMENTATION-EN.md')
 Copy-Item -LiteralPath (Join-Path $extensionRoot 'INSTALL-RU.md') -Destination (Join-Path $stageDirectory 'DOCUMENTATION-RU.md')
 Copy-Item -LiteralPath (Join-Path $marketplaceRoot 'LICENSE.txt') -Destination $stageDirectory

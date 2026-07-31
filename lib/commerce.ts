@@ -20,7 +20,7 @@ type SecureCatalogProduct = {
 export const secureCatalog: Record<string, SecureCatalogProduct> = {
   "promise-solitaire": {
     id: "promise-solitaire",
-    sku: "6M-RI-001",
+    sku: "NVR-RI-001",
     title: "Солітер «Обіцянка»",
     subtitle: "Золото 18 каратів · діамант із підтвердженим походженням",
     image: "/products/promise-solitaire.webp",
@@ -28,7 +28,7 @@ export const secureCatalog: Record<string, SecureCatalogProduct> = {
   },
   "union-band": {
     id: "union-band",
-    sku: "6M-WE-002",
+    sku: "NVR-WE-002",
     title: "Обручка «Союз»",
     subtitle: "Золото 18 каратів · ручне оздоблення",
     image: "/products/union-band.webp",
@@ -36,7 +36,7 @@ export const secureCatalog: Record<string, SecureCatalogProduct> = {
   },
   "arrival-pendant": {
     id: "arrival-pendant",
-    sku: "6M-NE-003",
+    sku: "NVR-NE-003",
     title: "Підвіска «Нова глава»",
     subtitle: "Золото 18 каратів · діамант круглого огранювання",
     image: "/products/arrival-pendant.webp",
@@ -44,7 +44,7 @@ export const secureCatalog: Record<string, SecureCatalogProduct> = {
   },
   "becoming-hoops": {
     id: "becoming-hoops",
-    sku: "6M-EA-004",
+    sku: "NVR-EA-004",
     title: "Сережки «Становлення»",
     subtitle: "Золото 18 каратів · продаються парою",
     image: "/products/becoming-hoops.webp",
@@ -52,7 +52,7 @@ export const secureCatalog: Record<string, SecureCatalogProduct> = {
   },
   "gratitude-bracelet": {
     id: "gratitude-bracelet",
-    sku: "6M-BR-005",
+    sku: "NVR-BR-005",
     title: "Браслет «Вдячність»",
     subtitle: "Золото 18 каратів · діамантове паве",
     image: "/products/gratitude-bracelet.webp",
@@ -60,7 +60,7 @@ export const secureCatalog: Record<string, SecureCatalogProduct> = {
   },
   "legacy-signet": {
     id: "legacy-signet",
-    sku: "6M-RI-006",
+    sku: "NVR-RI-006",
     title: "Перстень «Спадщина»",
     subtitle: "Золото 18 каратів · гравіювання включено",
     image: "/products/legacy-signet.webp",
@@ -68,7 +68,7 @@ export const secureCatalog: Record<string, SecureCatalogProduct> = {
   },
   "first-ride": {
     id: "first-ride",
-    sku: "6M-SE-007",
+    sku: "NVR-SE-007",
     title: "Біговел «Перша поїздка»",
     subtitle: "Пам’ятний предмет для першої великої пригоди",
     image: "/products/first-ride.webp",

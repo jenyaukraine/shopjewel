@@ -1,0 +1,50 @@
+{{ header }}
+<section id="checkout-checkout" class="checkout-page">
+  <div class="checkout-page-shell">
+    <nav class="checkout-page-progress" aria-label="{{ heading_title }}">
+      <a href="{{ six_cart_url }}"><i>01</i>{{ six_bag }}</a>
+      <span><i>02</i>{{ six_benefit_delivery_title }}</span>
+      <span class="is-current"><i>03</i>{{ heading_title }}</span>
+    </nav>
+
+    <header class="checkout-page-masthead">
+      <div>
+        <p class="eyebrow">NOVERAILE · {{ six_checkout_kicker }}</p>
+        <h1>{{ heading_title }}</h1>
+      </div>
+      <div class="checkout-page-intro">
+        <p>{{ six_checkout_intro }}</p>
+        <span><i aria-hidden="true">◇</i>{{ six_cart_secure }}</span>
+      </div>
+    </header>
+
+    <div class="checkout-page-grid">
+      <div class="checkout-page-details">
+        {{ content_top }}
+        {% if register %}<section id="checkout-register" class="checkout-page-section">{{ register }}</section>{% endif %}
+        {% if payment_address %}<section id="checkout-payment-address" class="checkout-page-section">{{ payment_address }}</section>{% endif %}
+        {% if shipping_address %}<section id="checkout-shipping-address" class="checkout-page-section">{{ shipping_address }}</section>{% endif %}
+        <div class="checkout-page-help">
+          <span aria-hidden="true">◎</span>
+          <p><strong>{{ six_checkout_help_title }}</strong>{{ six_checkout_help_copy }} <a href="{{ six_contact_url }}">{{ six_contact }} →</a></p>
+        </div>
+      </div>
+
+      <aside class="checkout-page-sidebar">
+        <div class="checkout-page-sidebar-heading">
+          <div><p class="eyebrow">NOVERAILE</p><h2>{{ six_cart_summary }}</h2></div>
+          <span aria-hidden="true">◇</span>
+        </div>
+        {% if shipping_method %}<div id="checkout-shipping-method" class="checkout-page-method">{{ shipping_method }}</div>{% endif %}
+        <div id="checkout-payment-method" class="checkout-page-method">{{ payment_method }}</div>
+        <div id="checkout-confirm" class="checkout-page-confirm">{{ confirm }}</div>
+        <div class="checkout-page-assurance">
+          <span aria-hidden="true">◇</span>
+          <p><strong>{{ six_checkout_assurance_title }}</strong>{{ six_checkout_assurance_copy }}</p>
+        </div>
+      </aside>
+    </div>
+    {{ content_bottom }}
+  </div>
+</section>
+{{ footer }}

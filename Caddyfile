@@ -1,4 +1,4 @@
 katya-dev.duckdns.org {
     encode zstd gzip
-    reverse_proxy sixmoments-store:3000
+    reverse_proxy noveraile-store:3000
 }

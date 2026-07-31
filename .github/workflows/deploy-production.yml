@@ -64,7 +64,7 @@ jobs:
           chmod 600 "$HOME/.ssh/deploy_key" "$HOME/.ssh/known_hosts"
 
       - name: Package deployment source
-        run: git archive --format=tar.gz --output=sixmoments-opencart.tar.gz "$GITHUB_SHA"
+        run: git archive --format=tar.gz --output=noveraile-opencart.tar.gz "$GITHUB_SHA"
 
       - name: Prepare protected runtime settings
         env:
@@ -94,18 +94,18 @@ jobs:
         run: |
           set -Eeuo pipefail
           scp -i "$HOME/.ssh/deploy_key" -o IdentitiesOnly=yes \
-            sixmoments-opencart.tar.gz \
-            "$DEPLOY_USER@$DEPLOY_HOST:/tmp/sixmoments-$GITHUB_SHA.tar.gz"
+            noveraile-opencart.tar.gz \
+            "$DEPLOY_USER@$DEPLOY_HOST:/tmp/noveraile-$GITHUB_SHA.tar.gz"
           scp -i "$HOME/.ssh/deploy_key" -o IdentitiesOnly=yes \
             .env.runtime \
-            "$DEPLOY_USER@$DEPLOY_HOST:/tmp/sixmoments-$GITHUB_SHA.env"
+            "$DEPLOY_USER@$DEPLOY_HOST:/tmp/noveraile-$GITHUB_SHA.env"
 
       - name: Deploy clean OpenCart with current module
         run: |
           set -Eeuo pipefail
           ssh -i "$HOME/.ssh/deploy_key" -o IdentitiesOnly=yes \
             "$DEPLOY_USER@$DEPLOY_HOST" \
-            "DEPLOY_PATH='$DEPLOY_PATH' RELEASE_SHA='$GITHUB_SHA' ARCHIVE='/tmp/sixmoments-$GITHUB_SHA.tar.gz' RUNTIME_ENV='/tmp/sixmoments-$GITHUB_SHA.env' bash -s" <<'REMOTE'
+            "DEPLOY_PATH='$DEPLOY_PATH' RELEASE_SHA='$GITHUB_SHA' ARCHIVE='/tmp/noveraile-$GITHUB_SHA.tar.gz' RUNTIME_ENV='/tmp/noveraile-$GITHUB_SHA.env' bash -s" <<'REMOTE'
           set -Eeuo pipefail
 
           case "$DEPLOY_PATH" in
@@ -118,13 +118,13 @@ jobs:
           mv "$RUNTIME_ENV" "$release_dir/.env.runtime"
           chmod 600 "$release_dir/.env.runtime"
 
-          if docker container inspect sixmoments-db >/dev/null 2>&1; then
-            test "$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' sixmoments-db)" = "healthy" || {
+          if docker container inspect noveraile-db >/dev/null 2>&1; then
+            test "$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' noveraile-db)" = "healthy" || {
               echo "Existing OpenCart database is not healthy; refusing to create an invalid backup"
               exit 1
             }
             backup="$DEPLOY_PATH/backups/opencart-$(date -u +%Y%m%dT%H%M%SZ).sql.gz"
-            docker exec sixmoments-db sh -c \
+            docker exec noveraile-db sh -c \
               'exec mysqldump --single-transaction --no-tablespaces -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE"' \
               | gzip > "$backup"
             find "$DEPLOY_PATH/backups" -type f -name 'opencart-*.sql.gz' -mtime +14 -delete
@@ -132,16 +132,16 @@ jobs:
 
           cd "$release_dir"
           docker network inspect web-edge >/dev/null 2>&1 || docker network create web-edge
-          docker compose --env-file .env.runtime -p sixmoments build opencart
-          docker compose --env-file .env.runtime -p sixmoments up -d db
-          docker compose --env-file .env.runtime -p sixmoments up -d --remove-orphans
+          docker compose --env-file .env.runtime -p noveraile build opencart
+          docker compose --env-file .env.runtime -p noveraile up -d db
+          docker compose --env-file .env.runtime -p noveraile up -d --remove-orphans
 
           for attempt in $(seq 1 36); do
-            if [ "$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' sixmoments-store)" = "healthy" ]; then
+            if [ "$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' noveraile-store)" = "healthy" ]; then
               break
             fi
             if [ "$attempt" -eq 36 ]; then
-              docker logs --tail 200 sixmoments-store
+              docker logs --tail 200 noveraile-store
               echo "OpenCart container did not become healthy"
               exit 1
             fi
@@ -150,7 +150,7 @@ jobs:
 
           ln -sfn "$release_dir" "$DEPLOY_PATH/current"
           rm -f "$ARCHIVE"
-          docker compose --env-file .env.runtime -p sixmoments ps
+          docker compose --env-file .env.runtime -p noveraile ps
           REMOTE
 
       - name: Verify production
@@ -159,7 +159,7 @@ jobs:
           for attempt in $(seq 1 36); do
             storefront="$(curl --fail --silent --show-error --max-time 15 "$PRODUCTION_URL" || true)"
             admin="$(curl --fail --silent --show-error --max-time 15 "${PRODUCTION_URL%/}/admin/" || true)"
-            if grep -q 'class="sixmoments-store"' <<<"$storefront" && grep -q '<title>Administration</title>' <<<"$admin"; then
+            if grep -q 'class="noveraile-store"' <<<"$storefront" && grep -q '<title>Administration</title>' <<<"$admin"; then
               echo "Production is healthy: $PRODUCTION_URL"
               exit 0
             fi

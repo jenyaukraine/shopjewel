@@ -42,4 +42,4 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Build clean OpenCart with the extension
-        run: docker build --build-arg OPENCART_VERSION=${{ matrix.opencart }} --tag sixmoments:test-${{ matrix.opencart }} .
+        run: docker build --build-arg OPENCART_VERSION=${{ matrix.opencart }} --tag noveraile:test-${{ matrix.opencart }} .

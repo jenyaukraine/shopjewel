@@ -954,7 +954,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   height: 375px;
   border-radius: 8px 8px 0 0;
   /*noinspection CssUnknownTarget -- served from Next.js/Vite's public directory */
-  background: #cbbba7 url("/hero-6moments.webp") 76% 52%/cover no-repeat;
+  background: #cbbba7 url("/hero-noveraile.webp") 76% 52%/cover no-repeat;
 }
 .welcome-close {
   width: 46px;

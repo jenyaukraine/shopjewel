@@ -1,6 +1,6 @@
 import { runtimeEnv } from "./runtime-env";
 
-const COOKIE_NAME = "sixmoments_admin";
+const COOKIE_NAME = "noveraile_admin";
 const SESSION_SECONDS = 60 * 60 * 12;
 
 export async function verifyAdminPassword(password: string, request: Request): Promise<boolean> {
@@ -39,13 +39,13 @@ export function adminConfigurationReady(request: Request): boolean {
 function configuredAdminPassword(request: Request): string | null {
   const env = runtimeEnv();
   if (env.ADMIN_PASSWORD) return env.ADMIN_PASSWORD;
-  return isLocal(request) ? "sixmoments-demo" : null;
+  return isLocal(request) ? "noveraile-demo" : null;
 }
 
 function configuredSessionSecret(request: Request): string | null {
   const env = runtimeEnv();
   if (env.ADMIN_SESSION_SECRET) return env.ADMIN_SESSION_SECRET;
-  return isLocal(request) ? "local-sixmoments-session-secret" : null;
+  return isLocal(request) ? "local-noveraile-session-secret" : null;
 }
 
 async function sign(payload: string, request: Request): Promise<string> {

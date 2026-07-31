@@ -98,11 +98,11 @@ mkdir -p \
 
 # The image directory is a persistent volume, so refresh versioned storefront
 # assets from the immutable extension overlay on every container start.
-cp -a extension/sixmoments/image/. image/
+cp -a extension/noveraile/image/. image/
 
 # Keep the module registration and its OpenCart events healthy after both a
 # fresh installation and future container replacements.
-php /usr/local/bin/bootstrap-sixmoments.php
+php /usr/local/bin/bootstrap-noveraile.php
 
 chown -R www-data:www-data config.php admin/config.php system/storage image
 chmod 640 config.php admin/config.php
