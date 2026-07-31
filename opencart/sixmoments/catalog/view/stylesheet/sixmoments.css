@@ -119,6 +119,25 @@ html, body { overflow-x: hidden; }
 .legal-page h1 { margin:12px 0; font:60px/1 var(--serif); }
 .legal-copy { color:var(--muted); font:18px/1.75 var(--serif); }
 .legal-copy h2 { margin-top:50px; color:var(--ink); font:36px var(--serif); }
+.legal-copy a { color:var(--ink); text-underline-offset:4px; }
+.legal-copy ul { margin:18px 0 0; padding-left:24px; }
+.legal-copy li + li { margin-top:10px; }
+.legal-intro { max-width:860px; color:var(--ink); font-size:22px; }
+.legal-updated { margin-top:12px; font:12px/1.4 var(--sans); letter-spacing:.12em; text-transform:uppercase; }
+.legal-details { margin:22px 0 0; border-top:1px solid var(--line); }
+.legal-details div { display:grid; grid-template-columns:minmax(170px, .36fr) 1fr; gap:28px; padding:18px 0; border-bottom:1px solid var(--line); }
+.legal-details dt { color:var(--ink); font:600 12px/1.5 var(--sans); letter-spacing:.08em; text-transform:uppercase; }
+.legal-details dd { margin:0; }
+.legal-table { margin-top:24px; border-top:1px solid var(--line); }
+.legal-table-row { display:grid; grid-template-columns:1fr 1fr; gap:28px; padding:18px 0; border-bottom:1px solid var(--line); }
+.legal-table-head { color:var(--ink); font:600 12px/1.5 var(--sans); letter-spacing:.08em; text-transform:uppercase; }
+.legal-placeholder { display:inline; padding:3px 7px; color:#79561d; background:#fff1cc; box-decoration-break:clone; -webkit-box-decoration-break:clone; font:600 13px/1.7 var(--sans); }
+.legal-note { margin-top:60px; padding:22px 24px; border:1px solid #dbc791; color:#685328; background:#fff9e9; font:14px/1.7 var(--sans); }
+@media (max-width:700px) {
+  .legal-details div,.legal-table-row { grid-template-columns:1fr; gap:6px; }
+  .legal-page h1 { font-size:44px; }
+  .legal-copy h2 { font-size:30px; }
+}
 .quiz-shell { max-width:1200px; margin:auto; padding:90px 5vw 130px; }
 .quiz-heading { max-width:760px; margin:auto; text-align:center; }
 .quiz-heading h1 { margin:15px 0; font:68px/1 var(--serif); }
