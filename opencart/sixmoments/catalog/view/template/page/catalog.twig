@@ -1,0 +1,30 @@
+{{ header }}
+<section class="interior-hero catalog-hero"><div><p class="eyebrow">{{ six_collections }}</p><h1>{{ six_catalog_title }}</h1><p>{{ six_catalog_intro }}</p></div></section>
+<main class="six-catalog-page">
+  <nav class="catalog-dual-nav" aria-label="{{ six_shop_by_type }}">
+    <div><strong>{{ six_shop_by_type }}</strong><a href="{{ clear_url }}"{% if not filters.type and not filters.category_id %} class="is-active"{% endif %}>{{ six_all }}</a>{% for type in types %}<a href="{{ type.href }}"{% if filters.type == type.value %} class="is-active"{% endif %}>{{ type.name }}</a>{% endfor %}</div>
+    <div><strong>{{ six_shop_by_moment }}</strong><a href="{{ clear_url }}"{% if not filters.moment %} class="is-active"{% endif %}>{{ six_all }}</a>{% for moment in moments %}<a href="{{ moment.href }}"{% if filters.moment == moment.value %} class="is-active"{% endif %}>{{ moment.name }}</a>{% endfor %}</div>
+  </nav>
+  <div class="catalog-shell">
+    <aside class="catalog-filters" data-six-filters>
+      <div class="filter-heading"><h2>{{ six_filters }}</h2><a href="{{ clear_url }}">{{ six_clear }}</a></div>
+      <form action="{{ catalog_action }}" method="get">
+        <input type="hidden" name="route" value="extension/sixmoments/page/catalog"><input type="hidden" name="language" value="{{ language }}">
+        <label class="filter-search">{{ six_search }}<input type="search" name="q" value="{{ filters.q }}"></label>
+        <details open><summary>{{ six_metal }}</summary><label><input type="radio" name="metal" value=""{% if not filters.metal %} checked{% endif %}> {{ six_all }}</label><label><input type="radio" name="metal" value="white-gold"{% if filters.metal == 'white-gold' %} checked{% endif %}> {{ six_white_gold }}</label><label><input type="radio" name="metal" value="yellow-gold"{% if filters.metal == 'yellow-gold' %} checked{% endif %}> {{ six_yellow_gold }}</label><label><input type="radio" name="metal" value="rose-gold"{% if filters.metal == 'rose-gold' %} checked{% endif %}> {{ six_rose_gold }}</label></details>
+        <details><summary>{{ six_fineness }}</summary><label><input type="radio" name="fineness" value=""{% if not filters.fineness %} checked{% endif %}> {{ six_all }}</label><label><input type="radio" name="fineness" value="585"{% if filters.fineness == '585' %} checked{% endif %}> 585</label><label><input type="radio" name="fineness" value="750"{% if filters.fineness == '750' %} checked{% endif %}> 750</label></details>
+        <details><summary>{{ six_stone }}</summary><label><input type="radio" name="stone" value=""{% if not filters.stone %} checked{% endif %}> {{ six_all }}</label><label><input type="radio" name="stone" value="natural"{% if filters.stone == 'natural' %} checked{% endif %}> {{ six_natural }}</label><label><input type="radio" name="stone" value="lab-grown"{% if filters.stone == 'lab-grown' %} checked{% endif %}> {{ six_lab_grown }}</label></details>
+        <details><summary>{{ six_price }} · {{ currency_code }}</summary><div class="price-range"><input type="number" name="price_min" min="0" value="{{ price_min }}" placeholder="{{ six_from }}"><span>—</span><input type="number" name="price_max" min="0" value="{{ price_max }}" placeholder="{{ six_to }}"></div></details>
+        <details><summary>{{ six_availability }}</summary><label><input type="radio" name="availability" value=""{% if not filters.availability %} checked{% endif %}> {{ six_all }}</label><label><input type="radio" name="availability" value="ready"{% if filters.availability == 'ready' %} checked{% endif %}> {{ six_ready }}</label><label><input type="radio" name="availability" value="preorder"{% if filters.availability == 'preorder' %} checked{% endif %}> {{ six_preorder }}</label></details>
+        <details><summary>{{ six_delivery }}</summary><label><input type="radio" name="delivery" value=""{% if not filters.delivery %} checked{% endif %}> {{ six_all }}</label><label><input type="radio" name="delivery" value="delivery-3"{% if filters.delivery == 'delivery-3' %} checked{% endif %}> {{ six_delivery_3 }}</label><label><input type="radio" name="delivery" value="delivery-10"{% if filters.delivery == 'delivery-10' %} checked{% endif %}> {{ six_delivery_10 }}</label></details>
+        {% if filters.type %}<input type="hidden" name="type" value="{{ filters.type }}">{% endif %}{% if filters.moment %}<input type="hidden" name="moment" value="{{ filters.moment }}">{% endif %}{% if filters.category_id %}<input type="hidden" name="category_id" value="{{ filters.category_id }}">{% endif %}{% if filters.sale %}<input type="hidden" name="sale" value="1">{% endif %}
+        <button class="button button--dark" type="submit">{{ six_apply }}</button>
+      </form>
+    </aside>
+    <section class="catalog-results">
+      <div class="catalog-toolbar"><button class="filter-toggle" type="button" data-six-filter-toggle>{{ six_filters }}</button><strong>{{ total }} {{ six_pieces }}</strong><label>{{ six_sort }} <select onchange="location=this.value">{% for sort in sorts %}<option value="{{ sort.href }}"{% if filters.sort == sort.value %} selected{% endif %}>{{ sort.name }}</option>{% endfor %}</select></label></div>
+      {% if products %}<div class="collection-grid product-grid">{% for product in products %}{{ product }}{% endfor %}</div><div class="pagination-shell">{{ pagination }}<p>{{ result_text }}</p></div>{% else %}<div class="empty-state"><p>{{ six_no_products }}</p><a class="button button--dark" href="{{ clear_url }}">{{ six_clear }}</a></div>{% endif %}
+    </section>
+  </div>
+</main>
+{{ footer }}

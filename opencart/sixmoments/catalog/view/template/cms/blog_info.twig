@@ -1,0 +1,33 @@
+{{ header }}
+<article class="journal-article-page">
+  <header class="journal-article-hero">
+    <a class="journal-back-link" href="{{ six_journal_url }}"><span aria-hidden="true">←</span> {{ six_journal_kicker }}</a>
+    <p class="eyebrow">{{ author }} · {{ date_added }}</p>
+    <h1>{{ heading_title }}</h1>
+  </header>
+
+  <figure class="journal-article-image">
+    <img src="{{ image }}" alt="{{ heading_title }}">
+  </figure>
+
+  <div class="journal-article-body">
+    <div class="journal-article-meta">
+      <p class="eyebrow">{{ six_field_note }}</p>
+      <span>{{ date_added }}</span>
+      <a href="{{ filter_author }}">{{ author }}</a>
+    </div>
+    <div class="journal-article-copy">
+      {{ description }}
+      {% if tags %}
+        <nav class="journal-tags" aria-label="{{ text_tags }}">
+          {% for tag in tags %}<a href="{{ tag.href }}">{{ tag.tag }}</a>{% endfor %}
+        </nav>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if comment %}<section class="journal-comments" id="comment-container">{{ comment }}</section>{% endif %}
+  {{ content_top }}
+  {{ content_bottom }}
+</article>
+{{ footer }}

@@ -31,8 +31,9 @@ RUN apt-get update \
         libicu-dev \
         libjpeg62-turbo-dev \
         libpng-dev \
+        libwebp-dev \
         libzip-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install -j"$(nproc)" gd intl mysqli opcache zip \
     && a2enmod expires headers rewrite \
     && sed -i 's/^Listen 80$/Listen 3000/' /etc/apache2/ports.conf \
@@ -58,11 +59,10 @@ COPY opencart/sixmoments/ /var/www/html/extension/sixmoments/
 COPY docker/opencart.ini /usr/local/etc/php/conf.d/opencart.ini
 COPY docker/apache-vhost.conf /etc/apache2/sites-available/000-default.conf
 COPY docker/render-config.php /usr/local/bin/render-opencart-config
+COPY docker/bootstrap-sixmoments.php /usr/local/bin/bootstrap-sixmoments.php
 COPY docker/entrypoint.sh /usr/local/bin/sixmoments-entrypoint
 
-RUN find /var/www/html/extension/sixmoments -type f -name '*.php' \
-        -exec php -l '{}' ';' \
-    && chmod +x /usr/local/bin/sixmoments-entrypoint \
+RUN chmod +x /usr/local/bin/sixmoments-entrypoint \
     && chown -R www-data:www-data \
         /var/www/html/config.php \
         /var/www/html/admin/config.php \

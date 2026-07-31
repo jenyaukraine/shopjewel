@@ -1,0 +1,50 @@
+[2mDefault inspector port 9229 not available, using 9232 instead
+[22m
+Detected multiple renderers concurrently rendering the same context provider. This is currently unsupported.
+Detected multiple renderers concurrently rendering the same context provider. This is currently unsupported.
+Detected multiple renderers concurrently rendering the same context provider. This is currently unsupported.
+Detected multiple renderers concurrently rendering the same context provider. This is currently unsupported.
+Detected multiple renderers concurrently rendering the same context provider. This is currently unsupported.
+Detected multiple renderers concurrently rendering the same context provider. This is currently unsupported.
+[2m3:21:21 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: The file does not exist at "C:/Users/jenya/PhpstormProjects/888/node_modules/.vite/deps_rsc/react_jsx-dev-runtime.js?v=ee5c10bd" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.[39m
+      at runInRunnerObject (workers/runner-worker/index.js:107:3)
+      at getWorkerEntryExport (workers/runner-worker/index.js:241:17)
+      at null.<anonymous> (workers/runner-worker/index.js:360:24)
+      at maybeCaptureError (workers/runner-worker/index.js:51:10)
+[2m3:21:21 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: The file does not exist at "C:/Users/jenya/PhpstormProjects/888/node_modules/.vite/deps_rsc/react_jsx-dev-runtime.js?v=ee5c10bd" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.[39m
+      at runInRunnerObject (workers/runner-worker/index.js:107:3)
+      at getWorkerEntryExport (workers/runner-worker/index.js:241:17)
+      at null.<anonymous> (workers/runner-worker/index.js:360:24)
+      at maybeCaptureError (workers/runner-worker/index.js:51:10)
+[2m3:21:36 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: The file does not exist at "C:/Users/jenya/PhpstormProjects/888/node_modules/.vite/deps_rsc/react_jsx-dev-runtime.js?v=ee5c10bd" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.[39m
+      at runInRunnerObject (workers/runner-worker/index.js:107:3)
+      at getWorkerEntryExport (workers/runner-worker/index.js:241:17)
+      at null.<anonymous> (workers/runner-worker/index.js:360:24)
+      at maybeCaptureError (workers/runner-worker/index.js:51:10)
+[2m3:21:36 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: The file does not exist at "C:/Users/jenya/PhpstormProjects/888/node_modules/.vite/deps_rsc/react_jsx-dev-runtime.js?v=ee5c10bd" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.[39m
+      at runInRunnerObject (workers/runner-worker/index.js:107:3)
+      at getWorkerEntryExport (workers/runner-worker/index.js:241:17)
+      at null.<anonymous> (workers/runner-worker/index.js:360:24)
+      at maybeCaptureError (workers/runner-worker/index.js:51:10)
+[2m3:22:37 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: The file does not exist at "C:/Users/jenya/PhpstormProjects/888/node_modules/.vite/deps_rsc/react_jsx-dev-runtime.js?v=ee5c10bd" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.[39m
+      at runInRunnerObject (workers/runner-worker/index.js:107:3)
+      at getWorkerEntryExport (workers/runner-worker/index.js:241:17)
+      at null.<anonymous> (workers/runner-worker/index.js:360:24)
+      at maybeCaptureError (workers/runner-worker/index.js:51:10)
+[2m3:22:37 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: The file does not exist at "C:/Users/jenya/PhpstormProjects/888/node_modules/.vite/deps_rsc/react_jsx-dev-runtime.js?v=ee5c10bd" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.[39m
+      at runInRunnerObject (workers/runner-worker/index.js:107:3)
+      at getWorkerEntryExport (workers/runner-worker/index.js:241:17)
+      at null.<anonymous> (workers/runner-worker/index.js:360:24)
+      at maybeCaptureError (workers/runner-worker/index.js:51:10)
+[2m3:24:07 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: The file does not exist at "C:/Users/jenya/PhpstormProjects/888/node_modules/.vite/deps_rsc/react_jsx-dev-runtime.js?v=ee5c10bd" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.[39m
+      at runInRunnerObject (workers/runner-worker/index.js:107:3)
+      at getWorkerEntryExport (workers/runner-worker/index.js:241:17)
+      at null.<anonymous> (workers/runner-worker/index.js:360:24)
+      at maybeCaptureError (workers/runner-worker/index.js:51:10)
+[2m3:24:07 PM[22m [31m[1m[vite][22m[39m [31mInternal server error: The file does not exist at "C:/Users/jenya/PhpstormProjects/888/node_modules/.vite/deps_rsc/react_jsx-dev-runtime.js?v=ee5c10bd" which is in the optimize deps directory. The dependency might be incompatible with the dep optimizer. Try adding it to `optimizeDeps.exclude`.[39m
+      at runInRunnerObject (workers/runner-worker/index.js:107:3)
+      at getWorkerEntryExport (workers/runner-worker/index.js:241:17)
+      at null.<anonymous> (workers/runner-worker/index.js:360:24)
+      at maybeCaptureError (workers/runner-worker/index.js:51:10)
+Detected multiple renderers concurrently rendering the same context provider. This is currently unsupported.
+Detected multiple renderers concurrently rendering the same context provider. This is currently unsupported.

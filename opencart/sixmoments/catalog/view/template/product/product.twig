@@ -11,7 +11,8 @@
       <p class="eyebrow">{{ six_moment }}</p><h1>{{ heading_title }}</h1>
       <p class="product-price">{% if special %}<del>{{ price }}</del> {{ special }}{% else %}{{ price }}{% endif %}</p>
       <div class="product-status-line"><span>{{ six_product_code }}: <strong>{{ model }}</strong></span><span>{{ six_stock }}: <strong>{{ stock }}</strong></span><span>{{ six_weight }}: <strong>{{ six_product_weight }}</strong></span></div>
-      <div class="product-description">{{ description }}</div>
+      <dl class="product-key-specs"><div><dt>{{ six_metal }}</dt><dd>{{ six_metal_value }}</dd></div><div><dt>{{ six_fineness }}</dt><dd>{{ six_fineness_value }}</dd></div><div><dt>{{ six_stone }}</dt><dd>{{ six_stone_value }}</dd></div><div><dt>{{ six_carat }}</dt><dd>{{ six_carat_value }}</dd></div><div><dt>{{ six_stone_count }}</dt><dd>{{ six_stones_value }}</dd></div><div><dt>{{ six_delivery }}</dt><dd>{{ six_delivery_value }}</dd></div></dl>
+      <div class="product-description">{{ description|raw }}</div>
       <form id="form-product" class="six-product-form">
         {% for option in options %}
           <fieldset class="option-group{% if option.required %} required{% endif %}"><legend>{{ option.name }}</legend>
@@ -23,19 +24,21 @@
           {% if option.type == 'date' %}<input type="date" name="option[{{ option.product_option_id }}]" value="{{ option.value }}" id="input-option-{{ option.product_option_id }}">{% endif %}
           <div id="error-option-{{ option.product_option_id }}" class="invalid-feedback"></div></fieldset>
         {% endfor %}
+        <details class="size-guide"><summary>{{ six_size_title }}</summary><p>{{ six_size_copy }}</p><div class="size-table"><span>EU</span><span>US</span><span>Ø mm</span><b>50</b><b>5¼</b><b>15.9</b><b>52</b><b>6</b><b>16.5</b><b>54</b><b>7</b><b>17.2</b><b>56</b><b>7½</b><b>17.8</b><b>58</b><b>8½</b><b>18.5</b><b>60</b><b>9</b><b>19.1</b></div></details>
         <div class="quantity-row"><label for="input-quantity">{{ entry_qty }}</label><input id="input-quantity" name="quantity" type="number" min="{{ minimum }}" value="{{ minimum }}"><button id="button-cart" class="button button--dark add-button" type="submit">{{ six_add_to_bag }}</button></div>
         <input type="hidden" name="product_id" value="{{ product_id }}" id="input-product-id">
         <div id="error-quantity" class="invalid-feedback"></div>
       </form>
       <form method="post" data-oc-toggle="ajax" class="product-secondary-actions"><button type="submit" formaction="{{ wishlist_add }}">♡ {{ six_wishlist }}</button><input type="hidden" name="product_id" value="{{ product_id }}"></form>
-      <ul class="product-details-list"><li>{{ six_in_stock }} / {{ six_preorder }}</li><li><a href="{{ six_shipping_url }}">{{ six_delivery }}</a></li><li>Luxury packaging included</li></ul>
-      <details class="product-accordion" open><summary>{{ six_description }}</summary><div>{{ description }}</div></details>
+      <ul class="product-details-list"><li><strong>{{ stock }}</strong></li><li><a href="{{ six_shipping_url }}">{{ six_delivery }}</a></li><li>{{ six_packaging }}</li></ul>
+      <details class="product-accordion" open><summary>{{ six_description }}</summary><div>{{ description|raw }}</div></details>
       {% if attribute_groups %}<details class="product-accordion"><summary>{{ six_details }}</summary><dl class="specification-block">{% for group in attribute_groups %}{% for attribute in group.attribute %}<div><dt>{{ attribute.name }}</dt><dd>{{ attribute.text }}</dd></div>{% endfor %}{% endfor %}</dl></details>{% endif %}
-      <details class="product-accordion"><summary>{{ six_hint_title }}</summary><p>{{ six_hint_copy }}</p><form class="hint-form" action="{{ six_hint_action }}" method="post" data-six-ajax-form><input type="hidden" name="product_id" value="{{ product_id }}"><label>{{ six_sender_name }}<input name="sender_name" required></label><label>{{ six_sender_email }}<input type="email" name="sender_email" required></label><label>{{ six_recipient_name }}<input name="recipient_name" required></label><label>{{ six_recipient_email }}<input type="email" name="recipient_email" required></label><label>{{ six_message }}<textarea name="message" rows="3"></textarea></label><button class="button button--dark" type="submit">{{ six_send_hint }}</button><p class="six-form-status" role="status"></p></form></details>
     </div>
   </section>
+  {% if six_bundle_product %}<section class="bundle-offer"><div><p class="eyebrow">{{ six_bundle }}</p><h2>{{ six_bundle_title }}</h2><p>{{ six_bundle_copy }}</p><p class="bundle-price"><del>{{ price }} + {{ six_bundle_product.price }}</del><strong>{{ six_bundle_product.set_price }}</strong></p><button class="button button--dark" type="button" data-six-bundle-add data-product-id="{{ product_id }}" data-paired-id="{{ six_bundle_product.product_id }}" data-cart-action="{{ six_cart_add }}" data-bundle-action="{{ six_bundle_add }}">{{ six_add_set }}</button><p class="six-form-status" role="status"></p></div><a href="{{ six_bundle_product.href }}"><img src="{{ six_bundle_product.image }}" alt="{{ six_bundle_product.name }}"><span>{{ six_bundle_product.name }}</span></a></section>{% endif %}
   {% if related %}<section class="recommendations"><div class="editorial-heading"><p class="editorial-script">{{ six_may_like }}</p><h2>{{ six_may_like }}</h2></div>{{ related }}</section>{% endif %}
   {% if review_status %}<section class="product-reviews">{{ review }}</section>{% endif %}
+  <section class="gift-hint-section"><div><p class="eyebrow">{{ six_hint_title }}</p><h2>{{ six_hint_title }}</h2><p>{{ six_hint_copy }}</p></div><form class="hint-form" action="{{ six_hint_action }}" method="post" data-six-ajax-form><input type="hidden" name="product_id" value="{{ product_id }}"><label>{{ six_sender_name }}<input name="sender_name" required></label><label>{{ six_sender_email }}<input type="email" name="sender_email" required></label><label>{{ six_recipient_name }}<input name="recipient_name" required></label><label>{{ six_recipient_email }}<input type="email" name="recipient_email" required></label><label class="hint-message">{{ six_message }}<textarea name="message" rows="3"></textarea></label><button class="button button--dark" type="submit">{{ six_send_hint }}</button><p class="six-form-status" role="status"></p></form></section>
   {{ content_bottom }}
 </div>
 <script>

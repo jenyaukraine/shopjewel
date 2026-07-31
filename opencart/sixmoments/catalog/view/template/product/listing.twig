@@ -1,10 +1,87 @@
 {{ header }}
-<section class="interior-hero catalog-hero"><div><p class="eyebrow">{{ six_collections }}</p><h1>{{ heading_title }}</h1><div class="catalog-description">{{ description }}</div></div></section>
-<div id="product-listing" class="catalog-layout container-fluid">
-  {{ content_top }}
-  {% if categories %}<nav class="category-pills">{% for category in categories %}<a href="{{ category.href }}">{{ category.name }}</a>{% endfor %}</nav>{% endif %}
-  <div class="catalog-toolbar"><strong>{{ products|length }} pieces</strong><div><label>{{ six_sort }} <select onchange="location=this.value">{% for item in sorts %}<option value="{{ item.href }}"{% if item.value == sort ~ '-' ~ order %} selected{% endif %}>{{ item.text }}</option>{% endfor %}</select></label><label>{{ entry_show }} <select onchange="location=this.value">{% for item in limits %}<option value="{{ item.href }}"{% if item.value == limit %} selected{% endif %}>{{ item.text }}</option>{% endfor %}</select></label></div></div>
-  {% if products %}<div class="collection-grid product-grid">{% for product in products %}{{ product }}{% endfor %}</div><div class="pagination-shell">{{ pagination }}<p>{{ results }}</p></div>{% else %}<p class="empty-state">{{ six_no_products }}</p>{% endif %}
-  {{ content_bottom }}
-</div>
+<main class="six-listing-page">
+  <section class="listing-hero">
+    <div class="listing-hero__index" aria-hidden="true">
+      <span>6M</span>
+      <i></i>
+      <span>01—06</span>
+    </div>
+    <div class="listing-hero__copy">
+      <p class="eyebrow">{{ six_collections }}</p>
+      <h1>{{ heading_title }}</h1>
+      <div class="listing-description">
+        {% if description %}{{ description }}{% else %}<p>{{ six_catalog_intro }}</p>{% endif %}
+      </div>
+    </div>
+    <p class="listing-hero__note">{{ six_collections_copy }}</p>
+  </section>
+
+  <div id="product-listing" class="listing-content">
+    {{ content_top }}
+
+    {% if six_listing_categories %}
+      <section class="listing-categories" aria-labelledby="listing-categories-title">
+        <header class="listing-section-heading">
+          <h2 id="listing-categories-title">{{ six_shop_by_type }}</h2>
+          <span>{{ six_listing_categories|length < 10 ? '0' : '' }}{{ six_listing_categories|length }}</span>
+        </header>
+        <nav class="listing-category-grid" aria-label="{{ six_shop_by_type }}">
+          <a class="listing-category-link listing-category-link--all" href="{{ six_catalog_url }}">
+            <span>00</span>
+            <strong>{{ six_all }}</strong>
+            <i aria-hidden="true">↗</i>
+          </a>
+          {% for category in six_listing_categories %}
+            <a class="listing-category-link" href="{{ category.href }}">
+              <span>{{ loop.index < 10 ? '0' : '' }}{{ loop.index }}</span>
+              <strong>{{ category.name }}</strong>
+              <i aria-hidden="true">↗</i>
+            </a>
+          {% endfor %}
+        </nav>
+      </section>
+    {% endif %}
+
+    <section class="listing-results" aria-labelledby="listing-results-title">
+      <div class="listing-toolbar">
+        <div class="listing-count" id="listing-results-title">
+          <strong>{{ products|length }}</strong>
+          <span>{{ six_pieces }}</span>
+        </div>
+        <div class="listing-controls">
+          <label>
+            <span>{{ six_sort }}</span>
+            <select aria-label="{{ six_sort }}" onchange="location=this.value">
+              {% for item in sorts %}<option value="{{ item.href }}"{% if item.value == sort ~ '-' ~ order %} selected{% endif %}>{{ item.text }}</option>{% endfor %}
+            </select>
+          </label>
+          <label>
+            <span>{{ entry_show }}</span>
+            <select aria-label="{{ entry_show }}" onchange="location=this.value">
+              {% for item in limits %}<option value="{{ item.href }}"{% if item.value == limit %} selected{% endif %}>{{ item.text }}</option>{% endfor %}
+            </select>
+          </label>
+        </div>
+      </div>
+
+      {% if products %}
+        <div class="collection-grid product-grid listing-product-grid">{% for product in products %}{{ product }}{% endfor %}</div>
+        <div class="pagination-shell">{{ pagination }}<p>{{ results }}</p></div>
+      {% else %}
+        <div class="listing-empty-state">
+          <div class="listing-empty-state__mark" aria-hidden="true"><span>6</span><i></i></div>
+          <div class="listing-empty-state__copy">
+            <p class="eyebrow">{{ six_collections }}</p>
+            <h2>{{ six_no_products }}</h2>
+            <p>{{ six_catalog_intro }}</p>
+            <a class="button button--dark" href="{{ six_catalog_url }}">{{ six_view_all }}</a>
+          </div>
+          <span class="listing-empty-state__number" aria-hidden="true">00</span>
+        </div>
+      {% endif %}
+    </section>
+
+    {{ content_bottom }}
+  </div>
+</main>
 {{ footer }}

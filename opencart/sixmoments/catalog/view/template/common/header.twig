@@ -5,10 +5,12 @@
   <title>{{ title }}</title><base href="{{ base }}">
   {% if description %}<meta name="description" content="{{ description }}">{% endif %}
   {% if keywords %}<meta name="keywords" content="{{ keywords }}">{% endif %}
+  <meta property="og:site_name" content="6MOMENTS"><meta property="og:title" content="{{ title }}"><meta property="og:type" content="website"><meta property="og:image" content="{{ six_og_image }}">
   <script src="{{ jquery }}"></script>
   <link href="{{ bootstrap }}" rel="stylesheet"><link href="{{ icons }}" rel="stylesheet"><link href="{{ six_stylesheet }}" rel="stylesheet">
   <script src="catalog/view/javascript/common.js"></script>
   {% if icon %}<link rel="icon" href="{{ icon }}">{% endif %}
+  <link rel="icon" href="{{ six_favicon }}" type="image/svg+xml">
   {% for style in styles %}<link href="{{ style.href }}" rel="{{ style.rel }}" media="{{ style.media }}">{% endfor %}
   {% for script in scripts %}<script src="{{ script.href }}"></script>{% endfor %}
   {% for link in links %}<link href="{{ link.href }}" rel="{{ link.rel }}">{% endfor %}
@@ -21,24 +23,29 @@
   <header class="site-header">
     <a class="wordmark" href="{{ six_home }}" aria-label="6MOMENTS">6MOMENTS</a>
     <nav class="desktop-nav" aria-label="Primary">
-      <a href="{{ six_catalog }}">{{ six_catalog }}</a><a href="{{ six_about }}">{{ six_about }}</a><a href="{{ six_quiz }}">{{ six_quiz }}</a><a href="{{ six_journal }}">{{ six_journal }}</a>
+      <a href="{{ six_catalog_url }}">{{ six_catalog }}</a><a href="{{ six_about_url }}">{{ six_about }}</a><a href="{{ six_quiz_url }}">{{ six_quiz }}</a><a href="{{ six_journal_url }}">{{ six_journal }}</a>
     </nav>
     <div class="header-actions">
-      <span class="six-switcher">{{ currency }}</span><span class="six-switcher">{{ language }}</span>
-      <a href="{{ six_contact }}">{{ six_contact }}</a>
+      <button class="header-search-trigger" type="button" data-six-search-open aria-label="{{ six_search }}">⌕</button>
+      <span class="six-switcher" data-switcher="currency" data-current="{{ six_currency_code }}">{{ currency }}</span><span class="six-switcher" data-switcher="language" data-current="{{ six_language_code }}">{{ language }}</span>
+      <a href="{{ contact }}">{{ six_contact }}</a>
       <a href="{{ shopping_cart }}" class="bag">{{ six_bag }} <span>{{ six_cart_count }}</span></a>
     </div>
     <button class="mobile-menu-trigger" type="button" data-six-menu-open aria-controls="six-mobile-menu" aria-expanded="false"><span>☰</span> {{ six_menu }}</button>
   </header>
+  <div class="search-overlay" data-six-search aria-hidden="true">
+    <button class="search-backdrop" type="button" data-six-search-close aria-label="Close"></button>
+    <div class="search-panel"><button class="search-close" type="button" data-six-search-close>×</button><p class="eyebrow">6MOMENTS</p><form action="{{ six_search_action }}" method="get" data-six-search-form data-suggest-url="{{ six_search_suggest }}"><input type="hidden" name="route" value="extension/sixmoments/page/catalog"><input type="hidden" name="language" value="{{ six_language_code }}"><label for="six-site-search">{{ six_search }}</label><div><input id="six-site-search" type="search" name="q" autocomplete="off" placeholder="{{ six_search_placeholder }}"><button type="submit">→</button></div><div class="search-suggestions" data-six-suggestions></div></form></div>
+  </div>
   <aside class="mobile-drawer-shell" id="six-mobile-menu" aria-hidden="true">
     <button class="mobile-drawer-backdrop" type="button" data-six-menu-close aria-label="Close"></button>
     <div class="mobile-drawer">
       <div class="mobile-drawer-header"><strong>{{ six_menu }}</strong><button type="button" data-six-menu-close>×</button></div>
       <nav class="mobile-category-nav">{% for category in six_categories %}<a href="{{ category.href }}"><span>◇</span>{{ category.name }}</a>{% endfor %}</nav>
       <nav class="mobile-main-nav">
-        <a href="{{ six_home }}">⌂ {{ text_home }}</a><a href="{{ six_catalog }}">◇ {{ six_catalog }}</a><a href="{{ six_quiz }}">◎ {{ six_quiz }}</a><a href="{{ six_about }}">○ {{ six_about }}</a><a href="{{ six_diamonds }}">◇ {{ six_diamonds }}</a><a href="{{ six_journal }}">□ {{ six_journal }}</a>
+        <a href="{{ six_home }}">⌂ {{ text_home }}</a><a href="{{ six_catalog_url }}">◇ {{ six_catalog }}</a><button type="button" data-six-search-open>⌕ {{ six_search }}</button><a href="{{ six_quiz_url }}">◎ {{ six_quiz }}</a><a href="{{ six_about_url }}">○ {{ six_about }}</a><a href="{{ six_diamonds_url }}">◇ {{ six_diamonds }}</a><a href="{{ six_journal_url }}">□ {{ six_journal }}</a>
       </nav>
-      <div class="mobile-drawer-controls"><span>{{ currency }}</span><span>{{ language }}</span></div>
+      <div class="mobile-drawer-controls"><span data-switcher="currency" data-current="{{ six_currency_code }}">{{ currency|replace({'form-currency':'form-currency-mobile'}) }}</span><span data-switcher="language" data-current="{{ six_language_code }}">{{ language|replace({'form-language':'form-language-mobile'}) }}</span></div>
       <div class="mobile-drawer-contact"><a href="{{ shopping_cart }}">{{ six_bag }} · {{ six_cart_count }}</a><a href="{{ account|default(login) }}">{{ six_account }}</a></div>
     </div>
   </aside>

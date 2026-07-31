@@ -19,9 +19,8 @@ class Sixmoments extends \Opencart\System\Engine\Controller {
             'module_sixmoments_status', 'module_sixmoments_instagram', 'module_sixmoments_email',
             'module_sixmoments_phone', 'module_sixmoments_catalog_category_id',
             'module_sixmoments_lab_category_id', 'module_sixmoments_quiz_rules',
-            'payment_sixmoments_stripe_secret_key', 'payment_sixmoments_stripe_webhook_secret',
-            'payment_sixmoments_stripe_status', 'shipping_sixmoments_dhl_cost',
-            'shipping_sixmoments_dpd_cost'
+            'payment_stripe_secret_key', 'payment_stripe_webhook_secret',
+            'payment_stripe_status', 'shipping_dhl_cost', 'shipping_dpd_cost'
         ];
 
         foreach ($keys as $key) {
@@ -51,10 +50,10 @@ class Sixmoments extends \Opencart\System\Engine\Controller {
 
         if (!$json) {
             $this->load->model('setting/setting');
-            $this->model_setting_setting->editSetting('module_sixmoments', $this->request->post);
-            $this->model_setting_setting->editSetting('payment_sixmoments_stripe', $this->request->post);
-            $this->model_setting_setting->editSetting('shipping_sixmoments_dhl', $this->request->post);
-            $this->model_setting_setting->editSetting('shipping_sixmoments_dpd', $this->request->post);
+            foreach (['module_sixmoments', 'payment_stripe', 'shipping_dhl', 'shipping_dpd'] as $setting_code) {
+                $current = $this->model_setting_setting->getSetting($setting_code);
+                $this->model_setting_setting->editSetting($setting_code, array_merge($current, $this->request->post));
+            }
             $json['success'] = $this->language->get('text_success');
         }
 

@@ -1,0 +1,58 @@
+{{ header }}
+{{ content_top }}
+<section class="interior-hero interior-hero--contact" aria-labelledby="contact-title">
+  <div>
+    <p class="eyebrow">{{ six_contact_eyebrow }}</p>
+    <h1 id="contact-title">{{ six_contact_hero_title }}</h1>
+    <p>{{ six_contact_hero_copy }}</p>
+  </div>
+  <span class="interior-mark" aria-hidden="true">C</span>
+</section>
+
+<section class="contact-layout" aria-labelledby="contact-details-title">
+  <div class="contact-details">
+    <p class="eyebrow">{{ six_contact_details_eyebrow }}</p>
+    <h2 id="contact-details-title">{{ six_contact_details_title }}</h2>
+    <p>{{ six_contact_details_copy }}</p>
+    <dl>
+      <div>
+        <dt>Email</dt>
+        <dd><a href="mailto:{{ six_contact_email }}">{{ six_contact_email }}</a></dd>
+      </div>
+      {% if telephone %}
+        <div><dt>{{ text_telephone }}</dt><dd><a href="tel:{{ telephone|replace({' ': '', '(': '', ')': '', '-': ''}) }}">{{ telephone }}</a></dd></div>
+      {% else %}
+        <div><dt>{{ six_contact_consultations_label }}</dt><dd>{{ six_contact_consultations_value }}</dd></div>
+      {% endif %}
+      <div>
+        <dt>{{ text_open }}</dt>
+        <dd>{% if open %}{{ open }}{% else %}{{ six_contact_hours_value }}{% endif %}</dd>
+      </div>
+    </dl>
+  </div>
+
+  <form id="form-contact" class="contact-form" action="{{ send }}" method="post" data-oc-toggle="ajax">
+    <fieldset>
+      <legend class="sr-only">{{ text_contact }}</legend>
+      <label for="input-name">
+        {{ entry_name }}
+        <input type="text" name="name" value="{{ name }}" id="input-name" autocomplete="name" required>
+        <span id="error-name" class="invalid-feedback" role="alert"></span>
+      </label>
+      <label for="input-email">
+        {{ entry_email }}
+        <input type="email" name="email" value="{{ email }}" id="input-email" autocomplete="email" required>
+        <span id="error-email" class="invalid-feedback" role="alert"></span>
+      </label>
+      <label for="input-enquiry">
+        {{ entry_enquiry }}
+        <textarea name="enquiry" rows="7" id="input-enquiry" minlength="10" required></textarea>
+        <span id="error-enquiry" class="invalid-feedback" role="alert"></span>
+      </label>
+      {{ captcha }}
+    </fieldset>
+    <button type="submit" class="button button--dark">{{ six_contact_submit }}</button>
+  </form>
+</section>
+{{ content_bottom }}
+{{ footer }}

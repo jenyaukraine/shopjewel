@@ -22,11 +22,11 @@ docker compose --env-file .env -f docker-compose.yml -f docker-compose.local.yml
 
 Магазин будет доступен на `http://localhost:8080/`.
 
-После первой установки откройте `/admin/`, затем один раз установите и включите `6MOMENTS Storefront Suite` в разделе Extensions → Extensions → Modules. Последующие деплои заменяют файлы уже установленного модуля и не требуют его переустановки.
+Контейнер автоматически регистрирует и включает `6MOMENTS Storefront Suite` при первой установке. При последующих запусках он восстанавливает обязательные события витрины и обновляет версионируемые изображения, сохраняя настройки и данные магазина.
 
-## Проверка и пакет модуля
+## Пакет модуля
 
-CI проверяет `install.json`, выполняет `php -l` для всех PHP-файлов, собирает чистый Docker-образ и публикует артефакт `sixmoments.ocmod.zip`. Такой же пакет локально можно получить командой:
+Установочный пакет модуля при необходимости можно собрать локально командой:
 
 ```powershell
 Compress-Archive -Path opencart/sixmoments/* -DestinationPath sixmoments.ocmod.zip -Force
@@ -34,11 +34,10 @@ Compress-Archive -Path opencart/sixmoments/* -DestinationPath sixmoments.ocmod.z
 
 ## Продакшен-деплой
 
-Push в `main`, затрагивающий Docker-инфраструктуру или `opencart/sixmoments`, запускает workflow `.github/workflows/deploy-production.yml`. Перед заменой контейнера он создаёт дамп MySQL, собирает образ из чистого OpenCart и текущего модуля, затем проверяет публичный URL.
+Каждый push в `main` сразу запускает workflow `.github/workflows/deploy-production.yml` без отдельного CI-job с валидацией. Перед заменой только контейнеров проекта `sixmoments` workflow создаёт дамп MySQL, собирает образ из чистого OpenCart и текущего модуля, затем проверяет публичный URL. Общий Caddy и контейнеры соседних сайтов workflow не изменяет.
 
 Repository variables:
 
-- `DEPLOY_ENABLED=true`
 - `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_PATH`
 - `PRODUCTION_URL`
 - `OPENCART_ADMIN_EMAIL`

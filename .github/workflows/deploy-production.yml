@@ -1,19 +1,9 @@
-name: Validate and deploy OpenCart module
+name: Deploy OpenCart to production
 
 on:
   push:
     branches:
       - main
-    paths:
-      - ".github/workflows/deploy-production.yml"
-      - ".dockerignore"
-      - ".env.example"
-      - "Caddyfile"
-      - "Dockerfile"
-      - "docker-compose.yml"
-      - "docker-compose.local.yml"
-      - "docker/**"
-      - "opencart/sixmoments/**"
   workflow_dispatch:
 
 concurrency:
@@ -31,56 +21,8 @@ env:
   OPENCART_VERSION: "4.1.0.3"
 
 jobs:
-  validate:
-    name: Validate module and image
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v7
-
-      - name: Validate extension manifest
-        run: |
-          set -Eeuo pipefail
-          jq --exit-status '
-            .name == "6MOMENTS Storefront Suite" and
-            (.version | test("^[0-9]+\\.[0-9]+\\.[0-9]+$")) and
-            (.author | length > 0)
-          ' opencart/sixmoments/install.json >/dev/null
-
-      - name: Check PHP syntax
-        run: |
-          set -Eeuo pipefail
-          docker run --rm \
-            --volume "$PWD/opencart/sixmoments:/module:ro" \
-            php:8.3-cli \
-            sh -ec 'find /module -type f -name "*.php" -exec php -l {} \;'
-
-      - name: Build installable module package
-        run: |
-          set -Eeuo pipefail
-          cd opencart/sixmoments
-          zip -qr ../../sixmoments.ocmod.zip .
-          unzip -l ../../sixmoments.ocmod.zip
-
-      - name: Build clean OpenCart image with module overlay
-        run: |
-          set -Eeuo pipefail
-          docker build \
-            --build-arg "OPENCART_VERSION=$OPENCART_VERSION" \
-            --tag "sixmoments-opencart:${GITHUB_SHA}" \
-            .
-
-      - name: Upload module package
-        uses: actions/upload-artifact@v6
-        with:
-          name: sixmoments-opencart-module
-          path: sixmoments.ocmod.zip
-          if-no-files-found: error
-
   deploy:
-    name: Deploy module to Hetzner
-    needs: validate
-    if: vars.DEPLOY_ENABLED == 'true'
+    name: Deploy to Hetzner
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -176,14 +118,6 @@ jobs:
           mv "$RUNTIME_ENV" "$release_dir/.env.runtime"
           chmod 600 "$release_dir/.env.runtime"
 
-          available_kb="$(df --output=avail -k / | tail -n 1 | tr -d ' ')"
-          if [ "$available_kb" -lt 6291456 ]; then
-            echo "Low disk space detected; pruning recoverable caches before the image build"
-            journalctl --vacuum-size=256M || true
-            docker builder prune -af
-            docker image prune -af
-          fi
-
           if docker container inspect sixmoments-db >/dev/null 2>&1; then
             test "$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' sixmoments-db)" = "healthy" || {
               echo "Existing OpenCart database is not healthy; refusing to create an invalid backup"
@@ -198,13 +132,8 @@ jobs:
 
           cd "$release_dir"
           docker network inspect web-edge >/dev/null 2>&1 || docker network create web-edge
-          docker compose --env-file .env.runtime -p sixmoments build --pull opencart
+          docker compose --env-file .env.runtime -p sixmoments build opencart
           docker compose --env-file .env.runtime -p sixmoments up -d db
-
-          if docker container inspect sixmoments-store >/dev/null 2>&1; then
-            docker rm -f sixmoments-store
-          fi
-
           docker compose --env-file .env.runtime -p sixmoments up -d --remove-orphans
 
           for attempt in $(seq 1 36); do
@@ -218,23 +147,6 @@ jobs:
             fi
             sleep 5
           done
-
-          caddyfile=/opt/incora/Caddyfile
-          if [ -f "$caddyfile" ]; then
-            if grep -q 'six-moments-atelier.jenyaukraine.chatgpt.site' "$caddyfile"; then
-              cp -a "$caddyfile" "$DEPLOY_PATH/backups/Caddyfile-$(date -u +%Y%m%dT%H%M%SZ)"
-              perl -0pe 's#reverse_proxy https://six-moments-atelier\.jenyaukraine\.chatgpt\.site \{\s*header_up Host six-moments-atelier\.jenyaukraine\.chatgpt\.site\s*\}#reverse_proxy sixmoments-store:3000#s' \
-                "$caddyfile" > "$caddyfile.next"
-              cat "$caddyfile.next" > "$caddyfile"
-              rm -f "$caddyfile.next"
-            fi
-            grep -q 'reverse_proxy sixmoments-store:3000' "$caddyfile" || {
-              echo "Caddy route for katya-dev.duckdns.org is not configured for OpenCart"
-              exit 1
-            }
-            docker exec inkora-caddy caddy validate --config /etc/caddy/Caddyfile
-            docker exec inkora-caddy caddy reload --config /etc/caddy/Caddyfile
-          fi
 
           ln -sfn "$release_dir" "$DEPLOY_PATH/current"
           rm -f "$ARCHIVE"
