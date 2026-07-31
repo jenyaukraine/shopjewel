@@ -80,7 +80,7 @@ class Theme extends \Opencart\System\Engine\Controller {
         $data['six_about'] = $this->url->link('extension/sixmoments/page/about', $lang);
         $data['six_diamonds'] = $this->url->link('extension/sixmoments/page/diamonds', $lang);
         $data['six_instagram'] = $this->config->get('module_sixmoments_instagram');
-        $data['six_asset'] = 'image/catalog/sixmoments/';
+        $data['six_asset'] = '/image/catalog/sixmoments/';
         $data['six_moments'] = [
             ['code' => '01', 'title' => $data['six_moment_yes'], 'tag' => 'engagement', 'image' => $data['six_asset'] . 'products/promise-solitaire.webp'],
             ['code' => '02', 'title' => $data['six_moment_forever'], 'tag' => 'wedding', 'image' => $data['six_asset'] . 'products/union-band.webp'],
