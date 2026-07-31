@@ -112,7 +112,11 @@ fi
 
 # Keep the module registration and its OpenCart events healthy after both a
 # fresh installation and future container replacements.
-NOVERAILE_WITH_DEMO_DATA="$noveraile_seed_demo" php /usr/local/bin/bootstrap-noveraile.php
+if [ "$noveraile_seed_demo" = "1" ]; then
+    NOVERAILE_WITH_DEMO_DATA=1 php /usr/local/bin/bootstrap-noveraile.php
+elif ! timeout 30s env NOVERAILE_WITH_DEMO_DATA=0 php /usr/local/bin/bootstrap-noveraile.php; then
+    echo "NOVERAILE registration refresh timed out; keeping the existing registration" >&2
+fi
 
 chown -R www-data:www-data config.php admin/config.php system/storage image
 chmod 640 config.php admin/config.php
