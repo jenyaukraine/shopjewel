@@ -25,7 +25,32 @@
   <header class="site-header">
     <a class="wordmark" href="{{ six_home }}" aria-label="{{ six_brand_name }}">{{ six_brand_name }}</a>
     <nav class="desktop-nav" aria-label="Primary">
-      <span class="mega-menu-shell{% if six_mega_menu_status %} is-enabled{% endif %}"><a href="{{ six_catalog_url }}"{% if six_mega_menu_status %} aria-haspopup="true"{% endif %}>{{ six_catalog }}</a>{% if six_mega_menu_status %}<span class="mega-menu" role="group" aria-label="{{ six_mega_menu_title }}"><span class="mega-menu-heading"><small>{{ six_mega_menu_title }}</small><a href="{{ six_catalog_url }}">{{ six_view_all }} ↗</a></span><span class="mega-menu-grid">{% for category in six_categories %}<a href="{{ category.href }}"><strong>{{ category.name }}</strong><small>{{ category.total|default(0) }} {{ six_pieces }}</small></a>{% endfor %}</span><a class="mega-menu-promo" href="{{ six_mega_menu_promo_url }}"><span>{{ six_mega_menu_promo_text }}</span><b>↗</b></a></span>{% endif %}</span><a href="{{ six_about_url }}">{{ six_about }}</a><a href="{{ six_quiz_url }}">{{ six_quiz }}</a><a href="{{ six_journal_url }}">{{ six_journal }}</a>
+      <div class="mega-menu-shell{% if six_mega_menu_status %} is-enabled{% endif %}">
+        <a class="desktop-nav-link" href="{{ six_catalog_url }}"{% if six_mega_menu_status %} aria-haspopup="true"{% endif %}>{{ six_catalog }}</a>
+        {% if six_mega_menu_status %}
+          <div class="mega-menu" role="group" aria-label="{{ six_mega_menu_title }}">
+            <div class="mega-menu-heading">
+              <span><i aria-hidden="true"></i><small>{{ six_mega_menu_title }}</small></span>
+              <a href="{{ six_catalog_url }}">{{ six_view_all }} <b aria-hidden="true">→</b></a>
+            </div>
+            <div class="mega-menu-grid">
+              {% for category in six_categories %}
+                <a href="{{ category.href }}">
+                  <span class="mega-menu-icon" aria-hidden="true"><svg viewBox="0 0 32 32" focusable="false">{% if category.icon == 'ring' %}<ellipse cx="16" cy="19" rx="8.5" ry="9.5"/><path d="m12.5 10 1.8-3h3.4l1.8 3-3.5 3Z"/>{% elseif category.icon == 'earring' %}<path d="M10 7v9.5a5 5 0 1 0 5 5V9"/><path d="M19.5 8.5v8a4 4 0 1 0 4 4V11"/><circle cx="10" cy="6" r="1.4"/><circle cx="19.5" cy="7.5" r="1.4"/>{% elseif category.icon == 'necklace' %}<path d="M5 7c1.8 8 5.4 12 11 12S25.2 15 27 7"/><path d="m16 18-3 4 3 4 3-4Z"/>{% elseif category.icon == 'bracelet' %}<ellipse cx="16" cy="17" rx="10" ry="8"/><path d="M8.5 11.5 11 9l2.5 2.5M18.5 10l2.5-2 2.5 2.5"/><circle cx="16" cy="9" r="1.5"/>{% elseif category.icon == 'wedding' %}<circle cx="12" cy="17" r="7"/><circle cx="20" cy="17" r="7"/><path d="m16 8 1.5-2h3L22 8l-3 2Z"/>{% else %}<path d="m6 12 4-6h12l4 6-10 14Z"/><path d="M6 12h20M10 6l6 6 6-6M11 12l5 14 5-14"/>{% endif %}</svg></span>
+                  <span class="mega-menu-copy"><strong>{{ category.name }}</strong><small>{{ category.total|default(0) }} {{ six_pieces }}</small></span>
+                  <span class="mega-menu-arrow" aria-hidden="true">→</span>
+                </a>
+              {% endfor %}
+            </div>
+            <a class="mega-menu-promo" href="{{ six_mega_menu_promo_url }}">
+              <small>{{ six_mega_menu_title }}</small>
+              <span>{{ six_mega_menu_promo_text }}</span>
+              <b aria-hidden="true">→</b>
+            </a>
+          </div>
+        {% endif %}
+      </div>
+      <a class="desktop-nav-link" href="{{ six_about_url }}">{{ six_about }}</a><a class="desktop-nav-link" href="{{ six_quiz_url }}">{{ six_quiz }}</a><a class="desktop-nav-link" href="{{ six_journal_url }}">{{ six_journal }}</a>
     </nav>
     <div class="header-actions">
       <button class="header-search-trigger" type="button" data-six-search-open aria-label="{{ six_search }}">⌕</button>
