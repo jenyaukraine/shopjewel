@@ -1,6 +1,6 @@
 {{ header }}
 <section class="hero" aria-label="6MOMENTS">
-  <div class="hero-backgrounds"><div class="hero-background is-active" style="--hero-image:url('image/catalog/sixmoments/hero-6moments-v2.png');--hero-mobile-image:url('image/catalog/sixmoments/hero-6moments-mobile.png');background-position:58% 48%"></div></div>
+  <div class="hero-backgrounds"><div class="hero-background is-active" style="--hero-image:url('/image/catalog/sixmoments/hero-6moments-v2.png');--hero-mobile-image:url('/image/catalog/sixmoments/hero-6moments-mobile.png');background-position:58% 48%"></div></div>
   <div class="hero-copy"><p class="hero-kicker">{{ six_hero_kicker }}</p><h1>{{ six_hero_title }}</h1><div class="hero-actions"><a class="button button--dark" href="{{ six_catalog }}">{{ six_hero_primary }}</a><a class="hero-learn" href="{{ six_quiz }}">{{ six_hero_secondary }} <span>→</span></a></div></div>
 </section>
 <section class="moments-section editorial-products signature-section"><div class="editorial-heading"><p class="editorial-script">{{ six_signature }}</p><h2>{{ six_desired }}</h2><p>{{ six_desired_copy }}</p><a class="sale-link" href="{{ six_catalog }}">{{ six_view_all }} →</a></div><div class="collection-grid product-grid">{% for product in six_products|slice(0,3) %}{{ product }}{% endfor %}</div></section>

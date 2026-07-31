@@ -21,11 +21,11 @@
   <header class="site-header">
     <a class="wordmark" href="{{ six_home }}" aria-label="6MOMENTS">6MOMENTS</a>
     <nav class="desktop-nav" aria-label="Primary">
-      <a href="{{ six_catalog }}">{{ six_catalog }}</a><a href="{{ six_about }}">{{ six_about }}</a><a href="{{ six_quiz }}">{{ six_quiz }}</a><a href="{{ six_journal }}">{{ six_journal }}</a>
+      <a href="{{ six_catalog_url }}">{{ six_catalog }}</a><a href="{{ six_about_url }}">{{ six_about }}</a><a href="{{ six_quiz_url }}">{{ six_quiz }}</a><a href="{{ six_journal_url }}">{{ six_journal }}</a>
     </nav>
     <div class="header-actions">
       <span class="six-switcher">{{ currency }}</span><span class="six-switcher">{{ language }}</span>
-      <a href="{{ six_contact }}">{{ six_contact }}</a>
+      <a href="{{ contact }}">{{ six_contact }}</a>
       <a href="{{ shopping_cart }}" class="bag">{{ six_bag }} <span>{{ six_cart_count }}</span></a>
     </div>
     <button class="mobile-menu-trigger" type="button" data-six-menu-open aria-controls="six-mobile-menu" aria-expanded="false"><span>☰</span> {{ six_menu }}</button>
@@ -36,7 +36,7 @@
       <div class="mobile-drawer-header"><strong>{{ six_menu }}</strong><button type="button" data-six-menu-close>×</button></div>
       <nav class="mobile-category-nav">{% for category in six_categories %}<a href="{{ category.href }}"><span>◇</span>{{ category.name }}</a>{% endfor %}</nav>
       <nav class="mobile-main-nav">
-        <a href="{{ six_home }}">⌂ {{ text_home }}</a><a href="{{ six_catalog }}">◇ {{ six_catalog }}</a><a href="{{ six_quiz }}">◎ {{ six_quiz }}</a><a href="{{ six_about }}">○ {{ six_about }}</a><a href="{{ six_diamonds }}">◇ {{ six_diamonds }}</a><a href="{{ six_journal }}">□ {{ six_journal }}</a>
+        <a href="{{ six_home }}">⌂ {{ text_home }}</a><a href="{{ six_catalog_url }}">◇ {{ six_catalog }}</a><a href="{{ six_quiz_url }}">◎ {{ six_quiz }}</a><a href="{{ six_about_url }}">○ {{ six_about }}</a><a href="{{ six_diamonds_url }}">◇ {{ six_diamonds }}</a><a href="{{ six_journal_url }}">□ {{ six_journal }}</a>
       </nav>
       <div class="mobile-drawer-controls"><span>{{ currency }}</span><span>{{ language }}</span></div>
       <div class="mobile-drawer-contact"><a href="{{ shopping_cart }}">{{ six_bag }} · {{ six_cart_count }}</a><a href="{{ account|default(login) }}">{{ six_account }}</a></div>

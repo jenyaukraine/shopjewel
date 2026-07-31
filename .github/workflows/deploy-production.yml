@@ -247,7 +247,7 @@ jobs:
           for attempt in $(seq 1 36); do
             storefront="$(curl --fail --silent --show-error --max-time 15 "$PRODUCTION_URL" || true)"
             admin="$(curl --fail --silent --show-error --max-time 15 "${PRODUCTION_URL%/}/admin/" || true)"
-            if grep -q 'catalog/view' <<<"$storefront" && grep -q '<title>Administration</title>' <<<"$admin"; then
+            if grep -q 'class="sixmoments-store"' <<<"$storefront" && grep -q '<title>Administration</title>' <<<"$admin"; then
               echo "Production is healthy: $PRODUCTION_URL"
               exit 0
             fi
