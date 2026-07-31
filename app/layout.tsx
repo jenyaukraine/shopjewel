@@ -29,6 +29,9 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="uk">
+      <head>
+        <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml" />
+      </head>
       <body>{children}</body>
     </html>
   );

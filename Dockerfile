@@ -62,7 +62,11 @@ COPY docker/render-config.php /usr/local/bin/render-opencart-config
 COPY docker/bootstrap-sixmoments.php /usr/local/bin/bootstrap-sixmoments.php
 COPY docker/entrypoint.sh /usr/local/bin/sixmoments-entrypoint
 
-RUN chmod +x /usr/local/bin/sixmoments-entrypoint \
+RUN find /var/www/html/extension/sixmoments -type f -name '*.php' \
+        -exec php -l '{}' ';' \
+    && php -l /usr/local/bin/bootstrap-sixmoments.php \
+    && sed -i 's/\r$//' /usr/local/bin/sixmoments-entrypoint \
+    && chmod +x /usr/local/bin/sixmoments-entrypoint \
     && chown -R www-data:www-data \
         /var/www/html/config.php \
         /var/www/html/admin/config.php \

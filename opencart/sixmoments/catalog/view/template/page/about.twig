@@ -1,21 +1,78 @@
 {{ header }}
-<section class="interior-hero about-hero">
+<section class="interior-hero about-hero" aria-labelledby="about-title">
   <div class="about-hero-copy">
     <p class="eyebrow"><span aria-hidden="true"></span> Our story</p>
-    <h1>{{ six_about_title }}</h1>
+    <h1 id="about-title">{{ six_about_title }}</h1>
     <p class="about-hero-lead">Jewelry created to hold the moments that quietly become a life.</p>
     <a class="about-hero-link" href="#our-story">Discover our philosophy <span aria-hidden="true">&#8595;</span></a>
     <p class="about-hero-signature" aria-hidden="true">Six moments <span></span> One legacy</p>
   </div>
   <figure class="about-hero-visual">
-    <img src="{{ asset }}hero-6moments-v2.png" alt="Gold jewelry arranged on a sculptural display">
+    <img src="{{ asset }}hero-6moments-v2.png" width="2048" height="701" fetchpriority="high" alt="Gold jewelry arranged on a sculptural display">
     <figcaption><span>Made slowly</span><span>Kept forever</span></figcaption>
   </figure>
 </section>
-<article class="story-page">
-  <section class="story-chapter" id="our-story"><div class="story-chapter-copy"><p>There are moments in life that can never be repeated. Quiet moments. Intimate moments. The ones that change everything without asking for attention.</p><p>A first “yes.” A first child. A victory after a long journey. The moment you choose yourself. A love that needs no explanation. And the moment you finally understand who you are.</p><p>6Moments Jewelry was born from the belief that true value is never created instantly. It reveals itself over time, becoming part of a personal story — and eventually, part of a family legacy.</p></div><img src="{{ asset }}about-quote-jewelry.webp" alt="6MOMENTS jewelry"></section>
-  <blockquote>Our jewelry is more than gold and diamonds. It is a symbol of a moment worth keeping forever.</blockquote>
-  <section class="story-chapter" id="craft"><img src="{{ asset }}editorial/craftsmanship.webp" alt="Jeweler finishing a piece"><div class="story-chapter-copy"><h2>Thoughtfully made</h2><p>Every Six Moments piece is thoughtfully designed down to the smallest detail. From the first sketch to the final polish, our jewelry is created with precision, balance, and timeless elegance in mind.</p><p>We do not believe in mass production or conveyor-made luxury. Each piece is individually crafted, carefully inspected, and approved by professionals before it reaches you.</p><p>Our diamonds are selected for their brilliance and quality, with certified stones available for signature pieces. Every order is presented in luxury packaging designed to make the experience feel as meaningful as the jewelry itself.</p></div></section>
-  <section class="story-manifesto"><p>Because true luxury is not simply brilliance.</p><p>It is memory. It is emotion. It is legacy.</p><strong>6 Moments Jewelry — where moments become legacy.</strong></section>
-</article>
+
+<main class="about-page" id="our-story">
+  <section class="about-origin" aria-labelledby="origin-title">
+    <div class="about-section-index" aria-hidden="true"><span>01</span><small>The beginning</small></div>
+    <div class="about-origin-copy">
+      <p class="eyebrow">The idea</p>
+      <h2 id="origin-title">Made for what stays with you.</h2>
+      <p class="about-lead">There are moments in life that can never be repeated. Quiet moments. Intimate moments. The ones that change everything without asking for attention.</p>
+      <p>A first “yes.” A first child. A victory after a long journey. The moment you choose yourself. A love that needs no explanation. And the moment you finally understand who you are.</p>
+      <p>6MOMENTS was born from the belief that true value is never created instantly. It reveals itself over time, becoming part of a personal story — and eventually, part of a family legacy.</p>
+    </div>
+    <figure class="about-origin-visual">
+      <img src="{{ asset }}about-quote-jewelry.webp" width="1983" height="793" loading="lazy" alt="Gold rings arranged on dark stone and silk">
+      <figcaption>Objects become heirlooms when they carry a story.</figcaption>
+    </figure>
+  </section>
+
+  <section class="about-belief" aria-label="Our belief">
+    <span class="about-belief-mark" aria-hidden="true">“</span>
+    <blockquote>Our jewelry is more than gold and diamonds. It is a symbol of a moment worth keeping forever.</blockquote>
+    <p>Designed in Europe <span aria-hidden="true"></span> Finished by hand</p>
+  </section>
+
+  <section class="about-craft" id="craft" aria-labelledby="craft-title">
+    <figure class="about-craft-visual">
+      <img src="{{ asset }}editorial/craftsmanship.webp" width="1200" height="1200" loading="lazy" alt="Jeweler finishing a gold ring by hand">
+      <figcaption><span>02</span> The making</figcaption>
+    </figure>
+    <div class="about-craft-copy">
+      <p class="eyebrow">Thoughtfully made</p>
+      <h2 id="craft-title">Nothing meaningful is rushed.</h2>
+      <p class="about-lead">Every Six Moments piece is thoughtfully designed down to the smallest detail — from the first sketch to the final polish.</p>
+      <p>We do not believe in mass production or conveyor-made luxury. Each piece is individually crafted, carefully inspected, and approved by professionals before it reaches you.</p>
+      <p>Our diamonds are selected for their brilliance and quality, with certified stones available for signature pieces. Every order is presented in luxury packaging designed to make the experience feel as meaningful as the jewelry itself.</p>
+      <a class="about-text-link" href="{{ six_diamonds_url }}">Explore our diamonds <span aria-hidden="true">&#8594;</span></a>
+    </div>
+  </section>
+
+  <section class="about-values" aria-labelledby="values-title">
+    <header>
+      <p class="eyebrow">Our standards</p>
+      <h2 id="values-title">Quiet luxury,<br>made personal.</h2>
+    </header>
+    <div class="about-values-grid">
+      <article><span>01</span><h3>Purpose over excess</h3><p>A considered collection of lasting forms, created to outlive seasons and trends.</p></article>
+      <article><span>02</span><h3>Honest materials</h3><p>Precious metals and carefully selected stones chosen for beauty, quality, and longevity.</p></article>
+      <article><span>03</span><h3>Made to be yours</h3><p>Scale, finish, engraving, and proportion can turn a beautiful object into your own.</p></article>
+    </div>
+  </section>
+
+  <section class="about-closing" aria-labelledby="closing-title">
+    <span class="about-closing-number" aria-hidden="true">6</span>
+    <div>
+      <p class="eyebrow">Where moments become legacy</p>
+      <h2 id="closing-title">Because true luxury is memory.</h2>
+      <p>It is emotion. It is presence. It is the story an object carries long after the moment itself has passed.</p>
+      <div class="about-closing-actions">
+        <a class="button button--light" href="{{ six_catalog_url }}">Discover the collection</a>
+        <a class="about-text-link about-text-link--light" href="{{ six_contact_url }}">Book a private appointment <span aria-hidden="true">&#8594;</span></a>
+      </div>
+    </div>
+  </section>
+</main>
 {{ footer }}
