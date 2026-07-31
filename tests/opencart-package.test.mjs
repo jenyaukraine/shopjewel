@@ -44,6 +44,7 @@ test("mobile categories are deduplicated and use semantic jewellery icons", asyn
   assert.match(event, /mb_strtolower/);
   assert.match(event, /'icon'\s*=>\s*\$this->categoryIcon\(\$name\)/);
   assert.match(event, /noveraile\.css\?v=2\.2\.0\.5/);
+  assert.match(event, /noveraile\.js\?v=2\.2\.0\.3/);
   assert.match(header, /class="mobile-category-icon"/);
   assert.match(header, /category\.icon == 'earring'/);
   assert.match(header, /class="mobile-main-icon"/);
