@@ -33,6 +33,56 @@ test("desktop navigation keeps every primary link vertically aligned", async () 
   assert.match(navigationRule, /align-items:\s*center/);
 });
 
+test("mobile categories are deduplicated and use semantic jewellery icons", async () => {
+  const [event, header, stylesheet] = await Promise.all([
+    readFile(path.join(root, "catalog/controller/event/theme.php"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/common/header.twig"), "utf8"),
+    readFile(path.join(root, "catalog/view/stylesheet/noveraile.css"), "utf8"),
+  ]);
+
+  assert.match(event, /\$category_names\s*=\s*\[\]/);
+  assert.match(event, /mb_strtolower/);
+  assert.match(event, /'icon'\s*=>\s*\$this->categoryIcon\(\$name\)/);
+  assert.match(header, /class="mobile-category-icon"/);
+  assert.match(header, /category\.icon == 'earring'/);
+  assert.match(header, /class="mobile-main-icon"/);
+  assert.match(header, /\{\{ six_home_label \}\}/);
+  assert.doesNotMatch(header, /<span>◇<\/span>\{\{ category\.name \}\}/);
+  assert.doesNotMatch(header, />⌂ \{\{ text_home \}\}/);
+  assert.match(stylesheet, /\.mobile-category-icon svg/);
+  assert.match(stylesheet, /\.mobile-main-icon svg/);
+});
+
+test("mobile theme control is a labelled, stateful switch", async () => {
+  const [header, stylesheet, script] = await Promise.all([
+    readFile(path.join(root, "catalog/view/template/common/header.twig"), "utf8"),
+    readFile(path.join(root, "catalog/view/stylesheet/noveraile.css"), "utf8"),
+    readFile(path.join(root, "catalog/view/javascript/noveraile.js"), "utf8"),
+  ]);
+
+  assert.match(header, /class="mobile-theme-toggle"[^>]+role="switch"[^>]+aria-checked="false"/);
+  assert.match(header, /data-six-theme-label/);
+  assert.match(header, /class="mobile-theme-switch-knob"/);
+  assert.match(stylesheet, /\.mobile-theme-switch-knob\s*\{/);
+  assert.match(stylesheet, /html\[data-theme="dark"\] \.mobile-theme-switch-knob\s*\{[^}]*translateX/);
+  assert.match(stylesheet, /> button:not\(\.mobile-theme-toggle\)/);
+  assert.match(script, /setAttribute\('aria-checked', String\(isDark\)\)/);
+  assert.match(script, /button\.dataset\.darkLabel/);
+});
+
+test("mobile catalog and cart keep primary content above the fold", async () => {
+  const stylesheet = await readFile(path.join(root, "catalog/view/stylesheet/noveraile.css"), "utf8");
+
+  assert.match(stylesheet, /\.catalog-hero\s*\{\s*min-height:\s*350px;\s*padding:\s*34px 22px 38px;/);
+  assert.match(stylesheet, /\.catalog-dual-nav\s*\{\s*gap:\s*10px;\s*padding:\s*14px 16px;/);
+  assert.match(stylesheet, /\.six-catalog-page \.catalog-toolbar\s*\{\s*display:\s*grid;\s*grid-template-columns:\s*auto 1fr;/);
+  assert.match(stylesheet, /\.cart-page-progress\s*\{\s*min-height:\s*44px;/);
+  assert.match(stylesheet, /\.cart-page-masthead\s*\{\s*gap:\s*14px;\s*padding:\s*23px 2px 22px;/);
+  assert.match(stylesheet, /\.cart-page-layout\s*\{\s*gap:\s*28px;\s*padding-top:\s*24px;/);
+  assert.match(stylesheet, /#checkout-cart\.cart-page\s*\{\s*padding:\s*0 14px 72px;/);
+  assert.match(stylesheet, /#checkout-cart\.cart-page \.cart-page-section-heading h2\s*\{\s*margin:\s*5px 0 10px;/);
+});
+
 test("premium suite ships working builder, mega menu, AJAX filters, one-page checkout and reviewed AI tools", async () => {
   const [admin, settings, adminTemplate, event, header, catalog, catalogTemplate, script, checkout] = await Promise.all([
     readFile(path.join(root, "admin/controller/module/noveraile.php"), "utf8"),
@@ -53,7 +103,7 @@ test("premium suite ships working builder, mega menu, AJAX filters, one-page che
   assert.match(admin, /\.noveraile-backup-/);
   assert.match(adminTemplate, /multipart\/form-data/);
   assert.match(event, /six_home_blocks/);
-  assert.match(event, /GROUP BY cd\.name/);
+  assert.match(event, /GROUP BY c\.category_id, cd\.name, c\.sort_order/);
   assert.match(header, /class="mega-menu"/);
   assert.match(catalog, /catalog_results/);
   assert.match(catalogTemplate, /data-six-ajax-filter/);

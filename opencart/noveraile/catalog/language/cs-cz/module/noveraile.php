@@ -1,5 +1,8 @@
 <?php
 $_['six_theme_toggle'] = 'Přepnout světlý nebo tmavý motiv';
+$_['six_theme_title'] = 'Vzhled';
+$_['six_theme_light'] = 'Světlý motiv';
+$_['six_theme_dark'] = 'Tmavý motiv';
 require DIR_EXTENSION . 'noveraile/catalog/language/en-gb/module/noveraile.php';
 $_['six_catalog_moment_01'] = 'Okamžik 01 — Slib';
 $_['six_catalog_moment_02'] = 'Okamžik 02 — Spojení';
@@ -10,7 +13,7 @@ $_['six_catalog_moment_06'] = 'Okamžik 06 — Odkaz';
 $_['six_catalog_moment_special'] = 'Speciální edice — První jízda';
 $_['six_no_stones'] = 'Bez kamenů'; $_['six_platinum'] = 'Platina'; $_['six_alloy'] = 'Slitina';
 $_['six_announcement'] = 'Bezplatné pojištěné doručení a vrácení';
-$_['six_catalog'] = 'Obchod'; $_['six_about'] = 'Náš příběh'; $_['six_journal'] = 'Magazín'; $_['six_quiz'] = 'Najděte svůj okamžik'; $_['six_diamonds'] = 'Diamanty'; $_['six_contact'] = 'Soukromá konzultace'; $_['six_account'] = 'Účet'; $_['six_wishlist'] = 'Oblíbené'; $_['six_bag'] = 'Košík'; $_['six_menu'] = 'Menu';
+$_['six_catalog'] = 'Obchod'; $_['six_about'] = 'Náš příběh'; $_['six_journal'] = 'Magazín'; $_['six_quiz'] = 'Najděte svůj okamžik'; $_['six_diamonds'] = 'Diamanty'; $_['six_contact'] = 'Soukromá konzultace'; $_['six_account'] = 'Účet'; $_['six_wishlist'] = 'Oblíbené'; $_['six_bag'] = 'Košík'; $_['six_menu'] = 'Menu'; $_['six_home_label'] = 'Domů';
 $_['six_hero_kicker'] = 'Šperky pro život, který stojí za to žít'; $_['six_hero_title'] = 'Kde se okamžiky mění v odkaz.'; $_['six_hero_primary'] = 'Prohlédnout katalog'; $_['six_hero_secondary'] = 'Spustit kvíz';
 $_['six_desired'] = 'Nejžádanější'; $_['six_desired_copy'] = 'Nadčasové šperky, ke kterým se vracíme'; $_['six_view_all'] = 'Zobrazit vše'; $_['six_collections'] = 'Kolekce'; $_['six_collections_title'] = 'Objevte nadčasové kousky';
 $_['six_moment_yes'] = 'Ano'; $_['six_moment_forever'] = 'Navždy'; $_['six_moment_new_life'] = 'Nový život'; $_['six_moment_victory'] = 'Moje vítězství'; $_['six_moment_deserve'] = 'Zasloužím si'; $_['six_moment_with_me'] = 'Se mnou';

@@ -1,5 +1,8 @@
 <?php
 $_['six_theme_toggle'] = 'Helles oder dunkles Design wechseln';
+$_['six_theme_title'] = 'Darstellung';
+$_['six_theme_light'] = 'Helles Design';
+$_['six_theme_dark'] = 'Dunkles Design';
 require DIR_EXTENSION . 'noveraile/catalog/language/en-gb/module/noveraile.php';
 $_['six_catalog_moment_01'] = 'Moment 01 — Versprechen';
 $_['six_catalog_moment_02'] = 'Moment 02 — Verbindung';
@@ -10,7 +13,7 @@ $_['six_catalog_moment_06'] = 'Moment 06 — Vermächtnis';
 $_['six_catalog_moment_special'] = 'Sonderedition — Erste Fahrt';
 $_['six_no_stones'] = 'Ohne Steine'; $_['six_platinum'] = 'Platin'; $_['six_alloy'] = 'Legierung';
 $_['six_announcement'] = 'Kostenloser versicherter Versand und Rückgabe';
-$_['six_catalog'] = 'Shop'; $_['six_about'] = 'Unsere Geschichte'; $_['six_journal'] = 'Journal'; $_['six_quiz'] = 'Finde deinen Moment'; $_['six_diamonds'] = 'Diamanten'; $_['six_contact'] = 'Private Beratung'; $_['six_account'] = 'Konto'; $_['six_wishlist'] = 'Wunschliste'; $_['six_bag'] = 'Warenkorb'; $_['six_menu'] = 'Menü';
+$_['six_catalog'] = 'Shop'; $_['six_about'] = 'Unsere Geschichte'; $_['six_journal'] = 'Journal'; $_['six_quiz'] = 'Finde deinen Moment'; $_['six_diamonds'] = 'Diamanten'; $_['six_contact'] = 'Private Beratung'; $_['six_account'] = 'Konto'; $_['six_wishlist'] = 'Wunschliste'; $_['six_bag'] = 'Warenkorb'; $_['six_menu'] = 'Menü'; $_['six_home_label'] = 'Startseite';
 $_['six_hero_kicker'] = 'Feine Schmuckstücke für ein erfülltes Leben'; $_['six_hero_title'] = 'Wo Momente zum Vermächtnis werden.'; $_['six_hero_primary'] = 'Katalog ansehen'; $_['six_hero_secondary'] = 'Quiz starten';
 $_['six_signature'] = 'Signature Pieces'; $_['six_desired'] = 'Die Begehrtesten'; $_['six_desired_copy'] = 'Zeitlose Stücke, die immer wieder gewählt werden'; $_['six_view_all'] = 'Alle ansehen';
 $_['six_collections'] = 'Kollektionen'; $_['six_collections_title'] = 'Zeitlose Stücke entdecken'; $_['six_collections_copy'] = 'Moderne Erbstücke aus Gold und Diamanten';

@@ -11,6 +11,13 @@
     themeRoot.dataset.themePreference = preference;
     if (themeColor) themeColor.content = mode === 'dark' ? '#171614' : '#f8f5ef';
     document.querySelectorAll('[data-six-theme-icon]').forEach((icon) => { icon.textContent = mode === 'dark' ? '☀' : '☾'; });
+    document.querySelectorAll('[data-six-theme-toggle]').forEach((button) => {
+      const isDark = mode === 'dark';
+      if (button.getAttribute('role') === 'switch') button.setAttribute('aria-checked', String(isDark));
+      else button.setAttribute('aria-pressed', String(isDark));
+      const label = button.querySelector('[data-six-theme-label]');
+      if (label) label.textContent = isDark ? button.dataset.darkLabel : button.dataset.lightLabel;
+    });
   };
   document.querySelectorAll('[data-six-theme-toggle]').forEach((button) => button.addEventListener('click', () => {
     const next = themeRoot.dataset.theme === 'dark' ? 'light' : 'dark';

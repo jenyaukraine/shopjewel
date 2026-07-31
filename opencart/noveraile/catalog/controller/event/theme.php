@@ -37,8 +37,8 @@ class Theme extends \Opencart\System\Engine\Controller {
             $data['title'] = $data['six_brand_name'];
         }
 
-        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.2.0.2';
-        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.2.0.1';
+        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.2.0.4';
+        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.2.0.2';
         $data['six_favicon'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/favicon.svg?v=2';
         $data['six_og_image'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/og-store.png';
         $data['six_color_mode'] = in_array($this->config->get('module_noveraile_color_mode'), ['light', 'dark'], true) ? $this->config->get('module_noveraile_color_mode') : 'auto';
@@ -65,15 +65,23 @@ class Theme extends \Opencart\System\Engine\Controller {
         $data['six_mega_menu_title'] = (string)($this->config->get('module_noveraile_mega_menu_title') ?: $data['six_catalog']);
         $data['six_mega_menu_promo_text'] = (string)($this->config->get('module_noveraile_mega_menu_promo_text') ?: $data['six_specials']);
         $data['six_mega_menu_promo_url'] = (string)($this->config->get('module_noveraile_mega_menu_promo_url') ?: $data['six_special']);
-        // Demo upgrades can leave more than one category record with the same
-        // translated name. Present each customer-facing category only once.
-        $category_query = $this->db->query("SELECT MIN(c.category_id) AS category_id, cd.name, MIN(c.sort_order) AS sort_order, COUNT(DISTINCT p.product_id) AS product_total FROM `" . DB_PREFIX . "category` c INNER JOIN `" . DB_PREFIX . "category_description` cd ON (cd.category_id = c.category_id) INNER JOIN `" . DB_PREFIX . "product_to_category` p2c ON (p2c.category_id = c.category_id) INNER JOIN `" . DB_PREFIX . "product` p ON (p.product_id = p2c.product_id AND p.status = '1') WHERE c.status = '1' AND cd.language_id = '" . (int)$this->config->get('config_language_id') . "' GROUP BY cd.name ORDER BY MIN(c.sort_order) ASC, cd.name ASC LIMIT 12");
+        // Demo upgrades can leave duplicate category records whose names differ
+        // only by case or invisible whitespace. Normalize them in PHP so the
+        // navigation stays unique across MySQL collations.
+        $category_query = $this->db->query("SELECT c.category_id, cd.name, c.sort_order, COUNT(DISTINCT p.product_id) AS product_total FROM `" . DB_PREFIX . "category` c INNER JOIN `" . DB_PREFIX . "category_description` cd ON (cd.category_id = c.category_id) INNER JOIN `" . DB_PREFIX . "product_to_category` p2c ON (p2c.category_id = c.category_id) INNER JOIN `" . DB_PREFIX . "product` p ON (p.product_id = p2c.product_id AND p.status = '1') WHERE c.status = '1' AND cd.language_id = '" . (int)$this->config->get('config_language_id') . "' GROUP BY c.category_id, cd.name, c.sort_order ORDER BY c.sort_order ASC, cd.name ASC, c.category_id ASC LIMIT 60");
+        $category_names = [];
         foreach ($category_query->rows as $category) {
+            $name = preg_replace('/[\p{Z}\s]+/u', ' ', trim((string)$category['name'])) ?: trim((string)$category['name']);
+            $key = function_exists('mb_strtolower') ? mb_strtolower($name, 'UTF-8') : strtolower($name);
+            if ($name === '' || isset($category_names[$key])) continue;
+            $category_names[$key] = true;
             $data['six_categories'][] = [
-                'name' => $category['name'],
+                'name' => $name,
+                'icon' => $this->categoryIcon($name),
                 'total' => (int)($category['product_total'] ?? 0),
                 'href' => $this->url->link('product/category', 'language=' . $this->config->get('config_language') . '&path=' . (int)$category['category_id'])
             ];
+            if (count($data['six_categories']) >= 12) break;
         }
         if (!$data['six_categories']) {
             foreach ([
@@ -81,15 +89,32 @@ class Theme extends \Opencart\System\Engine\Controller {
                 'necklaces' => $data['six_type_necklaces'], 'bracelets' => $data['six_type_bracelets'],
                 'wedding' => $data['six_type_wedding']
             ] as $type => $name) {
-                $data['six_categories'][] = ['name' => $name, 'href' => $this->url->link('extension/noveraile/page/catalog', 'language=' . $this->config->get('config_language') . '&type=' . $type)];
+                $data['six_categories'][] = ['name' => $name, 'icon' => $this->categoryIcon($name), 'href' => $this->url->link('extension/noveraile/page/catalog', 'language=' . $this->config->get('config_language') . '&type=' . $type)];
             }
         }
+    }
+
+    private function categoryIcon(string $name): string {
+        $value = function_exists('mb_strtolower') ? mb_strtolower($name, 'UTF-8') : strtolower($name);
+        $icons = [
+            'wedding' => ['wedding', 'обруч', 'hochzeit', 'snubn', 'svateb'],
+            'earring' => ['earring', 'сереж', 'серьг', 'ohrring', 'náuš'],
+            'necklace' => ['necklace', 'pendant', 'підвіс', 'подвес', 'halskett', 'náhrdel'],
+            'bracelet' => ['bracelet', 'браслет', 'armbänd', 'náram'],
+            'ring' => ['ring', 'каблуч', 'кольц', 'prsten'],
+        ];
+        foreach ($icons as $icon => $needles) {
+            foreach ($needles as $needle) {
+                if (str_contains($value, $needle)) return $icon;
+            }
+        }
+        return 'jewel';
     }
 
     public function footer(string &$route, array &$data, string &$code = '', string &$output = ''): void {
         if (!$this->enabled() || !$this->claimView($route, ['common/footer'], 'extension/noveraile/common/footer')) return;
         $this->words($data);
-        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.2.0';
+        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.2.0.2';
         $lang = 'language=' . $this->config->get('config_language');
         $data['six_home'] = $this->url->link('common/home', $lang);
         $data['six_about_url'] = $this->url->link('extension/noveraile/page/about', $lang);

@@ -1,5 +1,8 @@
 <?php
 $_['six_theme_toggle'] = 'Переключить светлую или тёмную тему';
+$_['six_theme_title'] = 'Оформление';
+$_['six_theme_light'] = 'Светлая тема';
+$_['six_theme_dark'] = 'Тёмная тема';
 require DIR_EXTENSION . 'noveraile/catalog/language/en-gb/module/noveraile.php';
 $_['six_catalog_moment_01'] = 'Момент 01 — Обещание';
 $_['six_catalog_moment_02'] = 'Момент 02 — Союз';
@@ -10,7 +13,7 @@ $_['six_catalog_moment_06'] = 'Момент 06 — Наследие';
 $_['six_catalog_moment_special'] = 'Спецсерия — Первая поездка';
 $_['six_no_stones'] = 'Без камней'; $_['six_platinum'] = 'Платина'; $_['six_alloy'] = 'Сплав';
 $_['six_announcement'] = 'Бесплатная застрахованная доставка и возврат';
-$_['six_catalog'] = 'Каталог'; $_['six_about'] = 'О нас'; $_['six_journal'] = 'Журнал'; $_['six_quiz'] = 'Найди свой момент'; $_['six_diamonds'] = 'Бриллианты'; $_['six_contact'] = 'Личная консультация'; $_['six_account'] = 'Аккаунт'; $_['six_wishlist'] = 'Избранное'; $_['six_bag'] = 'Корзина'; $_['six_menu'] = 'Меню'; $_['six_search'] = 'Поиск украшений';
+$_['six_catalog'] = 'Каталог'; $_['six_about'] = 'О нас'; $_['six_journal'] = 'Журнал'; $_['six_quiz'] = 'Найди свой момент'; $_['six_diamonds'] = 'Бриллианты'; $_['six_contact'] = 'Личная консультация'; $_['six_account'] = 'Аккаунт'; $_['six_wishlist'] = 'Избранное'; $_['six_bag'] = 'Корзина'; $_['six_menu'] = 'Меню'; $_['six_home_label'] = 'Главная'; $_['six_search'] = 'Поиск украшений';
 $_['six_hero_kicker'] = 'Украшения для жизни, наполненной смыслом'; $_['six_hero_title'] = 'Где моменты становятся наследием.'; $_['six_hero_primary'] = 'Смотреть каталог'; $_['six_hero_secondary'] = 'Пройти квиз';
 $_['six_signature'] = 'Знаковые украшения'; $_['six_desired'] = 'Самые желанные'; $_['six_desired_copy'] = 'Вневременные украшения, которые выбирают снова и снова'; $_['six_view_all'] = 'Смотреть все';
 $_['six_collections'] = 'Коллекции'; $_['six_collections_title'] = 'Откройте вневременные украшения'; $_['six_collections_copy'] = 'Современные реликвии из золота и бриллиантов';

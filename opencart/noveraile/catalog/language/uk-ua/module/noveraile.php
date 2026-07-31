@@ -1,5 +1,8 @@
 <?php
 $_['six_theme_toggle'] = 'Перемкнути світлу або темну тему';
+$_['six_theme_title'] = 'Оформлення';
+$_['six_theme_light'] = 'Світла тема';
+$_['six_theme_dark'] = 'Темна тема';
 require DIR_EXTENSION . 'noveraile/catalog/language/en-gb/module/noveraile.php';
 $_['six_catalog_moment_01'] = 'Момент 01 — Обіцянка';
 $_['six_catalog_moment_02'] = 'Момент 02 — Союз';
@@ -10,7 +13,7 @@ $_['six_catalog_moment_06'] = 'Момент 06 — Спадщина';
 $_['six_catalog_moment_special'] = 'Спецсерія — Перша поїздка';
 $_['six_no_stones'] = 'Без каменів'; $_['six_platinum'] = 'Платина'; $_['six_alloy'] = 'Сплав';
 $_['six_announcement'] = 'Безкоштовна застрахована доставка та повернення';
-$_['six_catalog'] = 'Каталог'; $_['six_about'] = 'Про нас'; $_['six_journal'] = 'Журнал'; $_['six_quiz'] = 'Знайди свій момент'; $_['six_diamonds'] = 'Діаманти'; $_['six_contact'] = 'Приватна консультація'; $_['six_account'] = 'Акаунт'; $_['six_wishlist'] = 'Обране'; $_['six_bag'] = 'Кошик'; $_['six_menu'] = 'Меню'; $_['six_search'] = 'Пошук прикрас';
+$_['six_catalog'] = 'Каталог'; $_['six_about'] = 'Про нас'; $_['six_journal'] = 'Журнал'; $_['six_quiz'] = 'Знайди свій момент'; $_['six_diamonds'] = 'Діаманти'; $_['six_contact'] = 'Приватна консультація'; $_['six_account'] = 'Акаунт'; $_['six_wishlist'] = 'Обране'; $_['six_bag'] = 'Кошик'; $_['six_menu'] = 'Меню'; $_['six_home_label'] = 'Головна'; $_['six_search'] = 'Пошук прикрас';
 $_['six_hero_kicker'] = 'Прикраси для життя, сповненого сенсу'; $_['six_hero_title'] = 'Де моменти стають спадщиною.'; $_['six_hero_primary'] = 'Переглянути каталог'; $_['six_hero_secondary'] = 'Пройти квіз';
 $_['six_signature'] = 'Знакові прикраси'; $_['six_desired'] = 'Найбажаніші'; $_['six_desired_copy'] = 'Позачасові прикраси, які обирають знову і знову'; $_['six_view_all'] = 'Переглянути всі';
 $_['six_collections'] = 'Колекції'; $_['six_collections_title'] = 'Відкрийте позачасові прикраси'; $_['six_collections_copy'] = 'Сучасні реліквії із золота та діамантів';
