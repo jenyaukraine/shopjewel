@@ -289,7 +289,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .mega-menu-shell:hover .mega-menu,.mega-menu-shell:focus-within .mega-menu { opacity: 1; visibility: visible; transform: translate(-50%,0); transition-delay: 0s; }
 .mega-menu-heading { grid-column: 1 / -1; min-height: 38px; display: flex; align-items: flex-start; justify-content: space-between; padding-bottom: 17px; border-bottom: 1px solid rgba(109,104,95,.2); }
 .mega-menu-heading > span { display: inline-flex; align-items: center; gap: 10px; }
-.mega-menu-heading i { width: 6px; height: 6px; border: 1px solid var(--gold); transform: rotate(45deg); }
+.mega-menu-heading-icon { width: 15px; height: 15px; display: grid; grid-template-columns: repeat(2,5px); grid-template-rows: repeat(2,5px); place-content: center; gap: 2px; color: var(--gold); }
+.mega-menu-heading-icon i { width: 5px; height: 5px; display: block; border: 1px solid currentColor; border-radius: 1px; }
 .mega-menu-heading small { color: var(--gold); font: 600 10px var(--sans); letter-spacing: .18em; text-transform: uppercase; }
 .desktop-nav .mega-menu-heading a { display: inline-flex; align-items: center; gap: 11px; padding: 1px 0 6px; border-bottom: 1px solid rgba(31,27,24,.45); color: var(--ink); background: transparent; font: 600 9px var(--sans); letter-spacing: .14em; text-transform: uppercase; }
 .mega-menu-heading a b { font: 14px/1 var(--sans); transition: transform .2s ease; }

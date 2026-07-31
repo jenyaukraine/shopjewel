@@ -62,16 +62,19 @@ test("mobile categories are deduplicated and use semantic jewellery icons", asyn
   assert.match(event, /\$category_names\s*=\s*\[\]/);
   assert.match(event, /mb_strtolower/);
   assert.match(event, /'icon'\s*=>\s*\$this->categoryIcon\(\$name\)/);
-  assert.match(event, /noveraile\.css\?v=2\.2\.0\.11/);
+  assert.match(event, /noveraile\.css\?v=2\.2\.0\.12/);
   assert.match(event, /noveraile\.js\?v=2\.2\.0\.6/);
   assert.match(header, /class="mobile-category-icon"/);
   assert.match(header, /category\.icon == 'earring'/);
   assert.match(header, /class="mobile-main-icon"/);
+  assert.match(header, /class="mega-menu-heading-icon"[\s\S]*<i><\/i><i><\/i><i><\/i><i><\/i>/);
+  assert.doesNotMatch(header, /mega-menu-heading[\s\S]*?<span><i aria-hidden="true"><\/i><small>/);
   assert.match(header, /\{\{ six_home_label \}\}/);
   assert.doesNotMatch(header, /<span>◇<\/span>\{\{ category\.name \}\}/);
   assert.doesNotMatch(header, />⌂ \{\{ text_home \}\}/);
   assert.match(stylesheet, /\.mobile-category-icon svg/);
   assert.match(stylesheet, /\.mobile-main-icon svg/);
+  assert.match(stylesheet, /\.mega-menu-heading-icon\s*\{/);
   assert.doesNotMatch(stylesheet, /data-theme|theme-toggle|prefers-color-scheme/);
 });
 
