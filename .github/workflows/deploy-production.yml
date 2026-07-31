@@ -159,10 +159,10 @@ jobs:
             fi
 
             if docker exec "$candidate" test -f /etc/caddy/Caddyfile; then
-              docker exec "$candidate" caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
+              docker exec "$candidate" caddy reload --force --config /etc/caddy/Caddyfile --adapter caddyfile
               reloaded_edge_proxies=$((reloaded_edge_proxies + 1))
             elif docker exec "$candidate" test -f /config/caddy/autosave.json; then
-              docker exec "$candidate" caddy reload --config /config/caddy/autosave.json
+              docker exec "$candidate" caddy reload --force --config /config/caddy/autosave.json
               reloaded_edge_proxies=$((reloaded_edge_proxies + 1))
             fi
           done
