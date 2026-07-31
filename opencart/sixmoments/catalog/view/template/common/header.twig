@@ -9,7 +9,6 @@
   <script src="{{ jquery }}"></script>
   <link href="{{ bootstrap }}" rel="stylesheet"><link href="{{ icons }}" rel="stylesheet"><link href="{{ six_stylesheet }}" rel="stylesheet">
   <script src="catalog/view/javascript/common.js"></script>
-  {% if icon %}<link rel="icon" href="{{ icon }}">{% endif %}
   <link rel="icon" href="{{ six_favicon }}" type="image/svg+xml">
   {% for style in styles %}<link href="{{ style.href }}" rel="{{ style.rel }}" media="{{ style.media }}">{% endfor %}
   {% for script in scripts %}<script src="{{ script.href }}"></script>{% endfor %}

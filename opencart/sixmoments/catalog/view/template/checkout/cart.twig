@@ -1,0 +1,68 @@
+{{ header }}
+<section id="checkout-cart" class="cart-page">
+  <header class="cart-page-masthead">
+    <p class="eyebrow">6MOMENTS · {{ six_bag }}</p>
+    <h1>{{ six_cart_title }}</h1>
+    <p>{{ six_cart_intro }}</p>
+  </header>
+  <div id="cart-messages" aria-live="polite"></div>
+  <div id="shopping-cart">{{ list }}</div>
+  {{ content_top }}{{ content_bottom }}
+</section>
+<script>
+(function () {
+  const cart = $('#shopping-cart');
+
+  function syncBagCount() {
+    let count = 0;
+    cart.find('input[name="quantity"]').each(function () { count += Number(this.value) || 0; });
+    document.querySelectorAll('.bag span').forEach(function (badge) { badge.textContent = count; });
+  }
+
+  function showMessage(type, message) {
+    if (!message) return;
+    const text = typeof message === 'string' ? message : Object.values(message).join(' ');
+    $('#cart-messages').html('<div class="cart-page-alert is-' + type + '">' + $('<span>').text(text).html() + '</div>');
+  }
+
+  cart.on('click', '[data-cart-step]', function () {
+    const input = this.closest('form').querySelector('input[name="quantity"]');
+    input.value = Math.max(1, (Number(input.value) || 1) + Number(this.dataset.cartStep));
+  });
+
+  cart.on('submit', '#output-cart form', function (event) {
+    event.preventDefault();
+    const form = this;
+    const button = event.originalEvent && event.originalEvent.submitter ? event.originalEvent.submitter : form.querySelector('[type="submit"]');
+    $.ajax({
+      url: button.formAction,
+      type: 'post',
+      data: $(form).serialize(),
+      dataType: 'json',
+      beforeSend: function () { button.disabled = true; },
+      complete: function () { button.disabled = false; },
+      success: function (json) {
+        if (json.redirect) { location = json.redirect; return; }
+        if (json.error) showMessage('error', json.error);
+        if (json.success) {
+          showMessage('success', json.success);
+          cart.load('index.php?route=checkout/cart.list&language={{ language }}', syncBagCount);
+        }
+      }
+    });
+  });
+
+  cart.on('click', '.cart-page-remove', function (event) {
+    event.preventDefault();
+    $.getJSON(this.href, function (json) {
+      if (json.redirect) { location = json.redirect; return; }
+      if (json.error) showMessage('error', json.error);
+      if (json.success) {
+        showMessage('success', json.success);
+        cart.load('index.php?route=checkout/cart.list&language={{ language }}', syncBagCount);
+      }
+    });
+  });
+}());
+</script>
+{{ footer }}

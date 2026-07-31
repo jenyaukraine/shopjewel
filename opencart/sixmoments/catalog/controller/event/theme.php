@@ -22,9 +22,9 @@ class Theme extends \Opencart\System\Engine\Controller {
             $data['title'] = '6MOMENTS Jewelry';
         }
 
-        $data['six_stylesheet'] = 'extension/sixmoments/catalog/view/stylesheet/sixmoments.css?v=1.1.7';
+        $data['six_stylesheet'] = 'extension/sixmoments/catalog/view/stylesheet/sixmoments.css?v=1.1.8';
         $data['six_script'] = 'extension/sixmoments/catalog/view/javascript/sixmoments.js?v=1.1.7';
-        $data['six_favicon'] = '/image/catalog/sixmoments/favicon.svg';
+        $data['six_favicon'] = '/image/catalog/sixmoments/favicon.svg?v=2';
         $data['six_og_image'] = '/image/catalog/sixmoments/og-store.png';
         $data['six_home'] = $this->url->link('common/home', 'language=' . $this->config->get('config_language'));
         $data['six_catalog_url'] = $this->url->link('extension/sixmoments/page/catalog', 'language=' . $this->config->get('config_language'));
