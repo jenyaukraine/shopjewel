@@ -152,19 +152,21 @@ jobs:
           # loaded. Refresh that resolution after Compose replaces the store
           # container, otherwise the public domain can keep serving the
           # previous container even though the new one is already healthy.
-          edge_proxy=""
+          reloaded_edge_proxies=0
           for candidate in $(docker ps --filter network=web-edge --format '{{.ID}}'); do
-            if docker exec "$candidate" sh -c \
-              "caddy version >/dev/null 2>&1 \
-                && test -f /etc/caddy/Caddyfile \
-                && grep -q 'katya-dev.duckdns.org' /etc/caddy/Caddyfile \
-                && grep -q 'noveraile-store' /etc/caddy/Caddyfile"; then
-              edge_proxy="$candidate"
-              break
+            if ! docker exec "$candidate" caddy version >/dev/null 2>&1; then
+              continue
+            fi
+
+            if docker exec "$candidate" test -f /etc/caddy/Caddyfile; then
+              docker exec "$candidate" caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
+              reloaded_edge_proxies=$((reloaded_edge_proxies + 1))
+            elif docker exec "$candidate" test -f /config/caddy/autosave.json; then
+              docker exec "$candidate" caddy reload --config /config/caddy/autosave.json
+              reloaded_edge_proxies=$((reloaded_edge_proxies + 1))
             fi
           done
-          test -n "$edge_proxy" || { echo "Caddy container was not found on web-edge"; exit 1; }
-          docker exec "$edge_proxy" caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
+          test "$reloaded_edge_proxies" -gt 0 || { echo "No reloadable Caddy container was found on web-edge"; exit 1; }
 
           ln -sfn "$release_dir" "$DEPLOY_PATH/current"
           rm -f "$ARCHIVE"
