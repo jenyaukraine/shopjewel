@@ -3,19 +3,26 @@ namespace Opencart\Admin\Model\Extension\Sixmoments\Module;
 
 class Sixmoments extends \Opencart\System\Engine\Model {
     public function install(): void {
-        $this->bootstrap();
+        $this->bootstrap(false);
     }
 
-    public function bootstrap(): void {
+    public function bootstrap(bool $with_demo_data = true): void {
         $this->db->query("CREATE TABLE IF NOT EXISTS `" . DB_PREFIX . "sixmoments_subscriber` (`subscriber_id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `email` VARCHAR(190) NOT NULL, `language_code` VARCHAR(16) NOT NULL, `consent` TINYINT(1) NOT NULL DEFAULT 1, `date_added` DATETIME NOT NULL, PRIMARY KEY (`subscriber_id`), UNIQUE KEY `email` (`email`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
         $this->db->query("CREATE TABLE IF NOT EXISTS `" . DB_PREFIX . "sixmoments_hint` (`hint_id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `product_id` INT UNSIGNED NOT NULL, `sender_name` VARCHAR(96) NOT NULL, `sender_email` VARCHAR(190) NOT NULL, `recipient_name` VARCHAR(96) NOT NULL, `recipient_email` VARCHAR(190) NOT NULL, `message` TEXT NOT NULL, `language_code` VARCHAR(16) NOT NULL, `date_added` DATETIME NOT NULL, PRIMARY KEY (`hint_id`), KEY `product_id` (`product_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
         $this->installPackageRegistration();
-        $this->installLanguages();
-        $this->installCurrencies();
         $this->installEvents();
         $this->installServiceExtensions();
-        $this->installSettings();
+        $this->installSettings($with_demo_data);
+
+        if ($with_demo_data) {
+            $this->installDemo();
+        }
+    }
+
+    public function installDemo(): void {
+        $this->installLanguages();
+        $this->installCurrencies();
         $this->seedCatalog();
         $this->seedArticles();
     }
@@ -24,9 +31,9 @@ class Sixmoments extends \Opencart\System\Engine\Model {
         $installed = $this->db->query("SELECT `extension_install_id` FROM `" . DB_PREFIX . "extension_install` WHERE `code` = 'sixmoments' LIMIT 1");
 
         if (!$installed->num_rows) {
-            $this->db->query("INSERT INTO `" . DB_PREFIX . "extension_install` SET `extension_id` = '0', `extension_download_id` = '0', `name` = '6MOMENTS Storefront Suite', `description` = '6MOMENTS storefront and commerce integration', `code` = 'sixmoments', `version` = '1.1.5', `author` = '6MOMENTS', `link` = 'https://6moments.store', `status` = '1', `date_added` = NOW()");
+            $this->db->query("INSERT INTO `" . DB_PREFIX . "extension_install` SET `extension_id` = '0', `extension_download_id` = '0', `name` = '6MOMENTS Universal Commerce Suite', `description` = 'Premium universal OpenCart 4.x theme with Page Builder, Mega Menu, AJAX filters, One Page Checkout and reviewed AI content tools', `code` = 'sixmoments', `version` = '2.1.0', `author` = '6MOMENTS', `link` = 'https://6moments.store', `status` = '1', `date_added` = NOW()");
         } else {
-            $this->db->query("UPDATE `" . DB_PREFIX . "extension_install` SET `version` = '1.1.5', `status` = '1' WHERE `extension_install_id` = '" . (int)$installed->row['extension_install_id'] . "'");
+            $this->db->query("UPDATE `" . DB_PREFIX . "extension_install` SET `name` = '6MOMENTS Universal Commerce Suite', `version` = '2.1.0', `status` = '1' WHERE `extension_install_id` = '" . (int)$installed->row['extension_install_id'] . "'");
         }
     }
 
@@ -44,6 +51,7 @@ class Sixmoments extends \Opencart\System\Engine\Model {
             ['sixmoments_cart', 'catalog/view/checkout/cart/before', 'extension/sixmoments/event/theme.cart'],
             ['sixmoments_cart_list', 'catalog/view/checkout/cart_list/before', 'extension/sixmoments/event/theme.cartList'],
             ['sixmoments_checkout', 'catalog/view/checkout/checkout/before', 'extension/sixmoments/event/theme.checkout'],
+            ['sixmoments_account_login', 'catalog/view/account/login/before', 'extension/sixmoments/event/theme.accountLogin'],
             ['sixmoments_blog', 'catalog/view/cms/blog/before', 'extension/sixmoments/event/theme.blog'],
             ['sixmoments_blog_info', 'catalog/view/cms/blog_info/before', 'extension/sixmoments/event/theme.blogInfo'],
             ['sixmoments_information', 'catalog/view/information/information/before', 'extension/sixmoments/event/theme.information'],
@@ -104,12 +112,13 @@ class Sixmoments extends \Opencart\System\Engine\Model {
         $this->model_setting_extension->install('total', 'sixmoments', 'bundle');
     }
 
-    private function installSettings(): void {
+    private function installSettings(bool $enable_storefront = false): void {
         $this->load->model('setting/setting');
         $defaults = [
-            'module_sixmoments_status' => 1,
-            'module_sixmoments_instagram' => 'https://www.instagram.com/6moments_jewelry?igsh=MTdnaHg4eWo0YzlrNQ==',
-            'module_sixmoments_email' => 'atelier@6moments.store',
+            'module_sixmoments_status' => (int)$enable_storefront,
+            'module_sixmoments_brand_name' => (string)($this->config->get('config_name') ?: '6MOMENTS'),
+            'module_sixmoments_instagram' => $enable_storefront ? 'https://www.instagram.com/6moments_jewelry' : '',
+            'module_sixmoments_email' => (string)($this->config->get('config_email') ?: ''),
             'module_sixmoments_phone' => '',
             'module_sixmoments_legal_name' => '',
             'module_sixmoments_legal_form' => '',
@@ -124,6 +133,29 @@ class Sixmoments extends \Opencart\System\Engine\Model {
             'module_sixmoments_retention_periods' => '',
             'module_sixmoments_catalog_category_id' => 0,
             'module_sixmoments_lab_category_id' => 0,
+            'module_sixmoments_page_builder' => json_encode([
+                ['id' => 'hero', 'enabled' => 1], ['id' => 'featured', 'enabled' => 1],
+                ['id' => 'benefits', 'enabled' => 1], ['id' => 'categories', 'enabled' => 1],
+                ['id' => 'collections', 'enabled' => 1], ['id' => 'specials', 'enabled' => 1],
+                ['id' => 'story', 'enabled' => 1], ['id' => 'journal', 'enabled' => 1],
+                ['id' => 'social', 'enabled' => 1]
+            ], JSON_UNESCAPED_SLASHES),
+            'module_sixmoments_hero_kicker' => '',
+            'module_sixmoments_hero_title' => '',
+            'module_sixmoments_hero_cta' => '',
+            'module_sixmoments_color_mode' => 'auto',
+            'module_sixmoments_blog_route' => 'cms/blog',
+            'module_sixmoments_native_menu_status' => 0,
+            'module_sixmoments_mega_menu_status' => 1,
+            'module_sixmoments_mega_menu_title' => 'Shop collections',
+            'module_sixmoments_mega_menu_promo_text' => 'New arrivals',
+            'module_sixmoments_mega_menu_promo_url' => '',
+            'module_sixmoments_ajax_filter_status' => 1,
+            'module_sixmoments_one_page_checkout_status' => 1,
+            'module_sixmoments_ai_endpoint' => 'https://api.openai.com/v1/responses',
+            'module_sixmoments_ai_api_key' => '',
+            'module_sixmoments_ai_model' => 'gpt-5-mini',
+            'module_sixmoments_ai_tone' => 'premium, clear and specific',
             'module_sixmoments_quiz_rules' => json_encode([
                 'engagement' => ['moment' => 'yes', 'tags' => ['engagement', 'ring']],
                 'wedding' => ['moment' => 'forever', 'tags' => ['wedding', 'anniversary']],
@@ -143,14 +175,14 @@ class Sixmoments extends \Opencart\System\Engine\Model {
             'payment_sixmoments_stripe_sort_order' => 1
         ]);
         $this->installDefaultSettings('shipping_sixmoments_dhl', [
-            'shipping_sixmoments_dhl_status' => 1,
+            'shipping_sixmoments_dhl_status' => 0,
             'shipping_sixmoments_dhl_cost' => 25,
             'shipping_sixmoments_dhl_tax_class_id' => 0,
             'shipping_sixmoments_dhl_geo_zone_id' => 0,
             'shipping_sixmoments_dhl_sort_order' => 1
         ]);
         $this->installDefaultSettings('shipping_sixmoments_dpd', [
-            'shipping_sixmoments_dpd_status' => 1,
+            'shipping_sixmoments_dpd_status' => 0,
             'shipping_sixmoments_dpd_cost' => 15,
             'shipping_sixmoments_dpd_tax_class_id' => 0,
             'shipping_sixmoments_dpd_geo_zone_id' => 0,
@@ -165,15 +197,15 @@ class Sixmoments extends \Opencart\System\Engine\Model {
             'payment_stripe_sort_order' => 1
         ]);
         $this->installDefaultSettings('shipping_dhl', [
-            'shipping_dhl_status' => 1, 'shipping_dhl_cost' => 25, 'shipping_dhl_tax_class_id' => 0,
+            'shipping_dhl_status' => 0, 'shipping_dhl_cost' => 25, 'shipping_dhl_tax_class_id' => 0,
             'shipping_dhl_geo_zone_id' => 0, 'shipping_dhl_sort_order' => 1
         ]);
         $this->installDefaultSettings('shipping_dpd', [
-            'shipping_dpd_status' => 1, 'shipping_dpd_cost' => 15, 'shipping_dpd_tax_class_id' => 0,
+            'shipping_dpd_status' => 0, 'shipping_dpd_cost' => 15, 'shipping_dpd_tax_class_id' => 0,
             'shipping_dpd_geo_zone_id' => 0, 'shipping_dpd_sort_order' => 2
         ]);
         $this->installDefaultSettings('total_bundle', [
-            'total_bundle_status' => 1, 'total_bundle_sort_order' => 4
+            'total_bundle_status' => 0, 'total_bundle_sort_order' => 4
         ]);
     }
 
@@ -513,7 +545,7 @@ class Sixmoments extends \Opencart\System\Engine\Model {
 
     public function uninstall(): void {
         $this->load->model('setting/event');
-        foreach (['sixmoments_header','sixmoments_footer','sixmoments_home','sixmoments_product','sixmoments_product_thumb','sixmoments_category','sixmoments_search','sixmoments_special','sixmoments_cart','sixmoments_cart_list','sixmoments_checkout','sixmoments_blog','sixmoments_blog_info','sixmoments_information','sixmoments_contact'] as $code) {
+        foreach (['sixmoments_header','sixmoments_footer','sixmoments_home','sixmoments_product','sixmoments_product_thumb','sixmoments_category','sixmoments_search','sixmoments_special','sixmoments_cart','sixmoments_cart_list','sixmoments_checkout','sixmoments_account_login','sixmoments_blog','sixmoments_blog_info','sixmoments_information','sixmoments_contact'] as $code) {
             $this->model_setting_event->deleteEventByCode($code);
         }
 

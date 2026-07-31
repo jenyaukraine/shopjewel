@@ -53,6 +53,7 @@ next-env.d.ts
 # generated screenshots
 /artifacts/
 /screenshots/
+/release/
 
 # generated deployment archives
 /.openai/site-build-*.tar.gz

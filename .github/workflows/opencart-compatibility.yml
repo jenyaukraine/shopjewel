@@ -1,0 +1,45 @@
+name: OpenCart compatibility
+
+on:
+  pull_request:
+    paths:
+      - "opencart/**"
+      - "docker/**"
+      - "Dockerfile"
+      - "tests/opencart-package.test.mjs"
+  push:
+    branches: [main]
+    paths:
+      - "opencart/**"
+      - "docker/**"
+      - "Dockerfile"
+      - "tests/opencart-package.test.mjs"
+  schedule:
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:opencart
+
+  opencart-image:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        opencart: ["4.0.2.3", "4.1.0.3"]
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build clean OpenCart with the extension
+        run: docker build --build-arg OPENCART_VERSION=${{ matrix.opencart }} --tag sixmoments:test-${{ matrix.opencart }} .

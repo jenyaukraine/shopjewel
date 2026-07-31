@@ -1,0 +1,12 @@
+{
+  "package": "sixmoments",
+  "channel": "stable",
+  "version": "2.1.0",
+  "released_at": "2026-07-31",
+  "opencart": {
+    "minimum": "4.0.2.3",
+    "tested": ["4.0.2.3", "4.1.0.3"],
+    "maximum_exclusive": "4.2.0.0"
+  },
+  "changelog": "https://katya-dev.duckdns.org/updates/sixmoments.json"
+}

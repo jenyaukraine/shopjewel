@@ -1,4 +1,5 @@
 <?php
+$_['six_theme_toggle'] = 'Helles oder dunkles Design wechseln';
 require DIR_EXTENSION . 'sixmoments/catalog/language/en-gb/module/sixmoments.php';
 $_['six_catalog_moment_01'] = 'Moment 01 — Versprechen';
 $_['six_catalog_moment_02'] = 'Moment 02 — Verbindung';

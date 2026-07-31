@@ -6,13 +6,13 @@
     <div class="product-gallery" data-six-product-gallery>
       {% if thumb %}
         <a class="product-visual" href="{{ popup }}" data-six-zoom-open aria-controls="six-product-zoom" aria-haspopup="dialog">
-          <img class="product-photo product-photo--detail" src="{{ thumb }}" alt="{{ heading_title }}">
+          <img class="product-photo product-photo--detail" src="{{ thumb }}" fetchpriority="high" loading="eager" decoding="async" alt="{{ heading_title }}">
           <span class="product-zoom-hint"><span aria-hidden="true">＋</span> Zoom</span>
         </a>
         <div id="six-product-zoom" class="product-zoom-dialog" data-six-zoom aria-hidden="true" role="dialog" aria-modal="true" aria-label="{{ heading_title }} — zoom">
           <button class="product-zoom-close" type="button" data-six-zoom-close aria-label="Close zoom"><span aria-hidden="true">×</span></button>
           <div class="product-zoom-stage" data-six-zoom-stage>
-            <img class="product-zoom-image" data-six-zoom-image src="{{ popup }}" alt="{{ heading_title }}" draggable="false">
+            <img class="product-zoom-image" data-six-zoom-image src="{{ popup }}" loading="lazy" decoding="async" alt="{{ heading_title }}" draggable="false">
           </div>
           <div class="product-zoom-toolbar" aria-label="Zoom controls">
             <button type="button" data-six-zoom-out aria-label="Zoom out">−</button>
@@ -23,7 +23,7 @@
           <p class="product-zoom-help">Scroll or use ＋/− to zoom · drag to move · Esc to close</p>
         </div>
       {% endif %}
-      {% if images %}<div class="product-thumbnails">{% for image in images %}<a href="{{ image.popup }}" data-six-zoom-source><img src="{{ image.thumb }}" alt="{{ heading_title }}"></a>{% endfor %}</div>{% endif %}
+      {% if images %}<div class="product-thumbnails">{% for image in images %}<a href="{{ image.popup }}" data-six-zoom-source><img src="{{ image.thumb }}" loading="lazy" decoding="async" alt="{{ heading_title }}"></a>{% endfor %}</div>{% endif %}
     </div>
     <div class="product-copy">
       <p class="eyebrow">{{ six_moment }}</p><h1>{{ heading_title }}</h1>
@@ -53,7 +53,7 @@
       {% if attribute_groups %}<details class="product-accordion"><summary>{{ six_details }}</summary><dl class="specification-block">{% for group in attribute_groups %}{% for attribute in group.attribute %}<div><dt>{{ attribute.name }}</dt><dd>{{ attribute.text }}</dd></div>{% endfor %}{% endfor %}</dl></details>{% endif %}
     </div>
   </section>
-  {% if six_bundle_product %}<section class="bundle-offer"><div><p class="eyebrow">{{ six_bundle }}</p><h2>{{ six_bundle_title }}</h2><p>{{ six_bundle_copy }}</p><p class="bundle-price"><del>{{ price }} + {{ six_bundle_product.price }}</del><strong>{{ six_bundle_product.set_price }}</strong></p><button class="button button--dark" type="button" data-six-bundle-add data-product-id="{{ product_id }}" data-paired-id="{{ six_bundle_product.product_id }}" data-cart-action="{{ six_cart_add }}" data-bundle-action="{{ six_bundle_add }}">{{ six_add_set }}</button><p class="six-form-status" role="status"></p></div><a href="{{ six_bundle_product.href }}"><img src="{{ six_bundle_product.image }}" alt="{{ six_bundle_product.name }}"><span>{{ six_bundle_product.name }}</span></a></section>{% endif %}
+  {% if six_bundle_product %}<section class="bundle-offer"><div><p class="eyebrow">{{ six_bundle }}</p><h2>{{ six_bundle_title }}</h2><p>{{ six_bundle_copy }}</p><p class="bundle-price"><del>{{ price }} + {{ six_bundle_product.price }}</del><strong>{{ six_bundle_product.set_price }}</strong></p><button class="button button--dark" type="button" data-six-bundle-add data-product-id="{{ product_id }}" data-paired-id="{{ six_bundle_product.product_id }}" data-cart-action="{{ six_cart_add }}" data-bundle-action="{{ six_bundle_add }}">{{ six_add_set }}</button><p class="six-form-status" role="status"></p></div><a href="{{ six_bundle_product.href }}"><img src="{{ six_bundle_product.image }}" width="520" height="520" loading="lazy" decoding="async" alt="{{ six_bundle_product.name }}"><span>{{ six_bundle_product.name }}</span></a></section>{% endif %}
   {% if related %}<section class="recommendations"><div class="editorial-heading"><p class="editorial-script">{{ six_may_like }}</p><h2>{{ six_may_like }}</h2></div>{{ related }}</section>{% endif %}
   {% if review_status %}<section class="product-reviews">{{ review }}</section>{% endif %}
   <section class="gift-hint-section"><div><p class="eyebrow">{{ six_hint_title }}</p><h2>{{ six_hint_title }}</h2><p>{{ six_hint_copy }}</p></div><form class="hint-form" action="{{ six_hint_action }}" method="post" data-six-ajax-form><input type="hidden" name="product_id" value="{{ product_id }}"><label>{{ six_sender_name }}<input name="sender_name" required></label><label>{{ six_sender_email }}<input type="email" name="sender_email" required></label><label>{{ six_recipient_name }}<input name="recipient_name" required></label><label>{{ six_recipient_email }}<input type="email" name="recipient_email" required></label><label class="hint-message">{{ six_message }}<textarea name="message" rows="3"></textarea></label><button class="button button--dark" type="submit">{{ six_send_hint }}</button><p class="six-form-status" role="status"></p></form></section>

@@ -1,6 +1,6 @@
 # 6MOMENTS for OpenCart
 
-Продакшен работает на чистом OpenCart `4.1.0.3`. В продакшен-сборку код 6MOMENTS попадает только из расширения `opencart/sixmoments` и при каждом релизе накладывается поверх неизменённого ядра OpenCart.
+Продакшен работает на чистом OpenCart `4.1.0.3`, а релизный пакет еженедельно проверяется также на `4.0.2.3`. В продакшен-сборку код 6MOMENTS попадает только из расширения `opencart/sixmoments` и при каждом релизе накладывается поверх неизменённого ядра OpenCart.
 
 ## Архитектура
 
@@ -26,11 +26,14 @@ docker compose --env-file .env -f docker-compose.yml -f docker-compose.local.yml
 
 ## Пакет модуля
 
-Установочный пакет модуля при необходимости можно собрать локально командой:
+Marketplace-релиз собирается одной командой. Скрипт проверяет манифест, обязательные файлы, отсутствие dev-артефактов и live-секретов, затем создаёт установочный архив и комплект для покупателя:
 
 ```powershell
-Compress-Archive -Path opencart/sixmoments/* -DestinationPath sixmoments.ocmod.zip -Force
+npm run test:opencart
+npm run build:opencart
 ```
+
+Результат: `release/sixmoments.ocmod.zip`, полный delivery bundle с документацией и `SHA256SUMS.txt`. Тексты карточки товара и чек-лист продавца находятся в `marketplace/`.
 
 ## Продакшен-деплой
 

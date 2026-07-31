@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-define('VERSION', '4.1.0.3');
+define('VERSION', (string)(getenv('OPENCART_VERSION') ?: '4.1.0.3'));
 
 $openCartRoot = rtrim((string)(getenv('OPENCART_ROOT') ?: '/var/www/html'), '/\\');
 require_once $openCartRoot . '/admin/config.php';

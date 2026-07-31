@@ -9,11 +9,14 @@ WORKDIR /usr/src/opencart
 RUN curl --fail --location --silent --show-error \
         "https://github.com/opencart/opencart/archive/refs/tags/${OPENCART_VERSION}.tar.gz" \
         | tar --extract --gzip --strip-components=1
-RUN composer install \
-        --no-dev \
-        --no-interaction \
-        --no-progress \
-        --optimize-autoloader
+RUN if [ -f composer.json ]; then \
+        composer install --no-dev --no-interaction --no-progress --optimize-autoloader; \
+    elif [ -f upload/system/storage/composer.json ]; then \
+        composer remove --working-dir=upload/system/storage phpdocumentor/phpdocumentor --no-update --no-interaction; \
+        composer install --working-dir=upload/system/storage --no-dev --no-interaction --no-progress --optimize-autoloader; \
+    else \
+        echo "Unsupported OpenCart source: composer.json was not found" >&2; exit 1; \
+    fi
 
 FROM php:8.3-apache-bookworm
 

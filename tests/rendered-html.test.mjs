@@ -81,7 +81,7 @@ test("OpenCart product cards keep the platform AJAX cart handler active", async 
   assert.doesNotMatch(script, /stopImmediatePropagation\(\)/);
   assert.doesNotMatch(script, /function submitProductCard\b/);
   assert.match(script, /ajaxSuccess\.sixBagFlight/);
-  assert.match(controller, /sixmoments\.js\?v=1\.2\.6/);
+  assert.match(controller, /sixmoments\.js\?v=\d+\.\d+\.\d+/);
 });
 
 test("OpenCart in-stock labels use the storefront success color", async () => {
@@ -92,7 +92,7 @@ test("OpenCart in-stock labels use the storefront success color", async () => {
 
   assert.match(stylesheet, /--success:\s*#4e7658/);
   assert.match(stylesheet, /\.product-details-list li:first-child,[\s\S]*?li:first-child::before\s*\{\s*color:\s*var\(--success\)/);
-  assert.match(controller, /sixmoments\.css\?v=1\.2\.6/);
+  assert.match(controller, /sixmoments\.css\?v=\d+\.\d+\.\d+/);
 });
 
 test("OpenCart checkout uses the branded responsive purchase flow", async () => {
@@ -110,6 +110,25 @@ test("OpenCart checkout uses the branded responsive purchase flow", async () => 
   assert.match(stylesheet, /@media \(max-width: 820px\)[\s\S]*?\.checkout-page-grid\s*\{[^}]*grid-template-columns:\s*1fr/s);
   assert.match(controller, /extension\/sixmoments\/checkout\/checkout/);
   assert.match(installer, /catalog\/view\/checkout\/checkout\/before/);
+});
+
+test("OpenCart account login uses the branded responsive client portal", async () => {
+  const [template, stylesheet, controller, installer] = await Promise.all([
+    readFile(new URL("../opencart/sixmoments/catalog/view/template/account/login.twig", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/sixmoments/catalog/view/stylesheet/sixmoments.css", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/sixmoments/catalog/controller/event/theme.php", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/sixmoments/admin/model/module/sixmoments.php", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(template, /class="account-login__portal"/);
+  assert.match(template, /id="form-login"[\s\S]*?data-oc-toggle="ajax"/);
+  assert.match(template, /autocomplete="email"/);
+  assert.match(template, /autocomplete="current-password"/);
+  assert.match(stylesheet, /\.account-login__portal\s*\{[^}]*grid-template-columns:/s);
+  assert.match(stylesheet, /@media \(max-width: 760px\)[\s\S]*?\.account-login__portal\s*\{[^}]*grid-template-columns:\s*1fr/s);
+  assert.match(controller, /extension\/sixmoments\/account\/login/);
+  assert.match(controller, /sixmoments\.css\?v=\d+\.\d+\.\d+/);
+  assert.match(installer, /catalog\/view\/account\/login\/before/);
 });
 
 test("OpenCart product zoom fills the preview and provides an interactive lightbox", async () => {

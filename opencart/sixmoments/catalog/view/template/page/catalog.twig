@@ -8,7 +8,7 @@
   <div class="catalog-shell">
     <aside class="catalog-filters" data-six-filters>
       <div class="filter-heading"><h2>{{ six_filters }}</h2><a href="{{ clear_url }}">{{ six_clear }}</a></div>
-      <form action="{{ catalog_action }}" method="get">
+      <form action="{{ catalog_action }}" method="get"{% if ajax_filter_status %} data-six-ajax-filter{% endif %}>
         <input type="hidden" name="route" value="extension/sixmoments/page/catalog"><input type="hidden" name="language" value="{{ language }}">
         <label class="filter-search">{{ six_search }}<input type="search" name="q" value="{{ filters.q }}"></label>
         <details open><summary>{{ six_metal }}</summary><label><input type="radio" name="metal" value=""{% if not filters.metal %} checked{% endif %}> {{ six_all }}</label><label><input type="radio" name="metal" value="white-gold"{% if filters.metal == 'white-gold' %} checked{% endif %}> {{ six_white_gold }}</label><label><input type="radio" name="metal" value="yellow-gold"{% if filters.metal == 'yellow-gold' %} checked{% endif %}> {{ six_yellow_gold }}</label><label><input type="radio" name="metal" value="rose-gold"{% if filters.metal == 'rose-gold' %} checked{% endif %}> {{ six_rose_gold }}</label><label><input type="radio" name="metal" value="platinum"{% if filters.metal == 'platinum' %} checked{% endif %}> {{ six_platinum }}</label></details>
@@ -26,8 +26,8 @@
         <button class="button button--dark" type="submit">{{ six_apply }}</button>
       </form>
     </aside>
-    <section class="catalog-results">
-      <div class="catalog-toolbar"><button class="filter-toggle" type="button" data-six-filter-toggle>{{ six_filters }}</button><strong>{{ total }} {{ six_pieces }}</strong><label>{{ six_sort }} <select onchange="location=this.value">{% for sort in sorts %}<option value="{{ sort.href }}"{% if filters.sort == sort.value %} selected{% endif %}>{{ sort.name }}</option>{% endfor %}</select></label></div>
+    <section class="catalog-results" id="six-catalog-results" aria-live="polite">
+      <div class="catalog-toolbar"><button class="filter-toggle" type="button" data-six-filter-toggle>{{ six_filters }}</button><strong>{{ total }} {{ six_pieces }}</strong><label>{{ six_sort }} <select data-six-catalog-sort>{% for sort in sorts %}<option value="{{ sort.href }}"{% if filters.sort == sort.value %} selected{% endif %}>{{ sort.name }}</option>{% endfor %}</select></label></div>
       {% if products %}<div class="collection-grid product-grid">{% for product in products %}{{ product }}{% endfor %}</div><div class="pagination-shell">{{ pagination }}<p>{{ result_text }}</p></div>{% else %}<div class="empty-state"><p>{{ six_no_products }}</p><a class="button button--dark" href="{{ clear_url }}">{{ six_clear }}</a></div>{% endif %}
     </section>
   </div>

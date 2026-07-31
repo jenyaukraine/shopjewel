@@ -1,0 +1,31 @@
+6MOMENTS STOREFRONT THEME LICENSE
+Version 1.0, 31 July 2026
+
+1. Code license
+
+The PHP, Twig, JavaScript and CSS source code in this package is licensed under
+the GNU General Public License, version 3 or any later version (GPL-3.0-or-later),
+consistent with OpenCart. The license text is available at:
+https://www.gnu.org/licenses/gpl-3.0.html
+
+2. Demo media and copy
+
+The original photographs, illustrations and editorial demo copy included under
+image/catalog/sixmoments and in the demo-data installer are licensed to the
+lawful purchaser for use in one production OpenCart store and any staging copies
+of that store. They may be modified for that store. They may not be resold,
+redistributed, sublicensed or offered as a standalone asset collection.
+
+3. Trademarks and third-party services
+
+The purchase does not transfer ownership of the 6MOMENTS name or marks. OpenCart,
+Stripe, DHL and DPD are names of their respective owners. Their software,
+accounts, contracts, fees and service availability are not included.
+
+4. Merchant responsibilities
+
+The merchant must replace demo product information, prices, contact details and
+legal copy; configure taxes, mail, payment and shipping; and verify compliance
+for every sales market before accepting orders.
+
+Copyright (c) 2026 6MOMENTS. All rights reserved except as expressly licensed.

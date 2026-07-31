@@ -70,6 +70,7 @@ class Catalog extends \Opencart\System\Engine\Controller {
         $data['currency_code'] = $selected_currency;
         $data['catalog_action'] = $this->url->link('extension/sixmoments/page/catalog', 'language=' . $this->config->get('config_language'));
         $data['clear_url'] = $data['catalog_action'];
+        $data['ajax_filter_status'] = (bool)$this->config->get('module_sixmoments_ajax_filter_status');
 
         $data['categories'] = [];
         foreach ($this->model_extension_sixmoments_catalog->getCategories() as $category) {
@@ -109,6 +110,11 @@ class Catalog extends \Opencart\System\Engine\Controller {
             'url' => $this->url->link('extension/sixmoments/page/catalog', 'language=' . $this->config->get('config_language') . $url . '&page={page}')
         ]);
         $data['result_text'] = $total ? sprintf($data['six_catalog_results'], min($total, $filter['start'] + 1), min($total, $filter['start'] + $limit), $total) : $data['six_no_products'];
+        if ($data['ajax_filter_status'] && !empty($this->request->get['ajax'])) {
+            $this->response->addHeader('Content-Type: text/html; charset=utf-8');
+            $this->response->setOutput($this->load->view('extension/sixmoments/page/catalog_results', $data));
+            return;
+        }
         $data['header'] = $this->load->controller('common/header');
         $data['footer'] = $this->load->controller('common/footer');
         $this->response->setOutput($this->load->view('extension/sixmoments/page/catalog', $data));
@@ -135,7 +141,7 @@ class Catalog extends \Opencart\System\Engine\Controller {
 
     private function filterUrl(array $replace): string {
         $query = $this->request->get;
-        unset($query['route'], $query['_route_'], $query['language']);
+        unset($query['route'], $query['_route_'], $query['language'], $query['ajax']);
         foreach ($replace as $key => $value) {
             if ($value === null || $value === '') unset($query[$key]); else $query[$key] = $value;
         }
@@ -145,7 +151,7 @@ class Catalog extends \Opencart\System\Engine\Controller {
 
     private function queryString(array $exclude = []): string {
         $query = $this->request->get;
-        foreach (array_merge(['route','_route_','language'], $exclude) as $key) unset($query[$key]);
+        foreach (array_merge(['route','_route_','language','ajax'], $exclude) as $key) unset($query[$key]);
         return $query ? '&' . http_build_query($query) : '';
     }
 }

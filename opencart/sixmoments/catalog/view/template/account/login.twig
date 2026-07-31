@@ -1,0 +1,97 @@
+{{ header }}
+<div id="account-login" class="account-login-page">
+  <div class="account-login-shell">
+    <nav class="account-login__breadcrumbs" aria-label="Breadcrumb">
+      <ol>
+        {% for breadcrumb in breadcrumbs %}
+          <li{% if loop.last %} aria-current="page"{% endif %}>
+            {% if not loop.last %}<a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a>{% else %}<span>{{ breadcrumb.text }}</span>{% endif %}
+          </li>
+        {% endfor %}
+      </ol>
+    </nav>
+
+    {% if success %}
+      <div class="alert alert-success alert-dismissible account-login__alert" role="status">
+        <i class="fa-solid fa-circle-check" aria-hidden="true"></i> {{ success }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endif %}
+    {% if error_warning %}
+      <div class="alert alert-danger alert-dismissible account-login__alert" role="alert">
+        <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i> {{ error_warning }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endif %}
+
+    {{ content_top }}
+
+    <header class="account-login__intro">
+      <p class="eyebrow">6MOMENTS · {{ text_account }}</p>
+      <h1>{{ heading_title }}</h1>
+      <span aria-hidden="true">01 — 06</span>
+    </header>
+
+    <section class="account-login__portal" aria-label="{{ heading_title }}">
+      <div class="account-login__returning">
+        <form id="form-login" action="{{ login }}" method="post" data-oc-toggle="ajax">
+          <div class="account-login__section-heading">
+            <span aria-hidden="true">01</span>
+            <div>
+              <p class="eyebrow">{{ text_account }}</p>
+              <h2>{{ text_returning_customer }}</h2>
+            </div>
+          </div>
+          <p class="account-login__lead">{{ text_i_am_returning_customer }}</p>
+
+          <div class="account-login__field">
+            <label for="input-email">{{ entry_email }}</label>
+            <input type="email" name="email" value="{{ email }}" placeholder="name@example.com" id="input-email" autocomplete="email" inputmode="email" required autofocus>
+          </div>
+          <div class="account-login__field">
+            <div class="account-login__label-row">
+              <label for="input-password">{{ entry_password }}</label>
+              <a href="{{ forgotten }}">{{ text_forgotten }}</a>
+            </div>
+            <input type="password" name="password" value="{{ password }}" placeholder="••••••••" id="input-password" autocomplete="current-password" required>
+          </div>
+          {% if redirect %}
+            <input type="hidden" name="redirect" value="{{ redirect }}">
+          {% endif %}
+          <button type="submit" class="account-login__button">
+            <span>{{ button_login }}</span><span aria-hidden="true">↗</span>
+          </button>
+        </form>
+      </div>
+
+      <div class="account-login__new">
+        <img src="{{ six_account_image }}" alt="" loading="eager">
+        <div class="account-login__new-overlay" aria-hidden="true"></div>
+        <div class="account-login__new-copy">
+          <div class="account-login__section-heading">
+            <span aria-hidden="true">02</span>
+            <div>
+              <p class="eyebrow">6MOMENTS</p>
+              <h2>{{ text_new_customer }}</h2>
+            </div>
+          </div>
+          <p><strong>{{ text_register }}</strong></p>
+          <p>{{ text_register_account }}</p>
+          <a href="{{ register }}" class="account-login__button account-login__button--light">
+            <span>{{ button_continue }}</span><span aria-hidden="true">↗</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    {% if column_left or column_right %}
+      <aside class="account-login__modules" aria-label="{{ text_account }}">
+        {{ column_left }}
+        {{ column_right }}
+      </aside>
+    {% endif %}
+
+    {{ content_bottom }}
+  </div>
+</div>
+{{ footer }}

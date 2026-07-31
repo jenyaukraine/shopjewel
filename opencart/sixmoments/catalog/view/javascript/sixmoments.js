@@ -2,6 +2,26 @@
   'use strict';
 
   const body = document.body;
+  const colorScheme = window.matchMedia('(prefers-color-scheme: dark)');
+  const themeRoot = document.documentElement;
+  const themeColor = document.querySelector('[data-six-theme-color]');
+  const applyTheme = (preference) => {
+    const mode = preference === 'auto' ? (colorScheme.matches ? 'dark' : 'light') : preference;
+    themeRoot.dataset.theme = mode;
+    themeRoot.dataset.themePreference = preference;
+    if (themeColor) themeColor.content = mode === 'dark' ? '#171614' : '#f8f5ef';
+    document.querySelectorAll('[data-six-theme-icon]').forEach((icon) => { icon.textContent = mode === 'dark' ? '☀' : '☾'; });
+  };
+  document.querySelectorAll('[data-six-theme-toggle]').forEach((button) => button.addEventListener('click', () => {
+    const next = themeRoot.dataset.theme === 'dark' ? 'light' : 'dark';
+    try { localStorage.setItem('sixmoments-theme', next); } catch {}
+    applyTheme(next);
+  }));
+  colorScheme.addEventListener('change', () => {
+    if ((themeRoot.dataset.themePreference || 'auto') === 'auto') applyTheme('auto');
+  });
+  applyTheme(themeRoot.dataset.themePreference || 'auto');
+
   const menu = document.querySelector('.mobile-drawer-shell');
   const open = document.querySelector('[data-six-menu-open]');
   document.querySelectorAll('[data-six-menu-close]').forEach((button) => button.addEventListener('click', closeMenu));
@@ -124,8 +144,62 @@
   }
 
   const filterPanel = document.querySelector('[data-six-filters]');
-  const filterToggle = document.querySelector('[data-six-filter-toggle]');
-  if (filterPanel && filterToggle) filterToggle.addEventListener('click', () => filterPanel.classList.toggle('is-open'));
+  const ajaxFilterForm = document.querySelector('[data-six-ajax-filter]');
+  const catalogResults = document.querySelector('#six-catalog-results');
+  function bindFilterToggle() {
+    const filterToggle = document.querySelector('[data-six-filter-toggle]');
+    if (filterPanel && filterToggle) filterToggle.addEventListener('click', () => filterPanel.classList.toggle('is-open'));
+  }
+  bindFilterToggle();
+
+  if (ajaxFilterForm && catalogResults) {
+    let filterTimer;
+    const buildFormUrl = () => {
+      const url = new URL(ajaxFilterForm.action, location.href);
+      const formData = new FormData(ajaxFilterForm);
+      for (const [key, value] of formData.entries()) {
+        if (key === 'route' || value === '') url.searchParams.delete(key);
+        else url.searchParams.set(key, value);
+      }
+      url.searchParams.delete('page');
+      return url;
+    };
+    const loadResults = async (target, pushState = true) => {
+      const browserUrl = new URL(target, location.href);
+      const requestUrl = new URL(browserUrl);
+      requestUrl.searchParams.set('ajax', '1');
+      catalogResults.classList.add('is-loading');
+      catalogResults.setAttribute('aria-busy', 'true');
+      try {
+        const response = await fetch(requestUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        if (!response.ok) throw new Error('Filter request failed');
+        catalogResults.innerHTML = await response.text();
+        if (pushState) history.pushState({ sixCatalog: true }, '', browserUrl);
+        bindCatalogResults();
+      } catch {
+        location.assign(browserUrl);
+      } finally {
+        catalogResults.classList.remove('is-loading');
+        catalogResults.removeAttribute('aria-busy');
+      }
+    };
+    const bindCatalogResults = () => {
+      bindFilterToggle();
+      const sort = catalogResults.querySelector('[data-six-catalog-sort]');
+      if (sort) sort.addEventListener('change', () => loadResults(sort.value));
+      catalogResults.querySelectorAll('.pagination a, .empty-state a').forEach(link => link.addEventListener('click', event => { event.preventDefault(); loadResults(link.href); }));
+    };
+    ajaxFilterForm.addEventListener('submit', event => { event.preventDefault(); loadResults(buildFormUrl()); });
+    ajaxFilterForm.addEventListener('change', event => {
+      if (event.target.matches('input[type="radio"], select')) loadResults(buildFormUrl());
+    });
+    ajaxFilterForm.querySelectorAll('input[type="number"], input[type="search"]').forEach(input => input.addEventListener('input', () => {
+      window.clearTimeout(filterTimer);
+      filterTimer = window.setTimeout(() => loadResults(buildFormUrl()), 420);
+    }));
+    window.addEventListener('popstate', () => location.reload());
+    bindCatalogResults();
+  }
 
   // Product imagery: keep the preview edge-to-edge and open a real, controllable lightbox.
   const productGallery = document.querySelector('[data-six-product-gallery]');

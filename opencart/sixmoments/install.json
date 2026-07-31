@@ -1,7 +1,7 @@
 {
-  "name": "6MOMENTS Storefront Suite",
-  "description": "OpenCart 4.1 storefront, multilingual content, quiz, gift hints, Stripe Checkout and DHL/DPD shipping rates for 6moments.store.",
-  "version": "1.1.5",
+  "name": "6MOMENTS Universal Commerce Suite",
+  "description": "Universal premium OpenCart 4.x theme with Page Builder, Mega Menu, AJAX filters, One Page Checkout, AI content, light/dark modes and extension-safe integration.",
+  "version": "2.1.0",
   "author": "6MOMENTS",
   "link": "https://6moments.store"
 }

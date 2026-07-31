@@ -1,4 +1,5 @@
 <?php
+$_['six_theme_toggle'] = 'Přepnout světlý nebo tmavý motiv';
 require DIR_EXTENSION . 'sixmoments/catalog/language/en-gb/module/sixmoments.php';
 $_['six_catalog_moment_01'] = 'Okamžik 01 — Slib';
 $_['six_catalog_moment_02'] = 'Okamžik 02 — Spojení';

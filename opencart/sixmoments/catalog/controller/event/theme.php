@@ -8,32 +8,51 @@ class Theme extends \Opencart\System\Engine\Controller {
         return (bool)$this->config->get('module_sixmoments_status');
     }
 
+    /** Leave a view alone when an earlier extension has already replaced it. */
+    private function claimView(string &$route, array $core_routes, string $theme_route): bool {
+        if (!in_array($route, $core_routes, true)) return false;
+        $route = $theme_route;
+        return true;
+    }
+
+    private function blogRoute(): string {
+        $route = trim((string)$this->config->get('module_sixmoments_blog_route'));
+        return preg_match('#^[a-z0-9_]+(?:/[a-z0-9_]+)+(?:\.[a-zA-Z0-9_]+)?$#', $route) ? $route : 'cms/blog';
+    }
+
     private function words(array &$data): void {
         $this->load->language('extension/sixmoments/module/sixmoments');
+        $brand = (string)($this->config->get('module_sixmoments_brand_name') ?: $this->config->get('config_name') ?: '6MOMENTS');
         foreach ($this->language->all() as $key => $value) {
-            if (str_starts_with($key, 'six_')) $data[$key] = $value;
+            if (str_starts_with($key, 'six_')) $data[$key] = is_string($value) ? str_replace(['6MOMENTS', 'Six Moments'], $brand, $value) : $value;
         }
+        $data['six_brand_name'] = $brand;
     }
 
     public function header(string &$route, array &$data, string &$code = '', string &$output = ''): void {
-        if (!$this->enabled()) return;
-        $route = 'extension/sixmoments/common/header';
+        if (!$this->enabled() || !$this->claimView($route, ['common/header'], 'extension/sixmoments/common/header')) return;
         $this->words($data);
 
         if (($data['title'] ?? '') === 'Your Store') {
-            $data['title'] = '6MOMENTS Jewelry';
+            $data['title'] = $data['six_brand_name'];
         }
 
-        $data['six_stylesheet'] = 'extension/sixmoments/catalog/view/stylesheet/sixmoments.css?v=1.2.6';
-        $data['six_script'] = 'extension/sixmoments/catalog/view/javascript/sixmoments.js?v=1.2.6';
-        $data['six_favicon'] = '/image/catalog/sixmoments/favicon.svg?v=2';
-        $data['six_og_image'] = '/image/catalog/sixmoments/og-store.png';
+        $data['six_stylesheet'] = 'extension/sixmoments/catalog/view/stylesheet/sixmoments.css?v=2.1.0';
+        $data['six_script'] = 'extension/sixmoments/catalog/view/javascript/sixmoments.js?v=2.1.0';
+        $data['six_favicon'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/sixmoments/favicon.svg?v=2';
+        $data['six_og_image'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/sixmoments/og-store.png';
+        $data['six_color_mode'] = in_array($this->config->get('module_sixmoments_color_mode'), ['light', 'dark'], true) ? $this->config->get('module_sixmoments_color_mode') : 'auto';
+        $data['six_native_menu_status'] = (bool)$this->config->get('module_sixmoments_native_menu_status');
+        $data['six_canonical'] = '';
+        foreach ((array)($data['links'] ?? []) as $link) {
+            if (($link['rel'] ?? '') === 'canonical') { $data['six_canonical'] = (string)($link['href'] ?? ''); break; }
+        }
         $data['six_home'] = $this->url->link('common/home', 'language=' . $this->config->get('config_language'));
         $data['six_catalog_url'] = $this->url->link('extension/sixmoments/page/catalog', 'language=' . $this->config->get('config_language'));
         $data['six_about_url'] = $this->url->link('extension/sixmoments/page/about', 'language=' . $this->config->get('config_language'));
         $data['six_diamonds_url'] = $this->url->link('extension/sixmoments/page/diamonds', 'language=' . $this->config->get('config_language'));
         $data['six_quiz_url'] = $this->url->link('extension/sixmoments/page/quiz', 'language=' . $this->config->get('config_language'));
-        $data['six_journal_url'] = $this->url->link('cms/blog', 'language=' . $this->config->get('config_language'));
+        $data['six_journal_url'] = $this->url->link($this->blogRoute(), 'language=' . $this->config->get('config_language'));
         $data['six_special'] = $this->url->link('extension/sixmoments/page/catalog', 'language=' . $this->config->get('config_language') . '&sale=1');
         $data['six_search_action'] = $data['six_catalog_url'];
         $data['six_search_suggest'] = $this->url->link('extension/sixmoments/search.suggest', 'language=' . $this->config->get('config_language'));
@@ -42,11 +61,16 @@ class Theme extends \Opencart\System\Engine\Controller {
         $data['six_currency_code'] = $this->session->data['currency'] ?? $this->config->get('config_currency');
 
         $data['six_categories'] = [];
-        $category_query = $this->db->query("SELECT DISTINCT c.category_id, cd.name, c.sort_order FROM `" . DB_PREFIX . "category` c INNER JOIN `" . DB_PREFIX . "category_description` cd ON (cd.category_id = c.category_id) INNER JOIN `" . DB_PREFIX . "product_to_category` p2c ON (p2c.category_id = c.category_id) INNER JOIN `" . DB_PREFIX . "product_code` pc ON (pc.product_id = p2c.product_id AND pc.code = 'sku' AND pc.value LIKE '6M-%') WHERE c.status = '1' AND cd.language_id = '" . (int)$this->config->get('config_language_id') . "' ORDER BY c.sort_order ASC, cd.name ASC LIMIT 5");
+        $data['six_mega_menu_status'] = (bool)$this->config->get('module_sixmoments_mega_menu_status');
+        $data['six_mega_menu_title'] = (string)($this->config->get('module_sixmoments_mega_menu_title') ?: $data['six_catalog']);
+        $data['six_mega_menu_promo_text'] = (string)($this->config->get('module_sixmoments_mega_menu_promo_text') ?: $data['six_specials']);
+        $data['six_mega_menu_promo_url'] = (string)($this->config->get('module_sixmoments_mega_menu_promo_url') ?: $data['six_special']);
+        $category_query = $this->db->query("SELECT c.category_id, cd.name, c.sort_order, COUNT(DISTINCT p.product_id) AS product_total FROM `" . DB_PREFIX . "category` c INNER JOIN `" . DB_PREFIX . "category_description` cd ON (cd.category_id = c.category_id) INNER JOIN `" . DB_PREFIX . "product_to_category` p2c ON (p2c.category_id = c.category_id) INNER JOIN `" . DB_PREFIX . "product` p ON (p.product_id = p2c.product_id AND p.status = '1') WHERE c.status = '1' AND cd.language_id = '" . (int)$this->config->get('config_language_id') . "' GROUP BY c.category_id, cd.name, c.sort_order ORDER BY c.sort_order ASC, cd.name ASC LIMIT 12");
         foreach ($category_query->rows as $category) {
             $data['six_categories'][] = [
                 'name' => $category['name'],
-                'href' => $this->url->link('extension/sixmoments/page/catalog', 'language=' . $this->config->get('config_language') . '&category_id=' . (int)$category['category_id'])
+                'total' => (int)($category['product_total'] ?? 0),
+                'href' => $this->url->link('product/category', 'language=' . $this->config->get('config_language') . '&path=' . (int)$category['category_id'])
             ];
         }
         if (!$data['six_categories']) {
@@ -61,17 +85,16 @@ class Theme extends \Opencart\System\Engine\Controller {
     }
 
     public function footer(string &$route, array &$data, string &$code = '', string &$output = ''): void {
-        if (!$this->enabled()) return;
-        $route = 'extension/sixmoments/common/footer';
+        if (!$this->enabled() || !$this->claimView($route, ['common/footer'], 'extension/sixmoments/common/footer')) return;
         $this->words($data);
-        $data['six_script'] = 'extension/sixmoments/catalog/view/javascript/sixmoments.js?v=1.2.6';
+        $data['six_script'] = 'extension/sixmoments/catalog/view/javascript/sixmoments.js?v=2.1.0';
         $lang = 'language=' . $this->config->get('config_language');
         $data['six_home'] = $this->url->link('common/home', $lang);
         $data['six_about_url'] = $this->url->link('extension/sixmoments/page/about', $lang);
         $data['six_diamonds_url'] = $this->url->link('extension/sixmoments/page/diamonds', $lang);
         $data['six_shipping_url'] = $this->url->link('extension/sixmoments/page/shipping', $lang);
         $data['six_faq_url'] = $this->url->link('extension/sixmoments/page/faq', $lang);
-        $data['six_journal_url'] = $this->url->link('cms/blog', $lang);
+        $data['six_journal_url'] = $this->url->link($this->blogRoute(), $lang);
         $data['six_catalog_url'] = $this->url->link('extension/sixmoments/page/catalog', $lang);
         $data['six_contact_url'] = $this->url->link('information/contact', $lang);
         $data['six_privacy_url'] = $this->url->link('extension/sixmoments/page/privacy', $lang);
@@ -79,13 +102,14 @@ class Theme extends \Opencart\System\Engine\Controller {
         $data['six_terms_url'] = $this->url->link('extension/sixmoments/page/terms', $lang);
         $data['six_newsletter_action'] = $this->url->link('extension/sixmoments/newsletter.subscribe', $lang);
         $data['six_instagram'] = $this->config->get('module_sixmoments_instagram');
+        $instagram_path = trim((string)parse_url((string)$data['six_instagram'], PHP_URL_PATH), '/');
+        $data['six_instagram_label'] = $instagram_path ? '@' . basename($instagram_path) : '@' . strtolower(preg_replace('/[^a-z0-9]+/i', '', $data['six_brand_name']));
         $data['six_email'] = $this->config->get('module_sixmoments_email');
         $data['six_year'] = date('Y');
     }
 
     public function home(string &$route, array &$data, string &$code = '', string &$output = ''): void {
-        if (!$this->enabled()) return;
-        $route = 'extension/sixmoments/common/home';
+        if (!$this->enabled() || !$this->claimView($route, ['common/home'], 'extension/sixmoments/common/home')) return;
         $this->words($data);
         $data['six_products'] = $this->productThumbs($this->getSixmomentsProducts(false, 6));
         $data['six_special_products'] = $this->productThumbs($this->getSixmomentsProducts(true, 10));
@@ -95,15 +119,29 @@ class Theme extends \Opencart\System\Engine\Controller {
         $data['six_quiz'] = $this->url->link('extension/sixmoments/page/quiz', $lang);
         $data['six_about'] = $this->url->link('extension/sixmoments/page/about', $lang);
         $data['six_diamonds'] = $this->url->link('extension/sixmoments/page/diamonds', $lang);
-        $data['six_journal_url'] = $this->url->link('cms/blog', $lang);
+        $data['six_journal_url'] = $this->url->link($this->blogRoute(), $lang);
         $data['six_instagram'] = $this->config->get('module_sixmoments_instagram');
+        $builder = json_decode((string)$this->config->get('module_sixmoments_page_builder'), true);
+        $default_blocks = ['hero','featured','benefits','categories','collections','specials','story','journal','social'];
+        if (!is_array($builder) || !$builder) $builder = array_map(static fn($id) => ['id' => $id, 'enabled' => 1], $default_blocks);
+        $allowed_blocks = array_flip($default_blocks);
+        $data['six_home_blocks'] = [];
+        foreach ($builder as $block) {
+            $id = (string)($block['id'] ?? '');
+            if (isset($allowed_blocks[$id]) && !empty($block['enabled'])) $data['six_home_blocks'][] = $id;
+        }
         // Root-relative paths also resolve correctly when used inside CSS custom properties.
         $data['six_asset'] = '/image/catalog/sixmoments/';
         $data['six_hero_slides'] = [
-            ['image' => $data['six_asset'] . 'hero-6moments-v2.png', 'mobile' => $data['six_asset'] . 'hero-6moments-mobile.png', 'position' => '58% 48%', 'kicker' => $data['six_hero_kicker'], 'title' => $data['six_hero_title']],
-            ['image' => $data['six_asset'] . 'editorial/lab-grown-diamond.png', 'mobile' => $data['six_asset'] . 'editorial/lab-grown-diamond-mobile.png', 'position' => '58% 50%', 'kicker' => $data['six_hero2_kicker'], 'title' => $data['six_hero2_title']],
-            ['image' => $data['six_asset'] . 'about-quote-jewelry.webp', 'mobile' => $data['six_asset'] . 'about-quote-jewelry.webp', 'position' => '50% 48%', 'kicker' => $data['six_hero3_kicker'], 'title' => $data['six_hero3_title']]
+            ['image' => $data['six_asset'] . 'hero-6moments-v2.png', 'mobile' => $data['six_asset'] . 'hero-6moments-mobile.png', 'width' => 2182, 'height' => 721, 'position' => '58% 48%', 'kicker' => $data['six_hero_kicker'], 'title' => $data['six_hero_title']],
+            ['image' => $data['six_asset'] . 'editorial/lab-grown-diamond.png', 'mobile' => $data['six_asset'] . 'editorial/lab-grown-diamond-mobile.png', 'width' => 1774, 'height' => 887, 'position' => '58% 50%', 'kicker' => $data['six_hero2_kicker'], 'title' => $data['six_hero2_title']],
+            ['image' => $data['six_asset'] . 'about-quote-jewelry.webp', 'mobile' => $data['six_asset'] . 'about-quote-jewelry.webp', 'width' => 1983, 'height' => 793, 'position' => '50% 48%', 'kicker' => $data['six_hero3_kicker'], 'title' => $data['six_hero3_title']]
         ];
+        $custom_kicker = trim((string)$this->config->get('module_sixmoments_hero_kicker'));
+        $custom_title = trim((string)$this->config->get('module_sixmoments_hero_title'));
+        if ($custom_kicker !== '') $data['six_hero_slides'][0]['kicker'] = $custom_kicker;
+        if ($custom_title !== '') $data['six_hero_slides'][0]['title'] = $custom_title;
+        $data['six_hero_primary'] = trim((string)$this->config->get('module_sixmoments_hero_cta')) ?: $data['six_hero_primary'];
         $data['six_moments'] = [
                 ['code' => '01', 'title' => $data['six_moment_yes'], 'category' => $data['six_type_rings'], 'tag' => 'engagement', 'image' => $data['six_asset'] . 'products/promise-solitaire.webp'],
                 ['code' => '02', 'title' => $data['six_moment_forever'], 'category' => $data['six_type_wedding'], 'tag' => 'wedding', 'image' => $data['six_asset'] . 'products/union-band.webp'],
@@ -149,8 +187,7 @@ class Theme extends \Opencart\System\Engine\Controller {
     }
 
     public function product(string &$route, array &$data, string &$code = '', string &$output = ''): void {
-        if (!$this->enabled()) return;
-        $route = 'extension/sixmoments/product/product';
+        if (!$this->enabled() || !$this->claimView($route, ['product/product'], 'extension/sixmoments/product/product')) return;
         $this->words($data);
         $product_id = (int)($data['product_id'] ?? 0);
         $this->load->model('catalog/product');
@@ -207,8 +244,7 @@ class Theme extends \Opencart\System\Engine\Controller {
     }
 
     public function thumb(string &$route, array &$data, string &$code = '', string &$output = ''): void {
-        if (!$this->enabled()) return;
-        $route = 'extension/sixmoments/product/thumb';
+        if (!$this->enabled() || !$this->claimView($route, ['product/thumb'], 'extension/sixmoments/product/thumb')) return;
         $this->words($data);
         $tags = array_filter(array_map('trim', explode(',', (string)($data['tag'] ?? ''))));
         $data['six_moment'] = $this->momentFromTags($tags);
@@ -225,19 +261,18 @@ class Theme extends \Opencart\System\Engine\Controller {
     }
 
     public function listing(string &$route, array &$data, string &$code = '', string &$output = ''): void {
-        if (!$this->enabled()) return;
-        $route = 'extension/sixmoments/product/listing';
+        if (!$this->enabled() || !$this->claimView($route, ['product/category', 'product/search', 'product/special'], 'extension/sixmoments/product/listing')) return;
         $this->words($data);
 
         $lang = 'language=' . $this->config->get('config_language');
         $data['six_catalog_url'] = $this->url->link('extension/sixmoments/page/catalog', $lang);
         $data['six_listing_categories'] = [];
 
-        $category_query = $this->db->query("SELECT DISTINCT c.category_id, cd.name, c.sort_order FROM `" . DB_PREFIX . "category` c INNER JOIN `" . DB_PREFIX . "category_description` cd ON (cd.category_id = c.category_id) INNER JOIN `" . DB_PREFIX . "product_to_category` p2c ON (p2c.category_id = c.category_id) INNER JOIN `" . DB_PREFIX . "product` p ON (p.product_id = p2c.product_id AND p.model LIKE '6M-%') WHERE c.status = '1' AND p.status = '1' AND cd.language_id = '" . (int)$this->config->get('config_language_id') . "' ORDER BY c.sort_order ASC, cd.name ASC LIMIT 8");
+        $category_query = $this->db->query("SELECT DISTINCT c.category_id, cd.name, c.sort_order FROM `" . DB_PREFIX . "category` c INNER JOIN `" . DB_PREFIX . "category_description` cd ON (cd.category_id = c.category_id) INNER JOIN `" . DB_PREFIX . "product_to_category` p2c ON (p2c.category_id = c.category_id) INNER JOIN `" . DB_PREFIX . "product` p ON (p.product_id = p2c.product_id) WHERE c.status = '1' AND p.status = '1' AND cd.language_id = '" . (int)$this->config->get('config_language_id') . "' ORDER BY c.sort_order ASC, cd.name ASC LIMIT 8");
         foreach ($category_query->rows as $category) {
             $data['six_listing_categories'][] = [
                 'name' => $category['name'],
-                'href' => $this->url->link('extension/sixmoments/page/catalog', $lang . '&category_id=' . (int)$category['category_id'])
+                'href' => $this->url->link('product/category', $lang . '&path=' . (int)$category['category_id'])
             ];
         }
 
@@ -256,30 +291,23 @@ class Theme extends \Opencart\System\Engine\Controller {
     }
 
     public function information(string &$route, array &$data, string &$code = '', string &$output = ''): void {
-        if (!$this->enabled()) return;
-        $route = 'extension/sixmoments/information/information';
+        if (!$this->enabled() || !$this->claimView($route, ['information/information'], 'extension/sixmoments/information/information')) return;
         $this->words($data);
     }
 
     public function contact(string &$route, array &$data, string &$code = '', string &$output = ''): void {
-        if (!$this->enabled()) return;
-
-        $route = 'extension/sixmoments/information/contact';
+        if (!$this->enabled() || !$this->claimView($route, ['information/contact'], 'extension/sixmoments/information/contact')) return;
         $this->words($data);
         $data['six_contact_email'] = $this->config->get('module_sixmoments_email') ?: $this->config->get('config_email');
     }
 
     public function cart(string &$route, array &$data, string &$code = '', string &$output = ''): void {
-        if (!$this->enabled()) return;
-
-        $route = 'extension/sixmoments/checkout/cart';
+        if (!$this->enabled() || !$this->claimView($route, ['checkout/cart'], 'extension/sixmoments/checkout/cart')) return;
         $this->words($data);
     }
 
     public function cartList(string &$route, array &$data, string &$code = '', string &$output = ''): void {
-        if (!$this->enabled()) return;
-
-        $route = 'extension/sixmoments/checkout/cart_list';
+        if (!$this->enabled() || !$this->claimView($route, ['checkout/cart_list'], 'extension/sixmoments/checkout/cart_list')) return;
         $this->words($data);
         // OpenCart rounds gram-scale jewelry weights to a misleading 0.00 kg.
         $data['weight'] = '';
@@ -289,9 +317,7 @@ class Theme extends \Opencart\System\Engine\Controller {
     }
 
     public function checkout(string &$route, array &$data, string &$code = '', string &$output = ''): void {
-        if (!$this->enabled()) return;
-
-        $route = 'extension/sixmoments/checkout/checkout';
+        if (!$this->enabled() || !$this->config->get('module_sixmoments_one_page_checkout_status') || !$this->claimView($route, ['checkout/checkout'], 'extension/sixmoments/checkout/checkout')) return;
         $this->words($data);
         $lang = 'language=' . $this->config->get('config_language');
         $data['six_cart_url'] = $this->url->link('checkout/cart', $lang);
@@ -299,10 +325,14 @@ class Theme extends \Opencart\System\Engine\Controller {
         $data['six_contact_url'] = $this->url->link('information/contact', $lang);
     }
 
-    public function blog(string &$route, array &$data, string &$code = '', string &$output = ''): void {
-        if (!$this->enabled()) return;
+    public function accountLogin(string &$route, array &$data, string &$code = '', string &$output = ''): void {
+        if (!$this->enabled() || !$this->claimView($route, ['account/login'], 'extension/sixmoments/account/login')) return;
+        $this->words($data);
+        $data['six_account_image'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/sixmoments/about-quote-jewelry.webp';
+    }
 
-        $route = 'extension/sixmoments/cms/blog';
+    public function blog(string &$route, array &$data, string &$code = '', string &$output = ''): void {
+        if (!$this->enabled() || !$this->claimView($route, ['cms/blog'], 'extension/sixmoments/cms/blog')) return;
         $this->words($data);
 
         $fallbacks = [
@@ -322,11 +352,9 @@ class Theme extends \Opencart\System\Engine\Controller {
     }
 
     public function blogInfo(string &$route, array &$data, string &$code = '', string &$output = ''): void {
-        if (!$this->enabled()) return;
-
-        $route = 'extension/sixmoments/cms/blog_info';
+        if (!$this->enabled() || !$this->claimView($route, ['cms/blog_info'], 'extension/sixmoments/cms/blog_info')) return;
         $this->words($data);
-        $data['six_journal_url'] = $this->url->link('cms/blog', 'language=' . $this->config->get('config_language'));
+        $data['six_journal_url'] = $this->url->link($this->blogRoute(), 'language=' . $this->config->get('config_language'));
 
         if (empty($data['image'])) {
             $data['image'] = '/image/catalog/sixmoments/editorial/journal-ring-architecture.webp';
@@ -349,7 +377,7 @@ class Theme extends \Opencart\System\Engine\Controller {
         if ($specialOnly) {
             $sql .= " INNER JOIN `" . DB_PREFIX . "product_discount` ps ON (ps.product_id = p.product_id AND ps.special = '1')";
         }
-        $sql .= " WHERE p.status = '1' AND p.model LIKE '6M-%' GROUP BY p.product_id ORDER BY p.sort_order ASC, p.product_id ASC LIMIT " . (int)$limit;
+        $sql .= " INNER JOIN `" . DB_PREFIX . "product_to_store` p2s ON (p2s.product_id = p.product_id AND p2s.store_id = '" . (int)$this->config->get('config_store_id') . "') WHERE p.status = '1' AND p.date_available <= NOW() GROUP BY p.product_id ORDER BY p.sort_order ASC, p.product_id ASC LIMIT " . (int)$limit;
         $products = [];
         foreach ($this->db->query($sql)->rows as $row) {
             $product = $this->model_catalog_product->getProduct((int)$row['product_id']);
