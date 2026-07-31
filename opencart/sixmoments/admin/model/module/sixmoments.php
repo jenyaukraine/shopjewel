@@ -3,9 +3,14 @@ namespace Opencart\Admin\Model\Extension\Sixmoments\Module;
 
 class Sixmoments extends \Opencart\System\Engine\Model {
     public function install(): void {
+        $this->bootstrap();
+    }
+
+    public function bootstrap(): void {
         $this->db->query("CREATE TABLE IF NOT EXISTS `" . DB_PREFIX . "sixmoments_subscriber` (`subscriber_id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `email` VARCHAR(190) NOT NULL, `language_code` VARCHAR(16) NOT NULL, `consent` TINYINT(1) NOT NULL DEFAULT 1, `date_added` DATETIME NOT NULL, PRIMARY KEY (`subscriber_id`), UNIQUE KEY `email` (`email`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
         $this->db->query("CREATE TABLE IF NOT EXISTS `" . DB_PREFIX . "sixmoments_hint` (`hint_id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `product_id` INT UNSIGNED NOT NULL, `sender_name` VARCHAR(96) NOT NULL, `sender_email` VARCHAR(190) NOT NULL, `recipient_name` VARCHAR(96) NOT NULL, `recipient_email` VARCHAR(190) NOT NULL, `message` TEXT NOT NULL, `language_code` VARCHAR(16) NOT NULL, `date_added` DATETIME NOT NULL, PRIMARY KEY (`hint_id`), KEY `product_id` (`product_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
+        $this->installPackageRegistration();
         $this->installLanguages();
         $this->installCurrencies();
         $this->installEvents();
@@ -14,18 +19,26 @@ class Sixmoments extends \Opencart\System\Engine\Model {
         $this->seedCatalog();
     }
 
+    private function installPackageRegistration(): void {
+        $installed = $this->db->query("SELECT `extension_install_id` FROM `" . DB_PREFIX . "extension_install` WHERE `code` = 'sixmoments' LIMIT 1");
+
+        if (!$installed->num_rows) {
+            $this->db->query("INSERT INTO `" . DB_PREFIX . "extension_install` SET `extension_id` = '0', `extension_download_id` = '0', `name` = '6MOMENTS Storefront Suite', `description` = '6MOMENTS storefront and commerce integration', `code` = 'sixmoments', `version` = '1.0.0', `author` = '6MOMENTS', `link` = 'https://6moments.store', `status` = '1', `date_added` = NOW()");
+        }
+    }
+
     private function installEvents(): void {
         $this->load->model('setting/event');
         $events = [
-            ['sixmoments_header', 'view/common/header/before', 'extension/sixmoments/event/theme.header'],
-            ['sixmoments_footer', 'view/common/footer/before', 'extension/sixmoments/event/theme.footer'],
-            ['sixmoments_home', 'view/common/home/before', 'extension/sixmoments/event/theme.home'],
-            ['sixmoments_product', 'view/product/product/before', 'extension/sixmoments/event/theme.product'],
-            ['sixmoments_product_thumb', 'view/product/thumb/before', 'extension/sixmoments/event/theme.thumb'],
-            ['sixmoments_category', 'view/product/category/before', 'extension/sixmoments/event/theme.listing'],
-            ['sixmoments_search', 'view/product/search/before', 'extension/sixmoments/event/theme.listing'],
-            ['sixmoments_special', 'view/product/special/before', 'extension/sixmoments/event/theme.listing'],
-            ['sixmoments_information', 'view/information/information/before', 'extension/sixmoments/event/theme.information']
+            ['sixmoments_header', 'catalog/view/common/header/before', 'extension/sixmoments/event/theme.header'],
+            ['sixmoments_footer', 'catalog/view/common/footer/before', 'extension/sixmoments/event/theme.footer'],
+            ['sixmoments_home', 'catalog/view/common/home/before', 'extension/sixmoments/event/theme.home'],
+            ['sixmoments_product', 'catalog/view/product/product/before', 'extension/sixmoments/event/theme.product'],
+            ['sixmoments_product_thumb', 'catalog/view/product/thumb/before', 'extension/sixmoments/event/theme.thumb'],
+            ['sixmoments_category', 'catalog/view/product/category/before', 'extension/sixmoments/event/theme.listing'],
+            ['sixmoments_search', 'catalog/view/product/search/before', 'extension/sixmoments/event/theme.listing'],
+            ['sixmoments_special', 'catalog/view/product/special/before', 'extension/sixmoments/event/theme.listing'],
+            ['sixmoments_information', 'catalog/view/information/information/before', 'extension/sixmoments/event/theme.information']
         ];
 
         foreach ($events as [$code, $trigger, $action]) {
@@ -75,6 +88,7 @@ class Sixmoments extends \Opencart\System\Engine\Model {
 
     private function installServiceExtensions(): void {
         $this->load->model('setting/extension');
+        $this->model_setting_extension->install('module', 'sixmoments', 'sixmoments');
         $this->model_setting_extension->install('payment', 'sixmoments', 'stripe');
         $this->model_setting_extension->install('shipping', 'sixmoments', 'dhl');
         $this->model_setting_extension->install('shipping', 'sixmoments', 'dpd');
@@ -98,29 +112,41 @@ class Sixmoments extends \Opencart\System\Engine\Model {
                 'milestone' => ['moment' => 'with-me', 'tags' => ['milestone']]
             ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
         ];
-        $this->model_setting_setting->editSetting('module_sixmoments', $defaults);
+        $this->installDefaultSettings('module_sixmoments', $defaults);
 
-        $this->model_setting_setting->editSetting('payment_sixmoments_stripe', [
+        $this->installDefaultSettings('payment_sixmoments_stripe', [
             'payment_sixmoments_stripe_status' => 0,
             'payment_sixmoments_stripe_secret_key' => '',
             'payment_sixmoments_stripe_webhook_secret' => '',
-            'payment_sixmoments_stripe_order_status_id' => (int)((array)$this->config->get('config_processing_status'))[0] ?? 0,
+            'payment_sixmoments_stripe_order_status_id' => (int)(((array)$this->config->get('config_processing_status'))[0] ?? 0),
             'payment_sixmoments_stripe_sort_order' => 1
         ]);
-        $this->model_setting_setting->editSetting('shipping_sixmoments_dhl', [
+        $this->installDefaultSettings('shipping_sixmoments_dhl', [
             'shipping_sixmoments_dhl_status' => 1,
             'shipping_sixmoments_dhl_cost' => 25,
             'shipping_sixmoments_dhl_tax_class_id' => 0,
             'shipping_sixmoments_dhl_geo_zone_id' => 0,
             'shipping_sixmoments_dhl_sort_order' => 1
         ]);
-        $this->model_setting_setting->editSetting('shipping_sixmoments_dpd', [
+        $this->installDefaultSettings('shipping_sixmoments_dpd', [
             'shipping_sixmoments_dpd_status' => 1,
             'shipping_sixmoments_dpd_cost' => 15,
             'shipping_sixmoments_dpd_tax_class_id' => 0,
             'shipping_sixmoments_dpd_geo_zone_id' => 0,
             'shipping_sixmoments_dpd_sort_order' => 2
         ]);
+    }
+
+    private function installDefaultSettings(string $code, array $defaults): void {
+        foreach ($defaults as $key => $value) {
+            $existing = $this->db->query("SELECT `setting_id` FROM `" . DB_PREFIX . "setting` WHERE `store_id` = '0' AND `key` = '" . $this->db->escape($key) . "' LIMIT 1");
+
+            if (!$existing->num_rows) {
+                $serialized = is_array($value);
+                $stored = $serialized ? json_encode($value) : (string)$value;
+                $this->db->query("INSERT INTO `" . DB_PREFIX . "setting` SET `store_id` = '0', `code` = '" . $this->db->escape($code) . "', `key` = '" . $this->db->escape($key) . "', `value` = '" . $this->db->escape($stored) . "', `serialized` = '" . (int)$serialized . "'");
+            }
+        }
     }
 
     private function seedCatalog(): void {
