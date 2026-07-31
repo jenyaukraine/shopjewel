@@ -28,7 +28,8 @@ test("container startup refreshes NOVERAILE media without reseeding an existing 
 
   assert.match(entrypoint, /find \/var\/www\/html\/image\/cache\/catalog\/noveraile -type f -delete/);
   assert.match(entrypoint, /noveraile_seed_demo=0/);
-  assert.match(entrypoint, /NOVERAILE_WITH_DEMO_DATA="\$noveraile_seed_demo"/);
+  assert.match(entrypoint, /timeout 30s env NOVERAILE_WITH_DEMO_DATA=0/);
+  assert.match(entrypoint, /keeping the existing registration/);
   assert.match(bootstrap, /getenv\('NOVERAILE_WITH_DEMO_DATA'\)/);
   assert.match(bootstrap, /bootstrap\(\$withDemoData\)/);
 });
@@ -61,8 +62,8 @@ test("mobile categories are deduplicated and use semantic jewellery icons", asyn
   assert.match(event, /\$category_names\s*=\s*\[\]/);
   assert.match(event, /mb_strtolower/);
   assert.match(event, /'icon'\s*=>\s*\$this->categoryIcon\(\$name\)/);
-  assert.match(event, /noveraile\.css\?v=2\.2\.0\.9/);
-  assert.match(event, /noveraile\.js\?v=2\.2\.0\.5/);
+  assert.match(event, /noveraile\.css\?v=2\.2\.0\.11/);
+  assert.match(event, /noveraile\.js\?v=2\.2\.0\.6/);
   assert.match(header, /class="mobile-category-icon"/);
   assert.match(header, /category\.icon == 'earring'/);
   assert.match(header, /class="mobile-main-icon"/);
@@ -108,6 +109,26 @@ test("storefront is light-only and ships no theme control", async () => {
   }
 });
 
+test("customer-facing service icons use one coherent SVG system", async () => {
+  const [cart, cartList, checkout, footer, stylesheet] = await Promise.all([
+    readFile(path.join(root, "catalog/view/template/checkout/cart.twig"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/checkout/cart_list.twig"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/checkout/checkout.twig"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/common/footer.twig"), "utf8"),
+    readFile(path.join(root, "catalog/view/stylesheet/noveraile.css"), "utf8"),
+  ]);
+
+  assert.match(cart, /class="checkout-inline-icon"/);
+  assert.match(cartList, /class="assurance-icon"/);
+  assert.match(checkout, /class="checkout-card-icon"/);
+  assert.match(footer, /footer-brand[\s\S]*<svg class="line-icon"/);
+  assert.match(stylesheet, /\.cart-page-assurances \.assurance-icon\s*\{/);
+  assert.match(stylesheet, /\.checkout-card-icon\s*\{/);
+  for (const source of [cart, cartList, checkout, footer, stylesheet]) {
+    assert.doesNotMatch(source, /[◇◎↺✉]/);
+  }
+});
+
 test("storefront notifications share one responsive status system", async () => {
   const [stylesheet, script, cart] = await Promise.all([
     readFile(path.join(root, "catalog/view/stylesheet/noveraile.css"), "utf8"),
@@ -145,6 +166,7 @@ test("mobile catalog and cart keep primary content above the fold", async () => 
   assert.doesNotMatch(cartList, /cart-page-update|button_update/);
   assert.match(cartList, /cart-page-summary-heading[\s\S]*summary-bag-icon/);
   assert.doesNotMatch(cartList, /cart-page-summary-heading[^\n]*>◇</);
+  assert.match(cartList, /cart-page-assurances[\s\S]*<svg class="assurance-icon"/);
   assert.match(cartList, /cart-page-empty-benefits[\s\S]*<svg class="line-icon"/);
   assert.doesNotMatch(cartList, /<div><span>[◇◎○]<\/span><strong>/);
   assert.match(stylesheet, /\.cart-page-empty-benefits \.line-icon\s*\{/);

@@ -384,7 +384,7 @@ const heroSlides = [
   },
 ] as const;
 
-type LineIconName = "home" | "jewel" | "story" | "journal" | "diamond" | "mail" | "certificate" | "shield" | "delivery" | "verified" | "bag";
+type LineIconName = "home" | "jewel" | "story" | "journal" | "diamond" | "mail" | "certificate" | "shield" | "delivery" | "verified" | "bag" | "support";
 
 function LineIcon({ name }: { name: LineIconName }) {
   const paths: Record<LineIconName, React.ReactNode> = {
@@ -399,6 +399,7 @@ function LineIcon({ name }: { name: LineIconName }) {
     delivery: <><path d="M3 6h11v10H3ZM14 9h4l3 3v4h-7Z" /><circle cx="7" cy="18" r="2" /><circle cx="18" cy="18" r="2" /></>,
     verified: <><circle cx="12" cy="12" r="9" /><path d="m8 12 2.6 2.6L16.5 9" /></>,
     bag: <><path d="M6.5 8.5h11l1 11h-13l1-11Z" /><path d="M9 9V6.5a3 3 0 0 1 6 0V9" /></>,
+    support: <><path d="M5 13v-2a7 7 0 0 1 14 0v2M5 13H3v4h3M19 13h2v4h-3M18 17c0 2-1.5 3-4 3h-2" /></>,
   };
 
   return (
@@ -2561,7 +2562,7 @@ function Footer() {
 
           <div className="footer-signup-card">
             <div className="footer-offer-heading">
-              <span className="footer-mail-icon" aria-hidden="true">✉︎</span>
+              <span className="footer-mail-icon"><LineIcon name="mail" /></span>
               <div className="footer-offer-copy">
                 <p>Привітальний подарунок</p>
                 <span>На перше замовлення</span>
@@ -2595,9 +2596,9 @@ function Footer() {
           <Link className="wordmark wordmark--footer" href="/">NOVERAILE</Link>
           <p>Сучасні реліквії із золота, платини та діамантів для моментів, які хочеться зберегти.</p>
           <ul>
-            <li><span aria-hidden="true">◇</span> Приватні консультації онлайн</li>
-            <li><span aria-hidden="true">◎</span> Застрахована доставка по світу</li>
-            <li><span aria-hidden="true">✉</span> <a href="mailto:atelier@noveraile.store">atelier@noveraile.store</a></li>
+            <li><LineIcon name="support" /> Приватні консультації онлайн</li>
+            <li><LineIcon name="delivery" /> Застрахована доставка по світу</li>
+            <li><LineIcon name="mail" /> <a href="mailto:atelier@noveraile.store">atelier@noveraile.store</a></li>
           </ul>
           <div className="footer-socials" aria-label="Соціальні мережі">
             <a href="https://www.instagram.com/noveraile_jewelry?igsh=MTdnaHg4eWo0YzlrNQ==" target="_blank" rel="noreferrer" aria-label="Instagram NOVERAILE">IG</a>
@@ -2868,6 +2869,16 @@ export function Storefront({ path }: { path: string }) {
         onCurrency={setCurrency}
         onOpenCart={() => setCartOpen(true)}
       />
+      <button
+        className={`bag floating-bag ${count > 0 ? "is-visible" : ""}`}
+        type="button"
+        onClick={() => setCartOpen(true)}
+        aria-label={`Відкрити кошик, товарів: ${count}`}
+        aria-hidden={count === 0}
+        tabIndex={count > 0 ? 0 : -1}
+      >
+        <LineIcon name="bag" /> Кошик <span>{count}</span>
+      </button>
       {product ? (
         <ProductDetail
           product={product}

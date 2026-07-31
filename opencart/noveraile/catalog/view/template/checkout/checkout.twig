@@ -19,7 +19,7 @@
       </div>
       <div class="checkout-page-intro">
         <p>{{ six_checkout_intro }}</p>
-        <span><i aria-hidden="true">◇</i>{{ six_cart_secure }}</span>
+        <span><svg class="checkout-inline-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3 20 6v5.5c0 4.5-3.2 7.8-8 9.5-4.8-1.7-8-5-8-9.5V6Z"/><path d="m8.5 12 2.2 2.2 4.8-4.8"/></svg>{{ six_cart_secure }}</span>
       </div>
     </header>
 
@@ -38,7 +38,7 @@
         {% if shipping_method %}<section id="checkout-delivery-step" class="checkout-page-section checkout-page-choice">{{ shipping_method }}</section>{% endif %}
         <section id="checkout-payment-step" class="checkout-page-section checkout-page-choice">{{ payment_method }}</section>
         <div class="checkout-page-help">
-          <span aria-hidden="true">◎</span>
+          <span><svg class="checkout-card-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 13v-2a7 7 0 0 1 14 0v2M5 13H3v4h3M19 13h2v4h-3M18 17c0 2-1.5 3-4 3h-2"/></svg></span>
           <p><strong>{{ six_checkout_help_title }}</strong>{{ six_checkout_help_copy }} <a href="{{ six_contact_url }}">{{ six_contact }} →</a></p>
         </div>
       </div>
@@ -50,7 +50,7 @@
         </div>
         <div id="checkout-confirm" class="checkout-page-confirm">{{ confirm }}</div>
         <div class="checkout-page-assurance">
-          <span aria-hidden="true">◇</span>
+          <span><svg class="checkout-card-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3 20 6v5.5c0 4.5-3.2 7.8-8 9.5-4.8-1.7-8-5-8-9.5V6Z"/><path d="m8.5 12 2.2 2.2 4.8-4.8"/></svg></span>
           <p><strong>{{ six_checkout_assurance_title }}</strong>{{ six_checkout_assurance_copy }}</p>
         </div>
       </aside>

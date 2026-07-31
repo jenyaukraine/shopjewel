@@ -84,6 +84,21 @@ test("OpenCart product cards keep the platform AJAX cart handler active", async 
   assert.match(controller, /noveraile\.js\?v=\d+\.\d+\.\d+/);
 });
 
+test("non-empty carts expose a synchronized floating bag control", async () => {
+  const [storefront, template, stylesheet, script] = await Promise.all([
+    readFile(new URL("../app/storefront.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/noveraile/catalog/view/template/common/header.twig", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/noveraile/catalog/view/stylesheet/noveraile.css", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/noveraile/catalog/view/javascript/noveraile.js", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(storefront, /floating-bag \$\{count > 0 \? "is-visible"/);
+  assert.match(template, /class="bag floating-bag/);
+  assert.match(stylesheet, /\.floating-bag\.is-visible\s*\{[^}]*pointer-events:\s*auto/s);
+  assert.match(script, /function syncFloatingBag\b/);
+  assert.match(script, /new MutationObserver/);
+});
+
 test("OpenCart in-stock labels use the storefront success color", async () => {
   const [stylesheet, controller] = await Promise.all([
     readFile(new URL("../opencart/noveraile/catalog/view/stylesheet/noveraile.css", import.meta.url), "utf8"),

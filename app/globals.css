@@ -47,6 +47,28 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .bag { display: inline-flex; align-items: center; }
 .bag > .line-icon { width: 17px; height: 17px; flex: 0 0 17px; margin-right: 7px; stroke-width: 1.45; }
 .bag span { min-width: 19px; height: 19px; display: inline-grid; place-items: center; margin-left: 6px; border-radius: 50%; color: white; background: var(--ink); font-size: 8px; }
+.floating-bag {
+  min-height: 50px;
+  position: fixed;
+  z-index: 80;
+  right: clamp(18px,4vw,58px);
+  bottom: max(22px,env(safe-area-inset-bottom));
+  padding: 0 13px 0 15px;
+  border: 1px solid rgba(28,27,25,.18);
+  border-radius: 999px;
+  color: var(--ink);
+  background: rgba(248,245,239,.96);
+  box-shadow: 0 12px 34px rgba(28,27,25,.18);
+  backdrop-filter: blur(12px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(18px) scale(.96);
+  transition: opacity .25s ease,visibility .25s ease,transform .25s ease,box-shadow .25s ease;
+}
+.floating-bag.is-visible { opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(0) scale(1); }
+.floating-bag.is-visible:hover { box-shadow: 0 16px 42px rgba(28,27,25,.24); transform: translateY(-3px); }
+body.cart-open .floating-bag { opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(18px) scale(.96); }
 .mobile-menu-trigger { display: none; }
 .mobile-drawer-shell { position: fixed; z-index: 240; inset: 0; visibility: hidden; pointer-events: none; }
 .mobile-drawer-shell.is-open { visibility: visible; pointer-events: auto; }
@@ -297,8 +319,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .engraving-field small { display: block; margin-top: 8px; color: var(--muted); font-weight: 400; letter-spacing: 0; text-transform: none; }
 .view-bag-link { width: 100%; padding: 16px; border: 0; border-bottom: 1px solid var(--ink); background: transparent; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
 .product-details-list { margin: 28px 0 0; padding: 0; list-style: none; }
-.product-details-list li { padding: 13px 0 13px 22px; border-bottom: 1px solid var(--line); color: var(--muted); font: 14px var(--serif); }
-.product-details-list li::before { content: "◇"; float: left; margin-left: -22px; color: var(--gold); }
+.product-details-list li { position: relative; padding: 13px 0 13px 22px; border-bottom: 1px solid var(--line); color: var(--muted); font: 14px var(--serif); }
+.product-details-list li::before { content: ""; width: 7px; height: 7px; position: absolute; top: 18px; left: 2px; border: 1px solid currentColor; border-radius: 50%; color: var(--gold); }
 .product-details-list li:first-child,
 .product-details-list li:first-child::before { color: var(--success); }
 .specification-block { margin-top: 38px; }
@@ -538,8 +560,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   place-items: center;
   border: 1px solid rgba(60,52,44,.32);
   border-radius: 50%;
-  font: 18px/1 var(--sans);
 }
+.footer-mail-icon .line-icon { width: 21px; height: 21px; }
 .footer-offer-copy { min-width: 0; }
 .footer-offer-heading p {
   margin: 0 0 6px;
@@ -610,7 +632,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .wordmark--footer { color: var(--ink); font-size: 29px; }
 .footer-brand ul { margin: 0; padding: 0; display: grid; gap: 11px; list-style: none; color: var(--muted); font-size: 11px; }
 .footer-brand li { display: flex; align-items: center; gap: 9px; }
-.footer-brand li > span { width: 18px; color: var(--gold); text-align: center; }
+.footer-brand li > .line-icon { width: 18px; height: 18px; flex: 0 0 18px; color: var(--gold); }
 .footer-socials { display: flex; gap: 9px; margin-top: 25px; }
 .footer-socials a { width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; color: var(--muted); font: 11px var(--sans); transition: color .2s, border-color .2s, background .2s; }
 .footer-socials a:hover { color: white; border-color: var(--ink); background: var(--ink); }
