@@ -170,7 +170,7 @@
   document.querySelector('#ai-apply').addEventListener('click',async()=>{const data=new FormData();['product_id','language_id'].forEach(key=>data.set(key,document.querySelector('#ai-'+key.replace('_','-')).value));data.set('description',document.querySelector('#ai-description').value);data.set('meta_title',document.querySelector('#ai-meta-title').value);data.set('meta_description',document.querySelector('#ai-meta-description').value);data.set('meta_keyword',document.querySelector('#ai-meta-keyword').value);status.textContent='Applying…';try{const json=await post('{{ ai_apply }}',data);status.textContent=json.success||json.error;}catch{status.textContent='Request failed.';}});
 
   document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab=>tab.addEventListener('shown.bs.tab',()=>history.replaceState(null,'',tab.dataset.bsTarget)));
-  if(location.hash){const tab=document.querySelector(`[data-bs-target="${CSS.escape(location.hash)}"]`);if(tab&&window.bootstrap)bootstrap.Tab.getOrCreateInstance(tab).show();}
+  if(location.hash){const tab=[...document.querySelectorAll('[data-bs-toggle="tab"]')].find(item=>item.dataset.bsTarget===location.hash);if(tab&&window.bootstrap)bootstrap.Tab.getOrCreateInstance(tab).show();}
 
   const catalogInput=document.querySelector('#input-catalog-file');
   const catalogDrop=document.querySelector('#catalog-drop');
