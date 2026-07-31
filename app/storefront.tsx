@@ -455,6 +455,9 @@ function Header({
           <Link aria-current={path === "/journal" ? "page" : undefined} href="/journal">
             Журнал
           </Link>
+          <Link aria-current={path === "/quiz" ? "page" : undefined} href="/quiz">
+            Підібрати
+          </Link>
         </nav>
         <div className="header-actions">
           <label className="currency-control">
@@ -503,6 +506,7 @@ function Header({
             <Link href="/collections" onClick={closeMobileMenu}><span><LineIcon name="jewel" /></span> Усі прикраси</Link>
             <Link href="/about" onClick={closeMobileMenu}><span><LineIcon name="story" /></span> Про нас</Link>
             <Link href="/journal" onClick={closeMobileMenu}><span><LineIcon name="journal" /></span> Журнал</Link>
+            <Link href="/quiz" onClick={closeMobileMenu}><span><LineIcon name="diamond" /></span> Підібрати прикрасу</Link>
             <Link href="/diamonds" onClick={closeMobileMenu}><span><LineIcon name="diamond" /></span> Про діаманти</Link>
             <Link href="/contact" onClick={closeMobileMenu}><span><LineIcon name="mail" /></span> Контакти</Link>
           </nav>
@@ -1739,6 +1743,139 @@ function CatalogManager({
   );
 }
 
+const quizQuestions = [
+  {
+    label: "01 · ВАШ МОМЕНТ",
+    title: "Який момент привів вас сюди?",
+    name: "moment",
+    options: ["Важливе «так»", "Назавжди разом", "Нова глава", "Особиста перемога", "Я на це заслуговую", "Завжди зі мною"],
+  },
+  {
+    label: "02 · ВАШ ДІАПАЗОН",
+    title: "У якому бюджеті будемо шукати?",
+    name: "budget",
+    options: ["До 50 000 ₴", "50 000–100 000 ₴", "Понад 100 000 ₴"],
+  },
+  {
+    label: "03 · ТИП ПРИКРАСИ",
+    title: "Яка прикраса найбільше схожа на вас?",
+    name: "type",
+    options: ["Каблучки", "Сережки", "Підвіски", "Браслети"],
+  },
+  {
+    label: "04 · МЕТАЛ",
+    title: "Який відтінок металу вам ближчий?",
+    name: "metal",
+    options: ["Біле золото", "Жовте золото", "Рожеве золото", "Відкриті до вибору"],
+  },
+  {
+    label: "05 · КАМІНЬ",
+    title: "Яка історія діаманта відгукується вам?",
+    name: "stone",
+    options: ["Лабораторний", "Натуральний", "Обидва варіанти"],
+  },
+] as const;
+
+function QuizPage({
+  products: catalog,
+  currency,
+  onQuickAdd,
+}: {
+  products: Product[];
+  currency: CurrencyCode;
+  onQuickAdd: (product: Product, options: Record<string, string>) => void;
+}) {
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [error, setError] = useState(false);
+  const [complete, setComplete] = useState(false);
+  const question = quizQuestions[step];
+  const selected = answers[question.name];
+
+  const recommendations = useMemo(() => {
+    const category = answers.type;
+    const categoryMatch = catalog.filter((product) => {
+      if (!category) return true;
+      if (category === "Каблучки") return product.category === "Кільця" || product.category === "Обручки";
+      return product.category === category;
+    });
+    return (categoryMatch.length ? categoryMatch : catalog).slice(0, 3);
+  }, [answers.type, catalog]);
+
+  function continueQuiz() {
+    if (!selected) {
+      setError(true);
+      return;
+    }
+    if (step === quizQuestions.length - 1) {
+      setComplete(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    setStep((current) => current + 1);
+    setError(false);
+  }
+
+  if (complete) {
+    return (
+      <main className="quiz-shell quiz-shell--results">
+        <section className="quiz-results">
+          <div className="quiz-heading__meta"><p className="eyebrow">NOVERAILE · ВАША ДОБІРКА</p><span>ГОТОВО</span></div>
+          <p className="eyebrow">ОБРАНО ДЛЯ ВАС</p>
+          <h1>Речі, що відчуваються особистими.</h1>
+          <p>Три прикраси, відібрані за вашими відповідями. Остаточний вибір — завжди за відчуттям.</p>
+          <ProductGrid products={recommendations} currency={currency} onQuickAdd={onQuickAdd} />
+          <button className="quiz-back" type="button" onClick={() => { setComplete(false); setStep(0); }}><span>←</span> Пройти ще раз</button>
+        </section>
+      </main>
+    );
+  }
+
+  return (
+    <main className="quiz-shell">
+      <header className="quiz-heading">
+        <div className="quiz-heading__meta">
+          <p className="eyebrow">NOVERAILE · PERSONAL EDIT</p>
+          <span><b>{String(step + 1).padStart(2, "0")}</b> / 05</span>
+        </div>
+        <h1>Знайдіть свій момент.</h1>
+        <p>П’ять точних запитань. Одна особиста добірка, створена навколо вашої історії.</p>
+        <div className="quiz-progress" aria-label={`Крок ${step + 1} із 5`}>
+          <span style={{ width: `${((step + 1) / quizQuestions.length) * 100}%` }} />
+          {quizQuestions.map((item, index) => <i className={index <= step ? "is-active" : ""} key={item.name} />)}
+        </div>
+      </header>
+      <form className="quiz-form" onSubmit={(event) => { event.preventDefault(); continueQuiz(); }}>
+        <fieldset className={error ? "has-error" : ""}>
+          <legend><small>{question.label}</small>{question.title}</legend>
+          <div className={`quiz-options quiz-options--${question.options.length}`}>
+            {question.options.map((option, index) => (
+              <label key={option}>
+                <input
+                  type="radio"
+                  name={question.name}
+                  value={option}
+                  checked={selected === option}
+                  onChange={() => {
+                    setAnswers((current) => ({ ...current, [question.name]: option }));
+                    setError(false);
+                  }}
+                />
+                <span><b>{String(index + 1).padStart(2, "0")}</b><em>{option}</em><i>✓</i></span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <p className={`quiz-error ${error ? "is-visible" : ""}`} role="alert">Оберіть один варіант, щоб продовжити.</p>
+        <div className="quiz-actions">
+          {step > 0 ? <button className="quiz-back" type="button" onClick={() => { setStep((current) => current - 1); setError(false); }}><span>←</span> Назад</button> : <span />}
+          <button className="quiz-next" type="submit"><span>{step === quizQuestions.length - 1 ? "Показати добірку" : "Продовжити"}</span><b>→</b></button>
+        </div>
+      </form>
+    </main>
+  );
+}
+
 function InteriorPage({
   path,
   products: catalog,
@@ -1752,6 +1889,10 @@ function InteriorPage({
 }) {
   const page = routeCopy[path] ?? routeCopy["/collections"];
   const [contactSent, setContactSent] = useState(false);
+
+  if (path === "/quiz") {
+    return <QuizPage products={catalog} currency={currency} onQuickAdd={onQuickAdd} />;
+  }
 
   return (
     <main>

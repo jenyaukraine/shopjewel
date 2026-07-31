@@ -2705,6 +2705,7 @@ html[data-theme="dark"] .mobile-theme-glyph--moon { color: #eee9e2; }
   .product-purchase .option-group select,
   .product-purchase .option-group input,
   .product-purchase .option-group textarea { font-size: 16px; }
+  .product-purchase .quantity-row .quantity-control { grid-column: auto; }
   .product-details-list { grid-template-columns: 1fr; gap: 0; }
   .product-details-list li { min-height: 58px; border-bottom: 0; }
   .product-details-list li:last-child { border-bottom: 1px solid var(--line); }
