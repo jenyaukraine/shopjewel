@@ -31,25 +31,29 @@
       <div class="product-status-line"><span>{{ six_product_code }}: <strong>{{ model }}</strong></span><span>{{ six_stock }}: <strong>{{ stock }}</strong></span><span>{{ six_weight }}: <strong>{{ six_product_weight }}</strong></span></div>
       <dl class="product-key-specs"><div><dt>{{ six_metal }}</dt><dd>{{ six_metal_value }}</dd></div><div><dt>{{ six_fineness }}</dt><dd>{{ six_fineness_value }}</dd></div><div><dt>{{ six_stone }}</dt><dd>{{ six_stone_value }}</dd></div><div><dt>{{ six_carat }}</dt><dd>{{ six_carat_value }}</dd></div><div><dt>{{ six_stone_count }}</dt><dd>{{ six_stones_value }}</dd></div><div><dt>{{ six_delivery }}</dt><dd>{{ six_delivery_value }}</dd></div></dl>
       <div class="product-description">{{ description|raw }}</div>
-      <form id="form-product" class="six-product-form">
-        {% for option in options %}
-          <fieldset class="option-group{% if option.required %} required{% endif %}"><legend>{{ option.name }}</legend>
-          {% if option.type == 'select' %}<select name="option[{{ option.product_option_id }}]" id="input-option-{{ option.product_option_id }}"><option value="">{{ text_select }}</option>{% for option_value in option.product_option_value %}<option value="{{ option_value.product_option_value_id }}">{{ option_value.name }}{% if option_value.price %} ({{ option_value.price_prefix }}{{ option_value.price }}){% endif %}</option>{% endfor %}</select>{% endif %}
-          {% if option.type == 'radio' %}<div class="option-values">{% for option_value in option.product_option_value %}<label><input type="radio" name="option[{{ option.product_option_id }}]" value="{{ option_value.product_option_value_id }}"><span>{{ option_value.name }}</span></label>{% endfor %}</div>{% endif %}
-          {% if option.type == 'checkbox' %}<div class="option-values">{% for option_value in option.product_option_value %}<label><input type="checkbox" name="option[{{ option.product_option_id }}][]" value="{{ option_value.product_option_value_id }}"><span>{{ option_value.name }}</span></label>{% endfor %}</div>{% endif %}
-          {% if option.type == 'text' %}<input type="text" name="option[{{ option.product_option_id }}]" value="{{ option.value }}" id="input-option-{{ option.product_option_id }}" maxlength="80">{% endif %}
-          {% if option.type == 'textarea' %}<textarea name="option[{{ option.product_option_id }}]" id="input-option-{{ option.product_option_id }}" rows="3">{{ option.value }}</textarea>{% endif %}
-          {% if option.type == 'date' %}<input type="date" name="option[{{ option.product_option_id }}]" value="{{ option.value }}" id="input-option-{{ option.product_option_id }}">{% endif %}
-          <div id="error-option-{{ option.product_option_id }}" class="invalid-feedback"></div></fieldset>
-        {% endfor %}
-        <details class="size-guide"><summary>{{ six_size_title }}</summary><p>{{ six_size_copy }}</p><div class="size-table"><span>EU</span><span>US</span><span>Ø mm</span><b>50</b><b>5¼</b><b>15.9</b><b>52</b><b>6</b><b>16.5</b><b>54</b><b>7</b><b>17.2</b><b>56</b><b>7½</b><b>17.8</b><b>58</b><b>8½</b><b>18.5</b><b>60</b><b>9</b><b>19.1</b></div></details>
-        <div class="quantity-row"><label for="input-quantity">{{ entry_qty }}</label><input id="input-quantity" name="quantity" type="number" min="{{ minimum }}" value="{{ minimum }}"><button id="button-cart" class="button button--dark add-button" type="submit">{{ six_add_to_bag }}</button></div>
-        <input type="hidden" name="product_id" value="{{ product_id }}" id="input-product-id">
-        <div id="error-quantity" class="invalid-feedback"></div>
-      </form>
-      <form method="post" data-oc-toggle="ajax" class="product-secondary-actions"><button type="submit" formaction="{{ wishlist_add }}"><svg class="wishlist-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.7a5.5 5.5 0 0 0-7.8 0L12 5.8l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21.3l7.8-7.7 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg><span>{{ six_wishlist }}</span></button><input type="hidden" name="product_id" value="{{ product_id }}"></form>
+      <div class="product-purchase">
+        <form id="form-product" class="six-product-form">
+          <div class="product-options">
+            {% for option in options %}
+              <fieldset class="option-group option-group--{{ option.type }}{% if option.required %} required{% endif %}"><legend><span>{{ option.name }}</span>{% if option.required %}<i aria-hidden="true">＊</i>{% endif %}</legend>
+              {% if option.type == 'select' %}<div class="select-wrap"><select name="option[{{ option.product_option_id }}]" id="input-option-{{ option.product_option_id }}"><option value="">{{ text_select }}</option>{% for option_value in option.product_option_value %}<option value="{{ option_value.product_option_value_id }}">{{ option_value.name }}{% if option_value.price %} ({{ option_value.price_prefix }}{{ option_value.price }}){% endif %}</option>{% endfor %}</select></div>{% endif %}
+              {% if option.type == 'radio' %}<div class="option-values">{% for option_value in option.product_option_value %}<label><input type="radio" name="option[{{ option.product_option_id }}]" value="{{ option_value.product_option_value_id }}"><span>{{ option_value.name }}</span></label>{% endfor %}</div>{% endif %}
+              {% if option.type == 'checkbox' %}<div class="option-values">{% for option_value in option.product_option_value %}<label><input type="checkbox" name="option[{{ option.product_option_id }}][]" value="{{ option_value.product_option_value_id }}"><span>{{ option_value.name }}</span></label>{% endfor %}</div>{% endif %}
+              {% if option.type == 'text' %}<input type="text" name="option[{{ option.product_option_id }}]" value="{{ option.value }}" id="input-option-{{ option.product_option_id }}" maxlength="80" placeholder="{{ option.name }}">{% endif %}
+              {% if option.type == 'textarea' %}<textarea name="option[{{ option.product_option_id }}]" id="input-option-{{ option.product_option_id }}" rows="3" placeholder="{{ option.name }}">{{ option.value }}</textarea>{% endif %}
+              {% if option.type == 'date' %}<input type="date" name="option[{{ option.product_option_id }}]" value="{{ option.value }}" id="input-option-{{ option.product_option_id }}">{% endif %}
+              <div id="error-option-{{ option.product_option_id }}" class="invalid-feedback"></div></fieldset>
+            {% endfor %}
+          </div>
+          <details class="size-guide"><summary><span>{{ six_size_title }}</span></summary><div class="size-guide__content"><p>{{ six_size_copy }}</p><div class="size-table"><span>EU</span><span>US</span><span>Ø mm</span><b>50</b><b>5¼</b><b>15.9</b><b>52</b><b>6</b><b>16.5</b><b>54</b><b>7</b><b>17.2</b><b>56</b><b>7½</b><b>17.8</b><b>58</b><b>8½</b><b>18.5</b><b>60</b><b>9</b><b>19.1</b></div></div></details>
+          <div class="quantity-row"><label class="quantity-control" for="input-quantity"><span>{{ entry_qty }}</span><input id="input-quantity" name="quantity" type="number" min="{{ minimum }}" value="{{ minimum }}" inputmode="numeric"></label><button id="button-cart" class="button button--dark add-button" type="submit"><span>{{ six_add_to_bag }}</span><span class="add-button__arrow" aria-hidden="true">→</span></button></div>
+          <input type="hidden" name="product_id" value="{{ product_id }}" id="input-product-id">
+          <div id="error-quantity" class="invalid-feedback"></div>
+        </form>
+        <form method="post" data-oc-toggle="ajax" class="product-secondary-actions"><button type="submit" formaction="{{ wishlist_add }}"><svg class="wishlist-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.7a5.5 5.5 0 0 0-7.8 0L12 5.8l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21.3l7.8-7.7 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg><span>{{ six_wishlist }}</span></button><input type="hidden" name="product_id" value="{{ product_id }}"></form>
+      </div>
       <ul class="product-details-list"><li><strong>{{ stock }}</strong></li><li><a href="{{ six_shipping_url }}">{{ six_delivery }}</a></li><li>{{ six_packaging }}</li></ul>
-      <details class="product-accordion" open><summary>{{ six_description }}</summary><div>{{ description|raw }}</div></details>
+      <details class="product-accordion"><summary>{{ six_description }}</summary><div>{{ description|raw }}</div></details>
       {% if attribute_groups %}<details class="product-accordion"><summary>{{ six_details }}</summary><dl class="specification-block">{% for group in attribute_groups %}{% for attribute in group.attribute %}<div><dt>{{ attribute.name }}</dt><dd>{{ attribute.text }}</dd></div>{% endfor %}{% endfor %}</dl></details>{% endif %}
     </div>
   </section>

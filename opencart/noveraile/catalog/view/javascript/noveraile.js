@@ -753,22 +753,34 @@
     const next = form.querySelector('[data-quiz-next]');
     const back = form.querySelector('[data-quiz-back]');
     const progress = root.querySelector('.quiz-progress span');
+    const progressSteps = Array.from(root.querySelectorAll('.quiz-progress i'));
+    const current = root.querySelector('[data-quiz-current]');
+    const error = root.querySelector('[data-quiz-error]');
     const results = root.querySelector('.quiz-results');
     let rules = {};
     try { rules = JSON.parse(root.dataset.rules || '{}'); } catch {}
     let index = 0;
+    updateProgress();
+    form.addEventListener('change', () => { error.classList.remove('is-visible'); });
     next.addEventListener('click', () => {
       const selected = steps[index].querySelector('input:checked');
-      if (!selected) { steps[index].classList.add('has-error'); return; }
+      if (!selected) { steps[index].classList.add('has-error'); error.classList.add('is-visible'); return; }
       steps[index].classList.remove('has-error');
+      error.classList.remove('is-visible');
       if (index === steps.length - 1) return showResults();
       steps[index].hidden = true; steps[++index].hidden = false;
-      back.hidden = false; next.textContent = index === steps.length - 1 ? root.dataset.finish || 'Show my edit' : 'Continue';
-      progress.style.width = ((index + 1) / steps.length * 100) + '%';
+      back.hidden = false; next.querySelector('span').textContent = index === steps.length - 1 ? root.dataset.finish || 'Show my edit' : 'Continue';
+      updateProgress();
+      steps[index].querySelector('input:checked')?.focus();
     });
     back.addEventListener('click', () => {
-      if (!index) return; steps[index].hidden = true; steps[--index].hidden = false; back.hidden = index === 0; next.textContent = index === 0 ? 'Begin' : index === steps.length - 1 ? root.dataset.finish || 'Show my edit' : 'Continue'; progress.style.width = ((index + 1) / steps.length * 100) + '%';
+      if (!index) return; steps[index].hidden = true; steps[--index].hidden = false; back.hidden = index === 0; next.querySelector('span').textContent = index === 0 ? 'Begin' : index === steps.length - 1 ? root.dataset.finish || 'Show my edit' : 'Continue'; error.classList.remove('is-visible'); updateProgress();
     });
+    function updateProgress() {
+      progress.style.width = ((index + 1) / steps.length * 100) + '%';
+      current.textContent = String(index + 1).padStart(2, '0');
+      progressSteps.forEach((step, stepIndex) => step.classList.toggle('is-active', stepIndex <= index));
+    }
     function showResults() {
       const values = Object.fromEntries(new FormData(form).entries());
       const cards = Array.from(results.querySelectorAll('[data-tags]'));
