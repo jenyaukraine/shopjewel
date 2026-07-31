@@ -13,14 +13,14 @@ export const metadata: Metadata = {
     title: "NOVERAILE — Де моменти стають спадщиною",
     description:
       "Особливі речі, створені для людини, яка нестиме їхню історію далі.",
-    images: [{ url: "/og-store.png", width: 1680, height: 940 }],
+    images: [{ url: "/og-quiz.png", width: 1728, height: 910 }],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "NOVERAILE — Де моменти стають спадщиною",
     description: "Особливі речі для моментів, які хочеться зберегти назавжди.",
-    images: ["/og-store.png"],
+    images: ["/og-quiz.png"],
   },
 };
 
