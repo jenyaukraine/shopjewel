@@ -24,9 +24,9 @@ class Sixmoments extends \Opencart\System\Engine\Model {
         $installed = $this->db->query("SELECT `extension_install_id` FROM `" . DB_PREFIX . "extension_install` WHERE `code` = 'sixmoments' LIMIT 1");
 
         if (!$installed->num_rows) {
-            $this->db->query("INSERT INTO `" . DB_PREFIX . "extension_install` SET `extension_id` = '0', `extension_download_id` = '0', `name` = '6MOMENTS Storefront Suite', `description` = '6MOMENTS storefront and commerce integration', `code` = 'sixmoments', `version` = '1.1.2', `author` = '6MOMENTS', `link` = 'https://6moments.store', `status` = '1', `date_added` = NOW()");
+            $this->db->query("INSERT INTO `" . DB_PREFIX . "extension_install` SET `extension_id` = '0', `extension_download_id` = '0', `name` = '6MOMENTS Storefront Suite', `description` = '6MOMENTS storefront and commerce integration', `code` = 'sixmoments', `version` = '1.1.3', `author` = '6MOMENTS', `link` = 'https://6moments.store', `status` = '1', `date_added` = NOW()");
         } else {
-            $this->db->query("UPDATE `" . DB_PREFIX . "extension_install` SET `version` = '1.1.2', `status` = '1' WHERE `extension_install_id` = '" . (int)$installed->row['extension_install_id'] . "'");
+            $this->db->query("UPDATE `" . DB_PREFIX . "extension_install` SET `version` = '1.1.3', `status` = '1' WHERE `extension_install_id` = '" . (int)$installed->row['extension_install_id'] . "'");
         }
     }
 

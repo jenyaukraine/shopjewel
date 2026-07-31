@@ -25,7 +25,7 @@ class Theme extends \Opencart\System\Engine\Controller {
         }
 
         $data['six_stylesheet'] = 'extension/sixmoments/catalog/view/stylesheet/sixmoments.css?v=1.2.2';
-        $data['six_script'] = 'extension/sixmoments/catalog/view/javascript/sixmoments.js?v=1.2.1';
+        $data['six_script'] = 'extension/sixmoments/catalog/view/javascript/sixmoments.js?v=1.2.4';
         $data['six_favicon'] = '/image/catalog/sixmoments/favicon.svg?v=2';
         $data['six_og_image'] = '/image/catalog/sixmoments/og-store.png';
         $data['six_home'] = $this->url->link('common/home', 'language=' . $this->config->get('config_language'));
@@ -64,7 +64,7 @@ class Theme extends \Opencart\System\Engine\Controller {
         if (!$this->enabled()) return;
         $route = 'extension/sixmoments/common/footer';
         $this->words($data);
-        $data['six_script'] = 'extension/sixmoments/catalog/view/javascript/sixmoments.js?v=1.2.1';
+        $data['six_script'] = 'extension/sixmoments/catalog/view/javascript/sixmoments.js?v=1.2.4';
         $lang = 'language=' . $this->config->get('config_language');
         $data['six_home'] = $this->url->link('common/home', $lang);
         $data['six_about_url'] = $this->url->link('extension/sixmoments/page/about', $lang);

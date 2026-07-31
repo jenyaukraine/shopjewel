@@ -88,13 +88,24 @@ class Catalog extends \Opencart\System\Engine\Model {
                 $sql .= " AND (`p`.`model` LIKE '6M-" . $prefixes[$type] . "-%' OR FIND_IN_SET('" . $tags[$type] . "', REPLACE(LOWER(`pd`.`tag`), ' ', '')))";
             }
         }
-        foreach (['moment', 'metal', 'fineness', 'stone', 'delivery'] as $key) {
+        foreach (['moment', 'delivery'] as $key) {
             if (!empty($filter[$key])) {
                 $tag = $this->db->escape(strtolower(preg_replace('/[^a-z0-9-]/i', '', (string)$filter[$key])));
                 $sql .= " AND FIND_IN_SET('" . $tag . "', REPLACE(LOWER(`pd`.`tag`), ' ', ''))";
             }
         }
         $attribute_map = $this->attributeMap();
+        foreach (['metal' => 'metal', 'fineness' => 'fineness', 'stone' => 'stone_origin'] as $filter_key => $attribute_key) {
+            if (empty($filter[$filter_key])) continue;
+            $tag = $this->db->escape(strtolower(preg_replace('/[^a-z0-9-]/i', '', (string)$filter[$filter_key])));
+            $attribute_id = (int)($attribute_map[$attribute_key] ?? 0);
+            if (!$attribute_id) {
+                $sql .= " AND FIND_IN_SET('" . $tag . "', REPLACE(LOWER(`pd`.`tag`), ' ', ''))";
+                continue;
+            }
+            $value = $this->db->escape($this->localizedAttributeValue($filter_key, (string)$filter[$filter_key]));
+            $sql .= " AND EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_attribute` `pa_" . $attribute_key . "` WHERE `pa_" . $attribute_key . "`.`product_id` = `p`.`product_id` AND `pa_" . $attribute_key . "`.`attribute_id` = '" . $attribute_id . "' AND `pa_" . $attribute_key . "`.`language_id` = '" . (int)$this->config->get('config_language_id') . "' AND TRIM(`pa_" . $attribute_key . "`.`text`) = '" . $value . "')";
+        }
         foreach (['gemstone', 'stone_shape', 'style'] as $key) {
             $attribute_id = (int)($attribute_map[$key] ?? 0);
             if ($attribute_id && !empty($filter[$key])) {
@@ -139,5 +150,24 @@ class Catalog extends \Opencart\System\Engine\Model {
         if (is_array($value)) return $value;
         $decoded = json_decode((string)$value, true);
         return is_array($decoded) ? $decoded : [];
+    }
+
+    private function localizedAttributeValue(string $key, string $value): string {
+        $language = (string)$this->config->get('config_language');
+        $language_index = ['en-gb' => 0, 'de-de' => 1, 'cs-cz' => 2, 'ru-ru' => 3, 'uk-ua' => 4][$language] ?? 0;
+        $values = [
+            'metal' => [
+                'white-gold' => ['White gold','Weißgold','Bílé zlato','Белое золото','Біле золото'],
+                'yellow-gold' => ['Yellow gold','Gelbgold','Žluté zlato','Жёлтое золото','Жовте золото'],
+                'rose-gold' => ['Rose gold','Roségold','Růžové zlato','Розовое золото','Рожеве золото'],
+                'platinum' => ['Platinum','Platin','Platina','Платина','Платина']
+            ],
+            'stone' => [
+                'natural' => ['Natural','Natürlich','Přírodní','Натуральный','Натуральний'],
+                'lab-grown' => ['Lab-grown','Laborgezüchtet','Laboratorní','Лабораторный','Лабораторний'],
+                'no-stones' => ['Not applicable','Nicht zutreffend','Nevztahuje se','Не применяется','Не застосовується']
+            ]
+        ];
+        return $values[$key][$value][$language_index] ?? $value;
     }
 }

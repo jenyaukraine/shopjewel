@@ -129,6 +129,7 @@
 
   // Give every successful add-to-bag action the same tactile, branded response.
   const pendingCartTriggers = [];
+  const cartFlightTimes = new WeakMap();
   let lastQueuedTrigger = null;
   let lastQueuedAt = 0;
 
@@ -176,12 +177,18 @@
     }, 700);
   }
 
-  function flyToBag(trigger, total) {
+  function flyToBag(trigger, total, confirmed = true, updateBadge = true) {
     if (!trigger || !trigger.isConnected) return;
-    updateCartBadge(total, trigger);
-    trigger.classList.remove('is-sending-to-bag');
-    trigger.classList.add('is-added-to-bag');
-    window.setTimeout(() => trigger.classList.remove('is-added-to-bag'), 850);
+    if (confirmed) {
+      if (updateBadge) updateCartBadge(total, trigger);
+      trigger.classList.remove('is-sending-to-bag');
+      trigger.classList.add('is-added-to-bag');
+      window.setTimeout(() => trigger.classList.remove('is-added-to-bag'), 850);
+    }
+
+    const now = Date.now();
+    if (now - (cartFlightTimes.get(trigger) || 0) < 1800) return;
+    cartFlightTimes.set(trigger, now);
 
     const target = document.querySelector('.site-header .bag') || document.querySelector('.bag');
     if (!target || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -218,6 +225,37 @@
     animation.finished.then(() => pulseCartTarget(target)).catch(() => {}).finally(() => flight.remove());
   }
 
+  async function submitProductCard(form, button) {
+    if (!button || button.disabled) return;
+    const action = button.getAttribute('formaction') || form.getAttribute('action');
+    if (!action) return;
+    let redirecting = false;
+    button.disabled = true;
+    button.setAttribute('aria-busy', 'true');
+    try {
+      const response = await fetch(action.replaceAll('&amp;', '&'), {
+        method: (button.getAttribute('formmethod') || form.getAttribute('method') || 'POST').toUpperCase(),
+        body: new FormData(form),
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      });
+      const json = await response.json();
+      if (json.success) {
+        flyToBag(button, json.total, true);
+      } else if (json.redirect) {
+        // Let the full bag animation land before opening required product options.
+        redirecting = true;
+        window.setTimeout(() => { window.location.href = json.redirect; }, 1350);
+      }
+    } catch {
+      button.classList.remove('is-sending-to-bag');
+    } finally {
+      if (!redirecting) {
+        button.disabled = false;
+        button.removeAttribute('aria-busy');
+      }
+    }
+  }
+
   document.addEventListener('click', (event) => {
     const button = event.target.closest('button, input[type="submit"]');
     if (!button) return;
@@ -225,8 +263,11 @@
     const action = button.getAttribute('formaction') || (form && form.getAttribute('action')) || '';
     if (button.matches('[data-six-bundle-add]')) {
       markCartTrigger(button, false);
+      flyToBag(button, null, false);
     } else if (button.id === 'button-cart' || action.includes('checkout/cart.add')) {
-      markCartTrigger(button, true);
+      const isProductCard = form && form.matches('.card-footer[data-oc-toggle="ajax"]');
+      markCartTrigger(button, !isProductCard);
+      flyToBag(button, null, false);
     }
   }, true);
 
@@ -234,6 +275,14 @@
     const form = event.target;
     const button = event.submitter || form.querySelector('button[type="submit"], input[type="submit"]');
     const action = (button && button.getAttribute('formaction')) || form.getAttribute('action') || '';
+    if (form.matches('.card-footer[data-oc-toggle="ajax"]') && action.includes('checkout/cart.add')) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      markCartTrigger(button, false);
+      flyToBag(button, null, false);
+      submitProductCard(form, button);
+      return;
+    }
     if ((button && button.id === 'button-cart') || action.includes('checkout/cart.add')) markCartTrigger(button, true);
   }, true);
 
@@ -245,7 +294,7 @@
         try { json = JSON.parse(xhr.responseText || '{}'); } catch { json = {}; }
       }
       const trigger = pendingCartTriggers.shift();
-      if (json.success && trigger) flyToBag(trigger, json.total);
+      if (json.success && trigger) flyToBag(trigger, json.total, true, trigger.id !== 'button-cart');
     });
   }
 

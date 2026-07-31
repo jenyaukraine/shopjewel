@@ -177,3 +177,23 @@ test("server-renders Stripe checkout outcomes and protected orders admin", async
   assert.match(adminHtml, /Комерційна панель/);
   assert.match(adminHtml, /Замовлення 6MOMENTS/);
 });
+
+test("OpenCart catalog keeps jewelry facets and attribute sorts wired", async () => {
+  const [template, controller, model, installer] = await Promise.all([
+    readFile(new URL("../opencart/sixmoments/catalog/view/template/page/catalog.twig", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/sixmoments/catalog/controller/page/catalog.php", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/sixmoments/catalog/model/catalog.php", import.meta.url), "utf8"),
+    readFile(new URL("../opencart/sixmoments/admin/model/module/sixmoments.php", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(template, /name="ring_size"/);
+  assert.match(template, /name="carat_min"/);
+  assert.match(template, /name="stone_shape"/);
+  assert.match(template, /name="style"/);
+  assert.match(controller, /carat-desc/);
+  assert.match(controller, /weight-desc/);
+  assert.match(model, /product_attribute/);
+  assert.match(model, /product_option_value/);
+  assert.match(installer, /installJewelryAttributes/);
+  assert.match(installer, /module_sixmoments_attribute_map/);
+});
