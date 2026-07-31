@@ -37,7 +37,7 @@ class Theme extends \Opencart\System\Engine\Controller {
             $data['title'] = $data['six_brand_name'];
         }
 
-        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.2.0.6';
+        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.2.0.7';
         $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.2.0.3';
         $data['six_favicon'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/favicon.svg?v=2';
         $data['six_og_image'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/og-store.png';
@@ -295,22 +295,33 @@ class Theme extends \Opencart\System\Engine\Controller {
         $data['six_catalog_url'] = $this->url->link('extension/noveraile/page/catalog', $lang);
         $data['six_listing_categories'] = [];
 
-        $category_query = $this->db->query("SELECT DISTINCT c.category_id, cd.name, c.sort_order FROM `" . DB_PREFIX . "category` c INNER JOIN `" . DB_PREFIX . "category_description` cd ON (cd.category_id = c.category_id) INNER JOIN `" . DB_PREFIX . "product_to_category` p2c ON (p2c.category_id = c.category_id) INNER JOIN `" . DB_PREFIX . "product` p ON (p.product_id = p2c.product_id) WHERE c.status = '1' AND p.status = '1' AND cd.language_id = '" . (int)$this->config->get('config_language_id') . "' ORDER BY c.sort_order ASC, cd.name ASC LIMIT 8");
+        $category_query = $this->db->query("SELECT c.category_id, cd.name, c.sort_order, c.image AS category_image, MIN(NULLIF(p.image, '')) AS product_image FROM `" . DB_PREFIX . "category` c INNER JOIN `" . DB_PREFIX . "category_description` cd ON (cd.category_id = c.category_id) INNER JOIN `" . DB_PREFIX . "product_to_category` p2c ON (p2c.category_id = c.category_id) INNER JOIN `" . DB_PREFIX . "product` p ON (p.product_id = p2c.product_id AND p.status = '1') WHERE c.status = '1' AND cd.language_id = '" . (int)$this->config->get('config_language_id') . "' GROUP BY c.category_id, cd.name, c.sort_order, c.image ORDER BY c.sort_order ASC, cd.name ASC, c.category_id ASC LIMIT 60");
+        $category_names = [];
         foreach ($category_query->rows as $category) {
+            $name = preg_replace('/[\p{Z}\s]+/u', ' ', trim((string)$category['name'])) ?: trim((string)$category['name']);
+            $key = function_exists('mb_strtolower') ? mb_strtolower($name, 'UTF-8') : strtolower($name);
+            if ($name === '' || isset($category_names[$key])) continue;
+            $category_names[$key] = true;
+            $image = trim((string)($category['category_image'] ?: $category['product_image']));
             $data['six_listing_categories'][] = [
-                'name' => $category['name'],
+                'name' => $name,
+                'image' => $image !== '' ? '/image/' . ltrim(str_replace('\\', '/', $image), '/') : '',
                 'href' => $this->url->link('product/category', $lang . '&path=' . (int)$category['category_id'])
             ];
+            if (count($data['six_listing_categories']) >= 6) break;
         }
 
         if (!$data['six_listing_categories']) {
             foreach ([
-                'rings' => $data['six_type_rings'], 'earrings' => $data['six_type_earrings'],
-                'necklaces' => $data['six_type_necklaces'], 'bracelets' => $data['six_type_bracelets'],
-                'wedding' => $data['six_type_wedding']
-            ] as $type => $name) {
+                'rings' => [$data['six_type_rings'], 'promise-solitaire.webp'],
+                'earrings' => [$data['six_type_earrings'], 'becoming-hoops.webp'],
+                'necklaces' => [$data['six_type_necklaces'], 'arrival-pendant.webp'],
+                'bracelets' => [$data['six_type_bracelets'], 'gratitude-bracelet.webp'],
+                'wedding' => [$data['six_type_wedding'], 'union-band.webp']
+            ] as $type => [$name, $image]) {
                 $data['six_listing_categories'][] = [
                     'name' => $name,
+                    'image' => '/image/catalog/noveraile/products/' . $image,
                     'href' => $this->url->link('extension/noveraile/page/catalog', $lang . '&type=' . $type)
                 ];
             }

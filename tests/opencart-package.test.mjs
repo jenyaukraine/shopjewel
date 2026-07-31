@@ -43,7 +43,7 @@ test("mobile categories are deduplicated and use semantic jewellery icons", asyn
   assert.match(event, /\$category_names\s*=\s*\[\]/);
   assert.match(event, /mb_strtolower/);
   assert.match(event, /'icon'\s*=>\s*\$this->categoryIcon\(\$name\)/);
-  assert.match(event, /noveraile\.css\?v=2\.2\.0\.6/);
+  assert.match(event, /noveraile\.css\?v=2\.2\.0\.7/);
   assert.match(event, /noveraile\.js\?v=2\.2\.0\.3/);
   assert.match(header, /class="mobile-category-icon"/);
   assert.match(header, /category\.icon == 'earring'/);
@@ -56,6 +56,24 @@ test("mobile categories are deduplicated and use semantic jewellery icons", asyn
   assert.match(stylesheet, /html\[data-theme="dark"\] \.mobile-drawer-header\s*\{[^}]*background:\s*#201e1b/);
   assert.match(stylesheet, /html\[data-theme="dark"\] \.mobile-category-icon\s*\{[^}]*background:\s*transparent;[^}]*border:\s*0/);
   assert.match(stylesheet, /html\[data-theme="dark"\] \.mobile-category-icon svg\s*\{[^}]*stroke:\s*currentColor/);
+});
+
+test("product listing presents unique image-led category cards", async () => {
+  const [event, listing, stylesheet] = await Promise.all([
+    readFile(path.join(root, "catalog/controller/event/theme.php"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/product/listing.twig"), "utf8"),
+    readFile(path.join(root, "catalog/view/stylesheet/noveraile.css"), "utf8"),
+  ]);
+
+  assert.match(event, /public function listing\([\s\S]*?\$category_names\s*=\s*\[\]/);
+  assert.match(event, /public function listing\([\s\S]*?mb_strtolower/);
+  assert.match(event, /public function listing\([\s\S]*?category_image/);
+  assert.match(event, /public function listing\([\s\S]*?product_image/);
+  assert.match(listing, /class="listing-category-all"/);
+  assert.match(listing, /<img src="\{\{ category\.image \}\}"/);
+  assert.doesNotMatch(listing, /listing-category-link listing-category-link--all/);
+  assert.match(stylesheet, /\.listing-category-link img\s*\{/);
+  assert.match(stylesheet, /linear-gradient\(180deg,rgba\(18,15,12,\.05\)/);
 });
 
 test("mobile theme control is a labelled, stateful switch", async () => {

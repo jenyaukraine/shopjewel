@@ -22,18 +22,21 @@
     {% if six_listing_categories %}
       <section class="listing-categories" aria-labelledby="listing-categories-title">
         <header class="listing-section-heading">
-          <h2 id="listing-categories-title">{{ six_shop_by_type }}</h2>
-          <span>{{ six_listing_categories|length < 10 ? '0' : '' }}{{ six_listing_categories|length }}</span>
-        </header>
-        <nav class="listing-category-grid" aria-label="{{ six_shop_by_type }}">
-          <a class="listing-category-link listing-category-link--all" href="{{ six_catalog_url }}">
+          <div>
+            <h2 id="listing-categories-title">{{ six_shop_by_type }}</h2>
+            <span>{{ six_listing_categories|length < 10 ? '0' : '' }}{{ six_listing_categories|length }}</span>
+          </div>
+          <a class="listing-category-all" href="{{ six_catalog_url }}">
             <span>00</span>
             <strong>{{ six_all }}</strong>
             <i aria-hidden="true">↗</i>
           </a>
+        </header>
+        <nav class="listing-category-grid" aria-label="{{ six_shop_by_type }}">
           {% for category in six_listing_categories %}
             <a class="listing-category-link" href="{{ category.href }}">
-              <span>{{ loop.index < 10 ? '0' : '' }}{{ loop.index }}</span>
+              {% if category.image %}<img src="{{ category.image }}" width="900" height="720" loading="lazy" alt="">{% endif %}
+              <span class="listing-category-link__number">{{ loop.index < 10 ? '0' : '' }}{{ loop.index }}</span>
               <strong>{{ category.name }}</strong>
               <i aria-hidden="true">↗</i>
             </a>
