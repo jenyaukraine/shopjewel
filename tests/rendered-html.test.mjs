@@ -150,6 +150,10 @@ test("OpenCart product zoom fills the preview and provides an interactive lightb
   assert.match(script, /function setupProductZoom\b/);
   assert.match(script, /addEventListener\('wheel'/);
   assert.match(script, /setPointerCapture/);
+  assert.match(script, /matchMedia\('\(pointer: coarse\)'\)/);
+  assert.match(script, /touchViewport \? 2 : 4/);
+  assert.match(script, /touchViewport \|\| Date\.now\(\) - openedAt < 400/);
+  assert.match(script, /openedAt = Date\.now\(\)/);
 });
 
 test("server-renders product attributes and story routes", async () => {

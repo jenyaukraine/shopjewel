@@ -316,8 +316,9 @@
     if (!trigger || !dialog || !stage || !image || !closeButton) return;
 
     const minScale = 1;
-    const maxScale = 4;
-    const zoomStep = .5;
+    const touchViewport = window.matchMedia('(pointer: coarse)').matches || window.innerWidth <= 680;
+    const maxScale = touchViewport ? 2 : 4;
+    const zoomStep = touchViewport ? .25 : .5;
     let scale = minScale;
     let panX = 0;
     let panY = 0;
@@ -326,6 +327,7 @@
     let lastY = 0;
     let moved = false;
     let returnFocus = trigger;
+    let openedAt = 0;
 
     function clamp(value, minimum, maximum) {
       return Math.min(maximum, Math.max(minimum, value));
@@ -371,6 +373,7 @@
       returnFocus = document.activeElement || trigger;
       image.src = trigger.getAttribute('href') || image.src;
       resetZoom();
+      openedAt = Date.now();
       dialog.classList.add('is-open');
       dialog.setAttribute('aria-hidden', 'false');
       body.classList.add('product-zoom-is-open');
@@ -403,6 +406,9 @@
     }, { passive: false });
     stage.addEventListener('click', (event) => {
       if (moved) { moved = false; return; }
+      // A tap that opens the dialog can land on the newly visible stage in
+      // iOS Safari. Never turn that touch into an automatic 250% zoom.
+      if (touchViewport || Date.now() - openedAt < 400) return;
       if (scale === minScale) setScale(2.5, event.clientX, event.clientY);
     });
     stage.addEventListener('pointerdown', (event) => {
