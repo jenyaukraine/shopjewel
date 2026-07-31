@@ -176,7 +176,19 @@ jobs:
           mv "$RUNTIME_ENV" "$release_dir/.env.runtime"
           chmod 600 "$release_dir/.env.runtime"
 
+          available_kb="$(df --output=avail -k / | tail -n 1 | tr -d ' ')"
+          if [ "$available_kb" -lt 6291456 ]; then
+            echo "Low disk space detected; pruning recoverable caches before the image build"
+            journalctl --vacuum-size=256M || true
+            docker builder prune -af
+            docker image prune -af
+          fi
+
           if docker container inspect sixmoments-db >/dev/null 2>&1; then
+            test "$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' sixmoments-db)" = "healthy" || {
+              echo "Existing OpenCart database is not healthy; refusing to create an invalid backup"
+              exit 1
+            }
             backup="$DEPLOY_PATH/backups/opencart-$(date -u +%Y%m%dT%H%M%SZ).sql.gz"
             docker exec sixmoments-db sh -c \
               'exec mysqldump --single-transaction --no-tablespaces -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE"' \
@@ -194,6 +206,36 @@ jobs:
           fi
 
           docker compose --env-file .env.runtime -p sixmoments up -d --remove-orphans
+
+          for attempt in $(seq 1 36); do
+            if [ "$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' sixmoments-store)" = "healthy" ]; then
+              break
+            fi
+            if [ "$attempt" -eq 36 ]; then
+              docker logs --tail 200 sixmoments-store
+              echo "OpenCart container did not become healthy"
+              exit 1
+            fi
+            sleep 5
+          done
+
+          caddyfile=/opt/incora/Caddyfile
+          if [ -f "$caddyfile" ]; then
+            if grep -q 'six-moments-atelier.jenyaukraine.chatgpt.site' "$caddyfile"; then
+              cp -a "$caddyfile" "$DEPLOY_PATH/backups/Caddyfile-$(date -u +%Y%m%dT%H%M%SZ)"
+              perl -0pe 's#reverse_proxy https://six-moments-atelier\.jenyaukraine\.chatgpt\.site \{\s*header_up Host six-moments-atelier\.jenyaukraine\.chatgpt\.site\s*\}#reverse_proxy sixmoments-store:3000#s' \
+                "$caddyfile" > "$caddyfile.next"
+              cat "$caddyfile.next" > "$caddyfile"
+              rm -f "$caddyfile.next"
+            fi
+            grep -q 'reverse_proxy sixmoments-store:3000' "$caddyfile" || {
+              echo "Caddy route for katya-dev.duckdns.org is not configured for OpenCart"
+              exit 1
+            }
+            docker exec inkora-caddy caddy validate --config /etc/caddy/Caddyfile
+            docker exec inkora-caddy caddy reload --config /etc/caddy/Caddyfile
+          fi
+
           ln -sfn "$release_dir" "$DEPLOY_PATH/current"
           rm -f "$ARCHIVE"
           docker compose --env-file .env.runtime -p sixmoments ps
@@ -203,7 +245,9 @@ jobs:
         run: |
           set -Eeuo pipefail
           for attempt in $(seq 1 36); do
-            if curl --fail --silent --show-error --max-time 15 "$PRODUCTION_URL" >/dev/null; then
+            storefront="$(curl --fail --silent --show-error --max-time 15 "$PRODUCTION_URL" || true)"
+            admin="$(curl --fail --silent --show-error --max-time 15 "${PRODUCTION_URL%/}/admin/" || true)"
+            if grep -q 'catalog/view' <<<"$storefront" && grep -q '<title>Administration</title>' <<<"$admin"; then
               echo "Production is healthy: $PRODUCTION_URL"
               exit 0
             fi
