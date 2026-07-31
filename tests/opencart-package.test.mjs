@@ -20,10 +20,16 @@ test("OpenCart 4 package has valid marketplace metadata and entry points", async
   await Promise.all(required.map((file) => readFile(path.join(root, file))));
 });
 
+test("admin content remains adjacent to the OpenCart sidebar", async () => {
+  const template = await readFile(path.join(root, "admin/view/template/module/noveraile.twig"), "utf8");
+  assert.match(template, /\{\{ header \}\}\{\{ column_left \}\}\s*<div id="content">/);
+});
+
 test("premium suite ships working builder, mega menu, AJAX filters, one-page checkout and reviewed AI tools", async () => {
-  const [admin, settings, event, header, catalog, catalogTemplate, script, checkout] = await Promise.all([
+  const [admin, settings, adminTemplate, event, header, catalog, catalogTemplate, script, checkout] = await Promise.all([
     readFile(path.join(root, "admin/controller/module/noveraile.php"), "utf8"),
     readFile(path.join(root, "admin/model/module/noveraile.php"), "utf8"),
+    readFile(path.join(root, "admin/view/template/module/noveraile.twig"), "utf8"),
     readFile(path.join(root, "catalog/controller/event/theme.php"), "utf8"),
     readFile(path.join(root, "catalog/view/template/common/header.twig"), "utf8"),
     readFile(path.join(root, "catalog/controller/page/catalog.php"), "utf8"),
@@ -32,6 +38,12 @@ test("premium suite ships working builder, mega menu, AJAX filters, one-page che
     readFile(path.join(root, "catalog/view/template/checkout/checkout.twig"), "utf8"),
   ]);
   assert.match(settings, /module_noveraile_page_builder/);
+  assert.match(admin, /htmlspecialchars_decode\(.*module_noveraile_page_builder/s);
+  assert.match(admin, /htmlspecialchars_decode\(.*module_noveraile_quiz_rules/s);
+  assert.match(admin, /public function update\(\): void/);
+  assert.match(admin, /version_compare\(\$next_version, self::VERSION, '<='\)/);
+  assert.match(admin, /\.noveraile-backup-/);
+  assert.match(adminTemplate, /multipart\/form-data/);
   assert.match(event, /six_home_blocks/);
   assert.match(header, /class="mega-menu"/);
   assert.match(catalog, /catalog_results/);
@@ -58,7 +70,7 @@ test("all six sales-readiness promises are implemented and release-checked", asy
   const manifest = JSON.parse(manifestSource);
   const feed = JSON.parse(feedSource);
 
-  assert.equal(manifest.version, "2.1.1");
+  assert.equal(manifest.version, "2.2.0");
   assert.equal(feed.version, manifest.version);
   assert.deepEqual(feed.opencart.tested, ["4.0.2.3", "4.1.0.3"]);
   assert.match(admin, /version_compare\(VERSION, '4\.0\.2\.3', '<'\)/);
@@ -88,9 +100,39 @@ test("marketplace install is opt-in and demo content is a separate action", asyn
   ]);
   assert.match(controller, /function installDemo\(/);
   assert.match(model, /bootstrap\(false\)/);
+  assert.match(model, /private function installPermissions\(\): void/);
+  assert.match(model, /extension\/noveraile\/module\/noveraile/);
   assert.match(model, /'module_noveraile_status'\s*=>\s*\(int\)\$enable_storefront/);
   assert.match(model, /'shipping_dhl_status'\s*=>\s*0/);
   assert.match(model, /'shipping_dpd_status'\s*=>\s*0/);
+});
+
+test("admin ships transactional multilingual product import and one-click export", async () => {
+  const [controller, model, template, language] = await Promise.all([
+    readFile(path.join(root, "admin/controller/module/noveraile.php"), "utf8"),
+    readFile(path.join(root, "admin/model/module/noveraile.php"), "utf8"),
+    readFile(path.join(root, "admin/view/template/module/noveraile.twig"), "utf8"),
+    readFile(path.join(root, "admin/language/en-gb/module/noveraile.php"), "utf8"),
+  ]);
+
+  assert.match(controller, /public function exportProducts\(\): void/);
+  assert.match(controller, /public function importProducts\(\): void/);
+  assert.match(controller, /public function downloadCatalogTemplate\(\): void/);
+  assert.match(controller, /fgetcsv\([^\n]+\$delimiter/);
+  assert.match(controller, /count\(\$rows\) > 10000/);
+  assert.match(model, /public function exportProducts\(\): array/);
+  assert.match(model, /public function importProducts\(array \$rows, bool \$update_existing\): array/);
+  assert.match(model, /START TRANSACTION[\s\S]+COMMIT[\s\S]+ROLLBACK/);
+  assert.match(model, /usesProductCodeTable\(\)/);
+  assert.match(model, /version_compare\(VERSION, '4\.1\.0\.0', '>='\)/);
+  assert.match(model, /DELETE FROM `" \. DB_PREFIX \. "product_to_category`/);
+  assert.match(model, /'sku' => \$product\['sku'\]/);
+  assert.doesNotMatch(model.match(/if \(\$product\['product_id'\]\)[\s\S]*?\} else \{/s)?.[0] ?? "", /deleteOptions|deleteImages|deleteDiscounts|deleteRelated/);
+  assert.match(template, /id="tab-catalog"/);
+  assert.match(template, /id="catalog-drop"/);
+  assert.match(template, /id="catalog-preview"/);
+  assert.match(template, /href="\{\{ catalog_export \}\}"/);
+  assert.match(language, /text_catalog_import_notice/);
 });
 
 test("storefront catalog accepts normal merchant products", async () => {

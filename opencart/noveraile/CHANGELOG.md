@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.2.0 — 2026-07-31
+
+- Added transactional multilingual CSV product import with automatic delimiter detection, row validation and create/update modes.
+- Added one-click full catalog export and a spreadsheet-ready CSV template.
+- Redesigned the module dashboard with a focused catalog workspace, live counts, drag-and-drop upload and a safe client-side preview.
+- Preserved product options, extra images, discounts and relations when imported rows update existing products.
+- Granted the primary OpenCart administrator access to the module workspace during install and container bootstrap.
+
+## 2.1.2 — 2026-07-31
+
+- Fixed Page Builder and quiz JSON validation under OpenCart request sanitization.
+- Normalized JSON before saving so encoded entities are not persisted to settings.
+- Added staged in-place ZIP updates with backups and automatic rollback, without uninstalling registered components.
+
 ## 2.1.1 — 2026-07-31
 
 - Aligned the public product name, extension code, package name and documentation under NOVERAILE.

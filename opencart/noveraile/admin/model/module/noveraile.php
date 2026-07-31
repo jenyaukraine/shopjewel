@@ -13,6 +13,7 @@ class Noveraile extends \Opencart\System\Engine\Model {
         $this->installPackageRegistration();
         $this->installEvents();
         $this->installServiceExtensions();
+        $this->installPermissions();
         $this->installSettings($with_demo_data);
 
         if ($with_demo_data) {
@@ -31,9 +32,9 @@ class Noveraile extends \Opencart\System\Engine\Model {
         $installed = $this->db->query("SELECT `extension_install_id` FROM `" . DB_PREFIX . "extension_install` WHERE `code` = 'noveraile' LIMIT 1");
 
         if (!$installed->num_rows) {
-            $this->db->query("INSERT INTO `" . DB_PREFIX . "extension_install` SET `extension_id` = '0', `extension_download_id` = '0', `name` = 'NOVERAILE Commerce Suite', `description` = 'OpenCart 4 storefront suite with Page Builder, Mega Menu, progressive catalog filters, optional One Page Checkout and reviewed AI content tools', `code` = 'noveraile', `version` = '2.1.1', `author` = 'NOVERAILE', `link` = '', `status` = '1', `date_added` = NOW()");
+            $this->db->query("INSERT INTO `" . DB_PREFIX . "extension_install` SET `extension_id` = '0', `extension_download_id` = '0', `name` = 'NOVERAILE Commerce Suite', `description` = 'OpenCart 4 storefront suite with Page Builder, catalog import/export, Mega Menu, progressive filters, checkout and reviewed AI tools', `code` = 'noveraile', `version` = '2.2.0', `author` = 'NOVERAILE', `link` = '', `status` = '1', `date_added` = NOW()");
         } else {
-            $this->db->query("UPDATE `" . DB_PREFIX . "extension_install` SET `name` = 'NOVERAILE Commerce Suite', `version` = '2.1.1', `status` = '1' WHERE `extension_install_id` = '" . (int)$installed->row['extension_install_id'] . "'");
+            $this->db->query("UPDATE `" . DB_PREFIX . "extension_install` SET `name` = 'NOVERAILE Commerce Suite', `version` = '2.2.0', `status` = '1' WHERE `extension_install_id` = '" . (int)$installed->row['extension_install_id'] . "'");
         }
     }
 
@@ -404,6 +405,21 @@ class Noveraile extends \Opencart\System\Engine\Model {
         }
     }
 
+    private function installPermissions(): void {
+        $route = 'extension/noveraile/module/noveraile';
+        $group = $this->db->query("SELECT `user_group_id`, `permission` FROM `" . DB_PREFIX . "user_group` WHERE `user_group_id` = '1' LIMIT 1");
+        if (!$group->num_rows) return;
+
+        $permission = json_decode((string)$group->row['permission'], true);
+        if (!is_array($permission)) $permission = [];
+        foreach (['access', 'modify'] as $type) {
+            if (!isset($permission[$type]) || !is_array($permission[$type])) $permission[$type] = [];
+            if (!in_array($route, $permission[$type], true)) $permission[$type][] = $route;
+        }
+
+        $this->db->query("UPDATE `" . DB_PREFIX . "user_group` SET `permission` = '" . $this->db->escape(json_encode($permission, JSON_UNESCAPED_SLASHES)) . "' WHERE `user_group_id` = '" . (int)$group->row['user_group_id'] . "'");
+    }
+
     /**
      * Install a real OpenCart attribute set for jewelry facets. Product tags
      * remain useful for editorial navigation, while these records are the
@@ -541,6 +557,288 @@ class Noveraile extends \Opencart\System\Engine\Model {
             }
             $this->model_cms_article->addArticle(['topic_id'=>0,'author'=>'NOVERAILE','status'=>1,'article_description'=>$descriptions,'article_store'=>[0],'article_seo_url'=>[0=>$seo]]);
         }
+    }
+
+    public function getCatalogSummary(): array {
+        $products = $this->db->query("SELECT COUNT(*) AS `total`, SUM(CASE WHEN `status` = '1' THEN 1 ELSE 0 END) AS `active` FROM `" . DB_PREFIX . "product`");
+        $languages = $this->db->query("SELECT COUNT(*) AS `total` FROM `" . DB_PREFIX . "language` WHERE `status` = '1'");
+
+        return [
+            'total' => (int)($products->row['total'] ?? 0),
+            'active' => (int)($products->row['active'] ?? 0),
+            'languages' => (int)($languages->row['total'] ?? 0)
+        ];
+    }
+
+    public function exportProducts(): array {
+        $sku = $this->usesProductCodeTable()
+            ? "(SELECT `pc`.`value` FROM `" . DB_PREFIX . "product_code` `pc` WHERE `pc`.`product_id` = `p`.`product_id` AND `pc`.`code` = 'sku' LIMIT 1)"
+            : "`p`.`sku`";
+        $query = $this->db->query("SELECT `p`.`product_id`, `p`.`model`, `p`.`price`, `p`.`quantity`, `p`.`status`, `p`.`image`, `p`.`weight`, `p`.`sort_order`, `p`.`date_available`, `l`.`code` AS `language_code`, `pd`.`name`, `pd`.`description`, `pd`.`meta_title`, `pd`.`meta_description`, `pd`.`meta_keyword`, `pd`.`tag`, " . $sku . " AS `sku`, (SELECT GROUP_CONCAT(`ptc`.`category_id` ORDER BY `ptc`.`category_id` SEPARATOR '|') FROM `" . DB_PREFIX . "product_to_category` `ptc` WHERE `ptc`.`product_id` = `p`.`product_id`) AS `category_ids` FROM `" . DB_PREFIX . "product` `p` INNER JOIN `" . DB_PREFIX . "product_description` `pd` ON (`pd`.`product_id` = `p`.`product_id`) INNER JOIN `" . DB_PREFIX . "language` `l` ON (`l`.`language_id` = `pd`.`language_id`) ORDER BY `p`.`product_id`, `l`.`sort_order`, `l`.`name`");
+
+        return $query->rows;
+    }
+
+    public function importProducts(array $rows, bool $update_existing): array {
+        if (!$rows) {
+            throw new \RuntimeException('The CSV file does not contain any product rows.');
+        }
+
+        $language_rows = $this->db->query("SELECT `language_id`, `code` FROM `" . DB_PREFIX . "language`")->rows;
+        $languages = [];
+        foreach ($language_rows as $language) {
+            $languages[strtolower((string)$language['code'])] = (int)$language['language_id'];
+        }
+
+        $groups = [];
+        foreach ($rows as $row) {
+            $line = (int)($row['_line'] ?? 0);
+            $product_id = $this->positiveInteger($row['product_id'] ?? '', $line, 'product_id', true);
+            $model = $this->catalogText($row['model'] ?? '', $line, 'model', 64, true);
+            $language_code = strtolower($this->catalogText($row['language_code'] ?? '', $line, 'language_code', 16, true));
+
+            if (!isset($languages[$language_code])) {
+                throw new \RuntimeException(sprintf('Row %d: language "%s" is not installed in OpenCart.', $line, $language_code));
+            }
+
+            $key = $product_id > 0 ? 'id:' . $product_id : 'model:' . strtolower($model);
+            if (!isset($groups[$key])) {
+                $groups[$key] = ['product_id' => $product_id, 'model' => $model, 'rows' => []];
+            } elseif ($groups[$key]['model'] !== $model) {
+                throw new \RuntimeException(sprintf('Row %d: product rows with the same ID must use the same model.', $line));
+            }
+
+            if (isset($groups[$key]['rows'][$language_code])) {
+                throw new \RuntimeException(sprintf('Row %d: duplicate language "%s" for model "%s".', $line, $language_code, $model));
+            }
+
+            $row['language_id'] = $languages[$language_code];
+            $groups[$key]['rows'][$language_code] = $row;
+        }
+
+        $prepared = [];
+        foreach ($groups as $group) {
+            $first = reset($group['rows']);
+            $line = (int)$first['_line'];
+            $product_id = (int)$group['product_id'];
+            $model = (string)$group['model'];
+
+            if ($product_id > 0) {
+                $existing = $this->db->query("SELECT `product_id` FROM `" . DB_PREFIX . "product` WHERE `product_id` = '" . $product_id . "' LIMIT 1");
+                if (!$existing->num_rows) {
+                    throw new \RuntimeException(sprintf('Row %d: product_id %d does not exist. Leave product_id blank to create a product.', $line, $product_id));
+                }
+            } else {
+                $existing = $this->db->query("SELECT `product_id` FROM `" . DB_PREFIX . "product` WHERE `model` = '" . $this->db->escape($model) . "' ORDER BY `product_id`");
+                if ($existing->num_rows > 1) {
+                    throw new \RuntimeException(sprintf('Row %d: model "%s" matches more than one existing product. Export the catalog and use product_id.', $line, $model));
+                }
+                $product_id = $existing->num_rows ? (int)$existing->row['product_id'] : 0;
+            }
+
+            if ($product_id > 0 && !$update_existing) {
+                throw new \RuntimeException(sprintf('Row %d: model "%s" already exists. Enable updating existing products or remove it from the file.', $line, $model));
+            }
+
+            $model_owner = $this->db->query("SELECT `product_id` FROM `" . DB_PREFIX . "product` WHERE `model` = '" . $this->db->escape($model) . "' AND `product_id` != '" . $product_id . "' LIMIT 1");
+            if ($model_owner->num_rows) {
+                throw new \RuntimeException(sprintf('Row %d: model "%s" is already used by another product.', $line, $model));
+            }
+
+            $category_ids = $this->categoryIds($first['category_ids'] ?? '', $line);
+            if ($category_ids) {
+                $valid = $this->db->query("SELECT `category_id` FROM `" . DB_PREFIX . "category` WHERE `category_id` IN (" . implode(',', $category_ids) . ")")->rows;
+                if (count($valid) !== count($category_ids)) {
+                    throw new \RuntimeException(sprintf('Row %d: one or more category_ids do not exist.', $line));
+                }
+            }
+
+            $image = str_replace('\\', '/', trim((string)($first['image'] ?? '')));
+            if (str_contains($image, '..') || str_starts_with($image, '/') || preg_match('#^[a-z]+://#i', $image)) {
+                throw new \RuntimeException(sprintf('Row %d: image must be a relative OpenCart image path.', $line));
+            }
+
+            $descriptions = [];
+            foreach ($group['rows'] as $row) {
+                $row_line = (int)$row['_line'];
+                $name = $this->catalogText($row['name'] ?? '', $row_line, 'name', 255, true);
+                $descriptions[(int)$row['language_id']] = [
+                    'name' => $name,
+                    'description' => (string)($row['description'] ?? ''),
+                    'tag' => $this->catalogText($row['tag'] ?? '', $row_line, 'tag', 255),
+                    'meta_title' => $this->catalogText($row['meta_title'] ?? $name, $row_line, 'meta_title', 255),
+                    'meta_description' => (string)($row['meta_description'] ?? ''),
+                    'meta_keyword' => (string)($row['meta_keyword'] ?? '')
+                ];
+            }
+
+            $date_available = trim((string)($first['date_available'] ?? '')) ?: date('Y-m-d');
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_available)) {
+                throw new \RuntimeException(sprintf('Row %d: date_available must use YYYY-MM-DD.', $line));
+            }
+
+            $prepared[] = [
+                'product_id' => $product_id,
+                'model' => $model,
+                'sku' => $this->catalogText($first['sku'] ?? '', $line, 'sku', 64),
+                'price' => $this->decimalNumber($first['price'] ?? '0', $line, 'price'),
+                'quantity' => $this->nonNegativeInteger($first['quantity'] ?? '0', $line, 'quantity'),
+                'status' => $this->catalogStatus($first['status'] ?? '1', $line),
+                'category_ids' => $category_ids,
+                'image' => $image,
+                'weight' => $this->decimalNumber($first['weight'] ?? '0', $line, 'weight'),
+                'sort_order' => $this->nonNegativeInteger($first['sort_order'] ?? '0', $line, 'sort_order'),
+                'date_available' => $date_available,
+                'descriptions' => $descriptions
+            ];
+        }
+
+        $created = 0;
+        $updated = 0;
+        $translations = 0;
+        $this->load->model('catalog/product');
+        $this->db->query('START TRANSACTION');
+
+        try {
+            foreach ($prepared as $product) {
+                if ($product['product_id']) {
+                    $product_id = (int)$product['product_id'];
+                    $this->db->query("UPDATE `" . DB_PREFIX . "product` SET `model` = '" . $this->db->escape($product['model']) . "', `quantity` = '" . (int)$product['quantity'] . "', `price` = '" . (float)$product['price'] . "', `status` = '" . (int)$product['status'] . "', `image` = '" . $this->db->escape($product['image']) . "', `weight` = '" . (float)$product['weight'] . "', `sort_order` = '" . (int)$product['sort_order'] . "', `date_available` = '" . $this->db->escape($product['date_available']) . "', `date_modified` = NOW() WHERE `product_id` = '" . $product_id . "'");
+
+                    foreach ($product['descriptions'] as $language_id => $description) {
+                        $this->db->query("DELETE FROM `" . DB_PREFIX . "product_description` WHERE `product_id` = '" . $product_id . "' AND `language_id` = '" . (int)$language_id . "'");
+                        $this->db->query("INSERT INTO `" . DB_PREFIX . "product_description` SET `product_id` = '" . $product_id . "', `language_id` = '" . (int)$language_id . "', `name` = '" . $this->db->escape($description['name']) . "', `description` = '" . $this->db->escape($description['description']) . "', `tag` = '" . $this->db->escape($description['tag']) . "', `meta_title` = '" . $this->db->escape($description['meta_title']) . "', `meta_description` = '" . $this->db->escape($description['meta_description']) . "', `meta_keyword` = '" . $this->db->escape($description['meta_keyword']) . "'");
+                        $translations++;
+                    }
+
+                    if ($this->usesProductCodeTable()) {
+                        $this->db->query("DELETE FROM `" . DB_PREFIX . "product_code` WHERE `product_id` = '" . $product_id . "' AND `code` = 'sku'");
+                        if ($product['sku'] !== '') {
+                            $this->db->query("INSERT INTO `" . DB_PREFIX . "product_code` SET `product_id` = '" . $product_id . "', `code` = 'sku', `value` = '" . $this->db->escape($product['sku']) . "'");
+                        }
+                    } else {
+                        $this->db->query("UPDATE `" . DB_PREFIX . "product` SET `sku` = '" . $this->db->escape($product['sku']) . "' WHERE `product_id` = '" . $product_id . "'");
+                    }
+
+                    $this->db->query("DELETE FROM `" . DB_PREFIX . "product_to_category` WHERE `product_id` = '" . $product_id . "'");
+                    foreach ($product['category_ids'] as $category_id) {
+                        $this->db->query("INSERT INTO `" . DB_PREFIX . "product_to_category` SET `product_id` = '" . $product_id . "', `category_id` = '" . (int)$category_id . "'");
+                    }
+                    $updated++;
+                } else {
+                    $codes = $product['sku'] !== '' ? [['code' => 'sku', 'value' => $product['sku']]] : [];
+                    $this->model_catalog_product->addProduct([
+                        'master_id' => 0,
+                        'model' => $product['model'],
+                        'sku' => $product['sku'],
+                        'upc' => '',
+                        'ean' => '',
+                        'jan' => '',
+                        'isbn' => '',
+                        'mpn' => '',
+                        'location' => '',
+                        'variant' => [],
+                        'override' => [],
+                        'quantity' => $product['quantity'],
+                        'minimum' => 1,
+                        'subtract' => 1,
+                        'stock_status_id' => (int)$this->config->get('config_stock_status_id'),
+                        'date_available' => $product['date_available'],
+                        'manufacturer_id' => 0,
+                        'shipping' => 1,
+                        'price' => $product['price'],
+                        'points' => 0,
+                        'weight' => $product['weight'],
+                        'weight_class_id' => (int)$this->config->get('config_weight_class_id'),
+                        'length' => 0,
+                        'width' => 0,
+                        'height' => 0,
+                        'length_class_id' => (int)$this->config->get('config_length_class_id'),
+                        'status' => $product['status'],
+                        'tax_class_id' => 0,
+                        'sort_order' => $product['sort_order'],
+                        'image' => $product['image'],
+                        'product_description' => $product['descriptions'],
+                        'product_code' => $codes,
+                        'product_category' => $product['category_ids'],
+                        'product_store' => [0]
+                    ]);
+                    $translations += count($product['descriptions']);
+                    $created++;
+                }
+            }
+
+            $this->db->query('COMMIT');
+            $this->cache->delete('product');
+        } catch (\Throwable $error) {
+            $this->db->query('ROLLBACK');
+            throw $error;
+        }
+
+        return ['created' => $created, 'updated' => $updated, 'translations' => $translations];
+    }
+
+    private function catalogText(mixed $value, int $line, string $field, int $maximum, bool $required = false): string {
+        $value = trim((string)$value);
+        $length = function_exists('mb_strlen') ? mb_strlen($value) : strlen($value);
+        if ($required && $value === '') {
+            throw new \RuntimeException(sprintf('Row %d: %s is required.', $line, $field));
+        }
+        if ($length > $maximum) {
+            throw new \RuntimeException(sprintf('Row %d: %s is longer than %d characters.', $line, $field, $maximum));
+        }
+        return $value;
+    }
+
+    private function positiveInteger(mixed $value, int $line, string $field, bool $allow_blank = false): int {
+        $value = trim((string)$value);
+        if ($allow_blank && $value === '') return 0;
+        if (!ctype_digit($value) || (int)$value < 1) {
+            throw new \RuntimeException(sprintf('Row %d: %s must be a positive integer.', $line, $field));
+        }
+        return (int)$value;
+    }
+
+    private function nonNegativeInteger(mixed $value, int $line, string $field): int {
+        $value = trim((string)$value);
+        if ($value === '' || !ctype_digit($value)) {
+            throw new \RuntimeException(sprintf('Row %d: %s must be zero or a positive integer.', $line, $field));
+        }
+        return (int)$value;
+    }
+
+    private function decimalNumber(mixed $value, int $line, string $field): float {
+        $value = trim((string)$value);
+        if (str_contains($value, ',') && !str_contains($value, '.')) $value = str_replace(',', '.', $value);
+        if ($value === '' || !is_numeric($value) || (float)$value < 0) {
+            throw new \RuntimeException(sprintf('Row %d: %s must be zero or a positive number.', $line, $field));
+        }
+        return (float)$value;
+    }
+
+    private function catalogStatus(mixed $value, int $line): int {
+        $value = strtolower(trim((string)$value));
+        if (in_array($value, ['1', 'true', 'yes', 'on', 'enabled', 'active'], true)) return 1;
+        if (in_array($value, ['0', 'false', 'no', 'off', 'disabled', 'inactive'], true)) return 0;
+        throw new \RuntimeException(sprintf('Row %d: status must be 1 or 0.', $line));
+    }
+
+    private function categoryIds(mixed $value, int $line): array {
+        $value = trim((string)$value);
+        if ($value === '') return [];
+        $ids = [];
+        foreach (preg_split('/[|,]/', $value) as $part) {
+            $part = trim($part);
+            if (!ctype_digit($part) || (int)$part < 1) {
+                throw new \RuntimeException(sprintf('Row %d: category_ids must contain numeric IDs separated by |.', $line));
+            }
+            $ids[] = (int)$part;
+        }
+        return array_values(array_unique($ids));
+    }
+
+    private function usesProductCodeTable(): bool {
+        return !defined('VERSION') || version_compare(VERSION, '4.1.0.0', '>=');
     }
 
     public function uninstall(): void {

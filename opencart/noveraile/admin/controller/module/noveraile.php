@@ -2,7 +2,12 @@
 namespace Opencart\Admin\Controller\Extension\Noveraile\Module;
 
 class Noveraile extends \Opencart\System\Engine\Controller {
-    private const VERSION = '2.1.1';
+    private const VERSION = '2.2.0';
+    private const CATALOG_HEADERS = [
+        'product_id', 'model', 'sku', 'language_code', 'name', 'description', 'meta_title',
+        'meta_description', 'meta_keyword', 'tag', 'price', 'quantity', 'status',
+        'category_ids', 'image', 'weight', 'sort_order', 'date_available'
+    ];
 
     public function index(): void {
         $this->load->language('extension/noveraile/module/noveraile');
@@ -15,6 +20,10 @@ class Noveraile extends \Opencart\System\Engine\Controller {
         ];
 
         $data['save'] = $this->url->link('extension/noveraile/module/noveraile.save', 'user_token=' . $this->session->data['user_token']);
+        $data['update'] = $this->url->link('extension/noveraile/module/noveraile.update', 'user_token=' . $this->session->data['user_token']);
+        $data['catalog_import'] = $this->url->link('extension/noveraile/module/noveraile.importProducts', 'user_token=' . $this->session->data['user_token']);
+        $data['catalog_export'] = $this->url->link('extension/noveraile/module/noveraile.exportProducts', 'user_token=' . $this->session->data['user_token']);
+        $data['catalog_template'] = $this->url->link('extension/noveraile/module/noveraile.downloadCatalogTemplate', 'user_token=' . $this->session->data['user_token']);
         $data['install_demo'] = $this->url->link('extension/noveraile/module/noveraile.installDemo', 'user_token=' . $this->session->data['user_token']);
         $data['ai_generate'] = $this->url->link('extension/noveraile/module/noveraile.aiGenerate', 'user_token=' . $this->session->data['user_token']);
         $data['ai_apply'] = $this->url->link('extension/noveraile/module/noveraile.aiApply', 'user_token=' . $this->session->data['user_token']);
@@ -22,6 +31,11 @@ class Noveraile extends \Opencart\System\Engine\Controller {
         $data['demo_installed'] = (int)$this->config->get('module_noveraile_catalog_version') >= 5;
         $data['noveraile_version'] = self::VERSION;
         $data['opencart_version'] = defined('VERSION') ? VERSION : '4.x';
+        $this->load->model('extension/noveraile/module/noveraile');
+        $data['catalog_summary'] = $this->model_extension_noveraile_module_noveraile->getCatalogSummary();
+        $data['success'] = (string)($this->session->data['success'] ?? '');
+        $data['error_warning'] = (string)($this->session->data['error_warning'] ?? '');
+        unset($this->session->data['success'], $this->session->data['error_warning']);
 
         $keys = [
             'module_noveraile_status', 'module_noveraile_brand_name', 'module_noveraile_instagram', 'module_noveraile_email',
@@ -71,15 +85,23 @@ class Noveraile extends \Opencart\System\Engine\Controller {
             $json['error'] = $this->language->get('error_permission');
         }
 
-        $rules = (string)($this->request->post['module_noveraile_quiz_rules'] ?? '[]');
-        json_decode($rules, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
+        // OpenCart sanitizes request strings with htmlspecialchars(), which turns
+        // JSON quotes into &quot;. Decode that transport escaping before parsing and
+        // store normalized JSON instead of persisting the escaped representation.
+        $rules_json = htmlspecialchars_decode((string)($this->request->post['module_noveraile_quiz_rules'] ?? '[]'), ENT_COMPAT);
+        $rules = json_decode($rules_json, true);
+        if (!is_array($rules)) {
             $json['error'] = $this->language->get('error_json');
+        } else {
+            $this->request->post['module_noveraile_quiz_rules'] = json_encode($rules, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         }
 
-        $builder = json_decode((string)($this->request->post['module_noveraile_page_builder'] ?? '[]'), true);
+        $builder_json = htmlspecialchars_decode((string)($this->request->post['module_noveraile_page_builder'] ?? '[]'), ENT_COMPAT);
+        $builder = json_decode($builder_json, true);
         if (!is_array($builder)) {
             $json['error'] = $this->language->get('error_builder_json');
+        } else {
+            $this->request->post['module_noveraile_page_builder'] = json_encode($builder, JSON_UNESCAPED_SLASHES);
         }
 
         $color_mode = (string)($this->request->post['module_noveraile_color_mode'] ?? 'auto');
@@ -131,6 +153,57 @@ class Noveraile extends \Opencart\System\Engine\Controller {
         $this->model_extension_noveraile_module_noveraile->install();
     }
 
+    public function update(): void {
+        $this->load->language('extension/noveraile/module/noveraile');
+        $redirect = $this->url->link('extension/noveraile/module/noveraile', 'user_token=' . $this->session->data['user_token']);
+
+        try {
+            if (!$this->user->hasPermission('modify', 'extension/noveraile/module/noveraile')) {
+                throw new \RuntimeException($this->language->get('error_permission'));
+            }
+
+            $upload = $this->request->files['file'] ?? [];
+            if (!$upload || (int)($upload['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK || !is_uploaded_file((string)($upload['tmp_name'] ?? ''))) {
+                throw new \RuntimeException($this->language->get('error_update_upload'));
+            }
+
+            $filename = basename((string)($upload['name'] ?? ''));
+            if (!str_ends_with(strtolower($filename), '.ocmod.zip')) {
+                throw new \RuntimeException($this->language->get('error_update_file'));
+            }
+
+            $zip = new \ZipArchive();
+            if ($zip->open((string)$upload['tmp_name'], \ZipArchive::RDONLY) !== true) {
+                throw new \RuntimeException($this->language->get('error_update_zip'));
+            }
+
+            try {
+                $manifest_json = $zip->getFromName('install.json');
+                $manifest = is_string($manifest_json) ? json_decode($manifest_json, true) : null;
+                $next_version = trim((string)($manifest['version'] ?? ''));
+
+                if (!is_array($manifest) || ($manifest['author'] ?? '') !== 'NOVERAILE' || !preg_match('/^\d+\.\d+\.\d+$/', $next_version)) {
+                    throw new \RuntimeException($this->language->get('error_update_manifest'));
+                }
+
+                if (version_compare($next_version, self::VERSION, '<=')) {
+                    throw new \RuntimeException(sprintf($this->language->get('error_update_version'), self::VERSION, $next_version));
+                }
+
+                $entries = $this->validateUpdateArchive($zip);
+                $this->deployUpdate($zip, $entries, $next_version);
+            } finally {
+                $zip->close();
+            }
+
+            $this->session->data['success'] = sprintf($this->language->get('text_update_success'), $next_version);
+        } catch (\Throwable $error) {
+            $this->session->data['error_warning'] = $error->getMessage();
+        }
+
+        $this->response->redirect($redirect);
+    }
+
     public function installDemo(): void {
         $this->load->language('extension/noveraile/module/noveraile');
         $json = [];
@@ -147,6 +220,366 @@ class Noveraile extends \Opencart\System\Engine\Controller {
 
         $this->response->addHeader('Content-Type: application/json');
         $this->response->setOutput(json_encode($json));
+    }
+
+    public function exportProducts(): void {
+        $this->load->language('extension/noveraile/module/noveraile');
+        if (!$this->user->hasPermission('access', 'extension/noveraile/module/noveraile')) {
+            $this->response->redirect($this->url->link('error/permission', 'user_token=' . $this->session->data['user_token']));
+            return;
+        }
+
+        $this->load->model('extension/noveraile/module/noveraile');
+        $this->sendCatalogCsv('noveraile-products-' . date('Y-m-d') . '.csv', $this->model_extension_noveraile_module_noveraile->exportProducts());
+    }
+
+    public function downloadCatalogTemplate(): void {
+        $this->load->language('extension/noveraile/module/noveraile');
+        if (!$this->user->hasPermission('access', 'extension/noveraile/module/noveraile')) {
+            $this->response->redirect($this->url->link('error/permission', 'user_token=' . $this->session->data['user_token']));
+            return;
+        }
+
+        $this->sendCatalogCsv('noveraile-products-template.csv', [[
+            'product_id' => '',
+            'model' => 'EXAMPLE-001',
+            'sku' => 'EXAMPLE-001',
+            'language_code' => (string)($this->config->get('config_language') ?: 'en-gb'),
+            'name' => 'Example product',
+            'description' => '<p>Product description</p>',
+            'meta_title' => 'Example product',
+            'meta_description' => 'Short description for search results',
+            'meta_keyword' => '',
+            'tag' => 'example,new',
+            'price' => '149.00',
+            'quantity' => '10',
+            'status' => '1',
+            'category_ids' => '',
+            'image' => 'catalog/products/example.jpg',
+            'weight' => '0',
+            'sort_order' => '0',
+            'date_available' => date('Y-m-d')
+        ]]);
+    }
+
+    public function importProducts(): void {
+        $this->load->language('extension/noveraile/module/noveraile');
+        $redirect = $this->url->link('extension/noveraile/module/noveraile', 'user_token=' . $this->session->data['user_token']) . '#tab-catalog';
+
+        try {
+            if (!$this->user->hasPermission('modify', 'extension/noveraile/module/noveraile')) {
+                throw new \RuntimeException($this->language->get('error_permission'));
+            }
+
+            $upload = $this->request->files['catalog_file'] ?? [];
+            $path = (string)($upload['tmp_name'] ?? '');
+            $name = strtolower(basename((string)($upload['name'] ?? '')));
+            if (!$upload || (int)($upload['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK || !is_uploaded_file($path)) {
+                throw new \RuntimeException($this->language->get('error_catalog_upload'));
+            }
+            if (!str_ends_with($name, '.csv')) {
+                throw new \RuntimeException($this->language->get('error_catalog_file'));
+            }
+            if ((int)($upload['size'] ?? 0) > 8 * 1024 * 1024) {
+                throw new \RuntimeException($this->language->get('error_catalog_size'));
+            }
+
+            $rows = $this->readCatalogCsv($path);
+            $this->load->model('extension/noveraile/module/noveraile');
+            $result = $this->model_extension_noveraile_module_noveraile->importProducts($rows, !empty($this->request->post['update_existing']));
+            $this->session->data['success'] = sprintf(
+                $this->language->get('text_catalog_import_success'),
+                (int)$result['created'],
+                (int)$result['updated'],
+                (int)$result['translations']
+            );
+        } catch (\Throwable $error) {
+            $this->session->data['error_warning'] = $error->getMessage();
+        }
+
+        $this->response->redirect($redirect);
+    }
+
+    private function readCatalogCsv(string $path): array {
+        $sample = file_get_contents($path, false, null, 0, 65536);
+        if (!is_string($sample) || $sample === '') {
+            throw new \RuntimeException($this->language->get('error_catalog_empty'));
+        }
+
+        $first_line = strtok($sample, "\r\n") ?: '';
+        $delimiters = [',' => substr_count($first_line, ','), ';' => substr_count($first_line, ';'), "\t" => substr_count($first_line, "\t")];
+        arsort($delimiters);
+        $delimiter = (string)array_key_first($delimiters);
+
+        $handle = fopen($path, 'rb');
+        if (!$handle) {
+            throw new \RuntimeException($this->language->get('error_catalog_upload'));
+        }
+
+        try {
+            $header = fgetcsv($handle, 0, $delimiter, '"', '');
+            if (!is_array($header)) {
+                throw new \RuntimeException($this->language->get('error_catalog_header'));
+            }
+            $header = array_map(static function ($value): string {
+                $value = preg_replace('/^\xEF\xBB\xBF/', '', trim((string)$value));
+                return strtolower((string)$value);
+            }, $header);
+            if (count($header) !== count(array_unique($header)) || array_diff(['model', 'language_code', 'name'], $header)) {
+                throw new \RuntimeException($this->language->get('error_catalog_header'));
+            }
+
+            $rows = [];
+            $line = 1;
+            while (($values = fgetcsv($handle, 0, $delimiter, '"', '')) !== false) {
+                $line++;
+                if (count(array_filter($values, static fn($value): bool => trim((string)$value) !== '')) === 0) continue;
+                if (count($values) > count($header)) {
+                    throw new \RuntimeException(sprintf($this->language->get('error_catalog_columns'), $line));
+                }
+                $values = array_pad($values, count($header), '');
+                $row = array_combine($header, $values);
+                foreach ($row as $key => $value) {
+                    $value = (string)$value;
+                    if (strlen($value) > 1 && $value[0] === "'" && str_contains('=+-@', $value[1])) {
+                        $value = substr($value, 1);
+                    }
+                    $row[$key] = $value;
+                }
+                $row['_line'] = $line;
+                $rows[] = $row;
+                if (count($rows) > 10000) {
+                    throw new \RuntimeException($this->language->get('error_catalog_rows'));
+                }
+            }
+        } finally {
+            fclose($handle);
+        }
+
+        return $rows;
+    }
+
+    private function sendCatalogCsv(string $filename, array $rows): void {
+        $handle = fopen('php://temp', 'w+b');
+        fwrite($handle, "\xEF\xBB\xBF");
+        fputcsv($handle, self::CATALOG_HEADERS, ',', '"', '');
+        foreach ($rows as $row) {
+            $values = [];
+            foreach (self::CATALOG_HEADERS as $header) {
+                $value = (string)($row[$header] ?? '');
+                if ($value !== '' && str_contains('=+-@', $value[0])) $value = "'" . $value;
+                $values[] = $value;
+            }
+            fputcsv($handle, $values, ',', '"', '');
+        }
+        rewind($handle);
+        $csv = stream_get_contents($handle);
+        fclose($handle);
+
+        $this->response->addHeader('Content-Type: text/csv; charset=UTF-8');
+        $this->response->addHeader('Content-Disposition: attachment; filename="' . $filename . '"');
+        $this->response->addHeader('X-Content-Type-Options: nosniff');
+        $this->response->setOutput($csv);
+    }
+
+    private function validateUpdateArchive(\ZipArchive $zip): array {
+        $entries = [];
+        $required = [
+            'install.json',
+            'admin/controller/module/noveraile.php',
+            'admin/view/template/module/noveraile.twig',
+            'catalog/controller/event/theme.php'
+        ];
+
+        for ($index = 0; $index < $zip->numFiles; $index++) {
+            $source = (string)$zip->getNameIndex($index);
+            $path = str_replace('\\', '/', $source);
+
+            if ($path === '' || str_contains($path, "\0") || str_starts_with($path, '/') || preg_match('#^[a-zA-Z]:/#', $path)) {
+                throw new \RuntimeException($this->language->get('error_update_paths'));
+            }
+
+            $parts = array_values(array_filter(explode('/', rtrim($path, '/')), static fn(string $part): bool => $part !== ''));
+            if (in_array('..', $parts, true) || in_array('.', $parts, true)) {
+                throw new \RuntimeException($this->language->get('error_update_paths'));
+            }
+
+            $is_directory = str_ends_with($path, '/');
+            $is_root_file = !$is_directory && !str_contains($path, '/');
+            $is_extension_file = str_starts_with($path, 'admin/') || str_starts_with($path, 'catalog/') || str_starts_with($path, 'system/');
+            $is_image = str_starts_with($path, 'image/catalog/noveraile/');
+
+            if (!$is_directory && !$is_root_file && !$is_extension_file && !$is_image) {
+                throw new \RuntimeException($this->language->get('error_update_paths'));
+            }
+
+            if (!$is_directory) {
+                $entries[$path] = ['index' => $index, 'image' => $is_image];
+            }
+        }
+
+        foreach ($required as $path) {
+            if (!isset($entries[$path])) {
+                throw new \RuntimeException(sprintf($this->language->get('error_update_required'), $path));
+            }
+        }
+
+        return $entries;
+    }
+
+    private function deployUpdate(\ZipArchive $zip, array $entries, string $next_version): void {
+        $extension_root = rtrim(DIR_EXTENSION, '/\\') . '/noveraile';
+        $image_root = rtrim(DIR_IMAGE, '/\\') . '/catalog/noveraile';
+        $suffix = date('YmdHis') . '-' . bin2hex(random_bytes(4));
+        $extension_stage = rtrim(DIR_EXTENSION, '/\\') . '/.noveraile-update-' . $suffix;
+        $extension_backup = rtrim(DIR_EXTENSION, '/\\') . '/.noveraile-backup-' . $suffix;
+        $image_stage = rtrim(DIR_IMAGE, '/\\') . '/catalog/.noveraile-update-' . $suffix;
+        $image_backup = rtrim(DIR_IMAGE, '/\\') . '/catalog/.noveraile-backup-' . $suffix;
+        $extension_backed_up = false;
+        $extension_swapped = false;
+        $image_backed_up = false;
+        $image_swapped = false;
+        $database_updated = false;
+
+        try {
+            $this->copyDirectory($extension_root, $extension_stage);
+            if (is_dir($image_root)) {
+                $this->copyDirectory($image_root, $image_stage);
+            } elseif (!mkdir($image_stage, 0777, true) && !is_dir($image_stage)) {
+                throw new \RuntimeException($this->language->get('error_update_write'));
+            }
+
+            foreach ($entries as $path => $entry) {
+                $contents = $zip->getFromIndex((int)$entry['index']);
+                if ($contents === false) {
+                    throw new \RuntimeException($this->language->get('error_update_zip'));
+                }
+
+                if ($entry['image']) {
+                    $relative = substr($path, strlen('image/catalog/noveraile/'));
+                    $target = $image_stage . '/' . $relative;
+                } else {
+                    $target = $extension_stage . '/' . $path;
+                }
+
+                $directory = dirname($target);
+                if (!is_dir($directory) && !mkdir($directory, 0777, true) && !is_dir($directory)) {
+                    throw new \RuntimeException($this->language->get('error_update_write'));
+                }
+                if (file_put_contents($target, $contents, LOCK_EX) === false) {
+                    throw new \RuntimeException($this->language->get('error_update_write'));
+                }
+            }
+
+            if (!rename($extension_root, $extension_backup)) {
+                throw new \RuntimeException($this->language->get('error_update_swap'));
+            }
+            $extension_backed_up = true;
+            if (!rename($extension_stage, $extension_root)) {
+                throw new \RuntimeException($this->language->get('error_update_swap'));
+            }
+            $extension_swapped = true;
+
+            if (is_dir($image_root)) {
+                if (!rename($image_root, $image_backup)) {
+                    throw new \RuntimeException($this->language->get('error_update_swap'));
+                }
+                $image_backed_up = true;
+            }
+            if (!rename($image_stage, $image_root)) {
+                throw new \RuntimeException($this->language->get('error_update_swap'));
+            }
+            $image_swapped = true;
+
+            $backup_root = rtrim(DIR_STORAGE, '/\\') . '/backup/noveraile-' . self::VERSION . '-' . $suffix;
+            $this->copyDirectory($extension_backup, $backup_root . '/extension');
+            if (is_dir($image_backup)) {
+                $this->copyDirectory($image_backup, $backup_root . '/image');
+            }
+
+            $this->db->query("UPDATE `" . DB_PREFIX . "extension_install` SET `version` = '" . $this->db->escape($next_version) . "', `status` = '1' WHERE `code` = 'noveraile'");
+            $database_updated = true;
+            if (function_exists('opcache_reset')) {
+                opcache_reset();
+            }
+
+            $this->removeDirectory($extension_backup);
+            $this->removeDirectory($image_backup);
+        } catch (\Throwable $error) {
+            if ($database_updated) {
+                $this->db->query("UPDATE `" . DB_PREFIX . "extension_install` SET `version` = '" . self::VERSION . "' WHERE `code` = 'noveraile'");
+            }
+
+            if ($image_swapped && is_dir($image_root)) {
+                rename($image_root, $image_stage);
+            }
+            if ($image_backed_up && is_dir($image_backup)) {
+                rename($image_backup, $image_root);
+            }
+            if ($extension_swapped && is_dir($extension_root)) {
+                rename($extension_root, $extension_stage);
+            }
+            if ($extension_backed_up && is_dir($extension_backup)) {
+                rename($extension_backup, $extension_root);
+            }
+            $this->removeDirectory($extension_stage);
+            $this->removeDirectory($image_stage);
+            throw $error;
+        }
+    }
+
+    private function copyDirectory(string $source, string $destination): void {
+        if (!is_dir($source)) {
+            throw new \RuntimeException($this->language->get('error_update_source'));
+        }
+        if (!is_dir($destination) && !mkdir($destination, 0777, true) && !is_dir($destination)) {
+            throw new \RuntimeException($this->language->get('error_update_write'));
+        }
+
+        foreach (new \FilesystemIterator($source, \FilesystemIterator::SKIP_DOTS) as $item) {
+            $target = $destination . '/' . $item->getFilename();
+            if ($item->isLink()) {
+                throw new \RuntimeException($this->language->get('error_update_paths'));
+            }
+            if ($item->isDir()) {
+                $this->copyDirectory($item->getPathname(), $target);
+            } elseif (!copy($item->getPathname(), $target)) {
+                throw new \RuntimeException($this->language->get('error_update_write'));
+            }
+        }
+    }
+
+    private function removeDirectory(string $directory): void {
+        $resolved_parent = str_replace('\\', '/', dirname($directory)) . '/';
+        $allowed = [str_replace('\\', '/', rtrim(DIR_EXTENSION, '/\\')) . '/', str_replace('\\', '/', rtrim(DIR_IMAGE, '/\\')) . '/catalog/'];
+
+        if (!in_array($resolved_parent, $allowed, true) || !preg_match('/^\.noveraile-(?:update|backup)-[0-9]{14}-[a-f0-9]{8}$/', basename($directory))) {
+            return;
+        }
+        if (!is_dir($directory)) {
+            return;
+        }
+
+        $items = new \FilesystemIterator($directory, \FilesystemIterator::SKIP_DOTS);
+        foreach ($items as $item) {
+            if ($item->isDir() && !$item->isLink()) {
+                $this->removeUpdateTree($item->getPathname());
+            } else {
+                unlink($item->getPathname());
+            }
+        }
+        rmdir($directory);
+    }
+
+    private function removeUpdateTree(string $directory): void {
+        foreach (new \FilesystemIterator($directory, \FilesystemIterator::SKIP_DOTS) as $item) {
+            if ($item->isDir() && !$item->isLink()) {
+                $this->removeUpdateTree($item->getPathname());
+            } else {
+                unlink($item->getPathname());
+            }
+        }
+        rmdir($directory);
     }
 
     public function aiGenerate(): void {

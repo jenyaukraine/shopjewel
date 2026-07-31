@@ -1,6 +1,10 @@
 # NOVERAILE Commerce Suite for OpenCart
 
-Installable storefront extension for OpenCart 4.0.2.3 and 4.1.x. It uses OpenCart events and does not replace core files. Version 2.1.1 works with an existing merchant catalog; the included jewelry sample catalog is optional.
+Installable storefront extension for OpenCart 4.0.2.3 and 4.1.x. It uses OpenCart events and does not replace core files. Version 2.2.0 works with an existing merchant catalog, includes transactional multilingual CSV import/export, and keeps the jewelry sample catalog optional.
+
+## Product import and export
+
+Open **Extensions → Modules → NOVERAILE Commerce Suite → Catalog data**. Use **Export all products** to create a UTF-8 CSV backup, edit it in Excel, Numbers or Google Sheets, then drop it into the import panel. The importer recognizes comma, semicolon and tab delimiters, groups translations by `product_id` or `model`, validates every row before writing, and rolls the whole operation back if any row is invalid. Updating a product preserves its options, additional images, discounts and relations.
 
 ## Installation
 
@@ -10,6 +14,10 @@ Installable storefront extension for OpenCart 4.0.2.3 and 4.1.x. It uses OpenCar
 4. Open the module settings, set the storefront brand and contact details, enable the module, and save.
 5. Optional: on a clean or staging store, click **Install demo content** to add the packaged sample catalog.
 6. Refresh OpenCart caches from the maintenance/developer settings if an older theme is still visible.
+
+## Updating
+
+Starting with version 2.1.2, open the NOVERAILE module settings and use **Safe in-place update** to upload a newer `noveraile.ocmod.zip`. Do not remove the package from OpenCart's Extension Installer. The updater validates and stages the archive, preserves the registered module/payment/shipping/total components and settings, saves a backup under OpenCart storage, and restores the previous files if replacement fails.
 
 The module-install action registers the storefront events and creates the newsletter and gift-hint tables. The storefront, Stripe, DHL, DPD and set-total helpers are disabled until the merchant explicitly enables them. Normal installation does not delete, replace or seed catalog records.
 
