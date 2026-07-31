@@ -20,7 +20,7 @@ class Imprint extends \Opencart\System\Engine\Controller {
         $legal_form = $this->value('module_sixmoments_legal_form', 'Legal form');
         $representative = $this->value('module_sixmoments_legal_representative', 'Authorised representative');
         $address = $this->value('module_sixmoments_legal_address', 'Registered office address');
-        $email = $this->value('module_sixmoments_email', (string)$this->config->get('config_email'));
+        [$email_href, $email_label] = $this->email();
         $phone = $this->value('module_sixmoments_phone', 'Telephone number');
         $register = $this->value('module_sixmoments_legal_register', 'Trade register and registration number');
         $vat = $this->value('module_sixmoments_vat_id', 'VAT identification number, if applicable');
@@ -39,7 +39,7 @@ class Imprint extends \Opencart\System\Engine\Controller {
 </dl>
 <h2>Contact</h2>
 <dl class="legal-details">
-  <div><dt>Email</dt><dd><a href="mailto:{$email}">{$email}</a></dd></div>
+  <div><dt>Email</dt><dd><a href="{$email_href}">{$email_label}</a></dd></div>
   <div><dt>Telephone</dt><dd>{$phone}</dd></div>
 </dl>
 <h2>Registration and tax details</h2>
@@ -64,5 +64,16 @@ HTML;
         }
 
         return nl2br(htmlspecialchars($value, ENT_QUOTES, 'UTF-8'));
+    }
+
+    private function email(): array {
+        $email = trim((string)$this->config->get('module_sixmoments_email')) ?: trim((string)$this->config->get('config_email'));
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return ['#', '<span class="legal-placeholder">To be completed: Contact email address</span>'];
+        }
+
+        $email = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
+        return ['mailto:' . $email, $email];
     }
 }

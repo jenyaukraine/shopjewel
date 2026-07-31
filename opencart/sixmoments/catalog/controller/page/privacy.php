@@ -18,7 +18,7 @@ class Privacy extends \Opencart\System\Engine\Controller {
     private function copy(): string {
         $controller = $this->value('module_sixmoments_legal_name', 'Legal company name');
         $address = $this->value('module_sixmoments_legal_address', 'Registered office address');
-        $email = $this->value('module_sixmoments_privacy_email', $this->value('module_sixmoments_email', (string)$this->config->get('config_email'), false), false);
+        [$email_href, $email_label] = $this->email();
         $authority = $this->value('module_sixmoments_data_authority', 'Name and website of the competent data protection authority');
         $retention = $this->value('module_sixmoments_retention_periods', 'Applicable order, account, enquiry and technical-log retention periods');
 
@@ -29,7 +29,7 @@ class Privacy extends \Opencart\System\Engine\Controller {
 <dl class="legal-details">
   <div><dt>Controller</dt><dd>{$controller}</dd></div>
   <div><dt>Address</dt><dd>{$address}</dd></div>
-  <div><dt>Privacy contact</dt><dd><a href="mailto:{$email}">{$email}</a></dd></div>
+  <div><dt>Privacy contact</dt><dd><a href="{$email_href}">{$email_label}</a></dd></div>
 </dl>
 <h2>2. Personal data we process</h2>
 <ul>
@@ -43,8 +43,8 @@ class Privacy extends \Opencart\System\Engine\Controller {
 <div class="legal-table" role="table" aria-label="Purposes and legal bases">
   <div class="legal-table-row legal-table-head" role="row"><strong role="columnheader">Purpose</strong><strong role="columnheader">Legal basis under GDPR</strong></div>
   <div class="legal-table-row" role="row"><span role="cell">Operate the cart and account, process payment, fulfil, deliver and support an order</span><span role="cell">Performance of a contract or steps requested before a contract — Article 6(1)(b)</span></div>
-  <div class="legal-table-row" role="row"><span role="cell">Invoices, tax records, fraud prevention and responding to lawful requests</span><span role="cell">Legal obligation — Article 6(1)(c)</span></div>
-  <div class="legal-table-row" role="row"><span role="cell">Store security, service improvement, customer support and establishment or defence of legal claims</span><span role="cell">Legitimate interests — Article 6(1)(f)</span></div>
+  <div class="legal-table-row" role="row"><span role="cell">Invoices, tax records and responding to lawful requests</span><span role="cell">Legal obligation — Article 6(1)(c)</span></div>
+  <div class="legal-table-row" role="row"><span role="cell">Store security, fraud prevention, service improvement, customer support and establishment or defence of legal claims</span><span role="cell">Legitimate interests — Article 6(1)(f)</span></div>
   <div class="legal-table-row" role="row"><span role="cell">Newsletter and any non-essential cookies or similar technologies</span><span role="cell">Consent — Article 6(1)(a), which you may withdraw at any time</span></div>
 </div>
 <p>If information required at checkout is not provided, we may be unable to conclude or fulfil your order. Newsletter subscription is optional.</p>
@@ -66,7 +66,7 @@ class Privacy extends \Opencart\System\Engine\Controller {
 <p>Strictly necessary technologies maintain the shopping session, cart, checkout, account security and your language or currency choice. Non-essential analytics or marketing technologies, if introduced, may be activated only after consent. You can delete cookies in your browser; blocking necessary cookies may prevent the cart or checkout from working.</p>
 <h2>8. Your rights</h2>
 <p>Subject to the conditions in the GDPR, you may request access, rectification, erasure, restriction, portability or object to processing. You may withdraw consent at any time without affecting earlier lawful processing. You may also object at any time to direct marketing.</p>
-<p>Send requests to <a href="mailto:{$email}">{$email}</a>. We may need to verify your identity before acting on a request.</p>
+<p>Send requests to <a href="{$email_href}">{$email_label}</a>. We may need to verify your identity before acting on a request.</p>
 <h2>9. Complaints</h2>
 <p>You have the right to lodge a complaint with the data protection authority in the country where you live, work or where the alleged infringement occurred. Our lead authority is: {$authority}. A list of EEA authorities is available from the <a href="https://www.edpb.europa.eu/about-edpb/about-edpb/members_en" rel="external noopener">European Data Protection Board</a>.</p>
 <h2>10. Automated decisions</h2>
@@ -89,5 +89,18 @@ HTML;
         }
 
         return nl2br(htmlspecialchars($value, ENT_QUOTES, 'UTF-8'));
+    }
+
+    private function email(): array {
+        $email = trim((string)$this->config->get('module_sixmoments_privacy_email'))
+            ?: trim((string)$this->config->get('module_sixmoments_email'))
+            ?: trim((string)$this->config->get('config_email'));
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return ['#', '<span class="legal-placeholder">To be completed: Privacy contact email</span>'];
+        }
+
+        $email = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
+        return ['mailto:' . $email, $email];
     }
 }

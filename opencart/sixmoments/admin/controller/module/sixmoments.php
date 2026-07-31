@@ -17,7 +17,12 @@ class Sixmoments extends \Opencart\System\Engine\Controller {
 
         $keys = [
             'module_sixmoments_status', 'module_sixmoments_instagram', 'module_sixmoments_email',
-            'module_sixmoments_phone', 'module_sixmoments_catalog_category_id',
+            'module_sixmoments_phone', 'module_sixmoments_legal_name', 'module_sixmoments_legal_form',
+            'module_sixmoments_legal_representative', 'module_sixmoments_legal_address',
+            'module_sixmoments_legal_register', 'module_sixmoments_vat_id',
+            'module_sixmoments_supervisory_authority', 'module_sixmoments_content_responsible',
+            'module_sixmoments_privacy_email', 'module_sixmoments_data_authority',
+            'module_sixmoments_retention_periods', 'module_sixmoments_catalog_category_id',
             'module_sixmoments_lab_category_id', 'module_sixmoments_quiz_rules',
             'payment_stripe_secret_key', 'payment_stripe_webhook_secret',
             'payment_stripe_status', 'shipping_dhl_cost', 'shipping_dpd_cost'

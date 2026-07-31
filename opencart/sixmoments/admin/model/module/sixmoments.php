@@ -24,9 +24,9 @@ class Sixmoments extends \Opencart\System\Engine\Model {
         $installed = $this->db->query("SELECT `extension_install_id` FROM `" . DB_PREFIX . "extension_install` WHERE `code` = 'sixmoments' LIMIT 1");
 
         if (!$installed->num_rows) {
-            $this->db->query("INSERT INTO `" . DB_PREFIX . "extension_install` SET `extension_id` = '0', `extension_download_id` = '0', `name` = '6MOMENTS Storefront Suite', `description` = '6MOMENTS storefront and commerce integration', `code` = 'sixmoments', `version` = '1.1.4', `author` = '6MOMENTS', `link` = 'https://6moments.store', `status` = '1', `date_added` = NOW()");
+            $this->db->query("INSERT INTO `" . DB_PREFIX . "extension_install` SET `extension_id` = '0', `extension_download_id` = '0', `name` = '6MOMENTS Storefront Suite', `description` = '6MOMENTS storefront and commerce integration', `code` = 'sixmoments', `version` = '1.1.5', `author` = '6MOMENTS', `link` = 'https://6moments.store', `status` = '1', `date_added` = NOW()");
         } else {
-            $this->db->query("UPDATE `" . DB_PREFIX . "extension_install` SET `version` = '1.1.4', `status` = '1' WHERE `extension_install_id` = '" . (int)$installed->row['extension_install_id'] . "'");
+            $this->db->query("UPDATE `" . DB_PREFIX . "extension_install` SET `version` = '1.1.5', `status` = '1' WHERE `extension_install_id` = '" . (int)$installed->row['extension_install_id'] . "'");
         }
     }
 
@@ -111,6 +111,17 @@ class Sixmoments extends \Opencart\System\Engine\Model {
             'module_sixmoments_instagram' => 'https://www.instagram.com/6moments_jewelry?igsh=MTdnaHg4eWo0YzlrNQ==',
             'module_sixmoments_email' => 'atelier@6moments.store',
             'module_sixmoments_phone' => '',
+            'module_sixmoments_legal_name' => '',
+            'module_sixmoments_legal_form' => '',
+            'module_sixmoments_legal_representative' => '',
+            'module_sixmoments_legal_address' => '',
+            'module_sixmoments_legal_register' => '',
+            'module_sixmoments_vat_id' => '',
+            'module_sixmoments_supervisory_authority' => '',
+            'module_sixmoments_content_responsible' => '',
+            'module_sixmoments_privacy_email' => '',
+            'module_sixmoments_data_authority' => '',
+            'module_sixmoments_retention_periods' => '',
             'module_sixmoments_catalog_category_id' => 0,
             'module_sixmoments_lab_category_id' => 0,
             'module_sixmoments_quiz_rules' => json_encode([
