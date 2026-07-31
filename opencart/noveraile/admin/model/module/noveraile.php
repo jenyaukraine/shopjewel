@@ -144,7 +144,6 @@ class Noveraile extends \Opencart\System\Engine\Model {
             'module_noveraile_hero_kicker' => '',
             'module_noveraile_hero_title' => '',
             'module_noveraile_hero_cta' => '',
-            'module_noveraile_color_mode' => 'auto',
             'module_noveraile_blog_route' => 'cms/blog',
             'module_noveraile_native_menu_status' => 0,
             'module_noveraile_mega_menu_status' => 1,

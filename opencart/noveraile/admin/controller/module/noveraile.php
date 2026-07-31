@@ -51,7 +51,7 @@ class Noveraile extends \Opencart\System\Engine\Controller {
             'module_noveraile_mega_menu_promo_text', 'module_noveraile_mega_menu_promo_url',
             'module_noveraile_ajax_filter_status', 'module_noveraile_one_page_checkout_status',
             'module_noveraile_ai_endpoint', 'module_noveraile_ai_model', 'module_noveraile_ai_tone',
-            'module_noveraile_color_mode', 'module_noveraile_blog_route',
+            'module_noveraile_blog_route',
             'module_noveraile_native_menu_status',
             'payment_stripe_secret_key', 'payment_stripe_webhook_secret',
             'payment_stripe_status', 'shipping_dhl_cost', 'shipping_dpd_cost'
@@ -60,7 +60,6 @@ class Noveraile extends \Opencart\System\Engine\Controller {
         foreach ($keys as $key) {
             $data[$key] = $this->config->get($key);
         }
-        $data['module_noveraile_color_mode'] = $data['module_noveraile_color_mode'] ?: 'auto';
         $data['module_noveraile_blog_route'] = $data['module_noveraile_blog_route'] ?: 'cms/blog';
 
         $data['module_noveraile_ai_api_key'] = '';
@@ -102,11 +101,6 @@ class Noveraile extends \Opencart\System\Engine\Controller {
             $json['error'] = $this->language->get('error_builder_json');
         } else {
             $this->request->post['module_noveraile_page_builder'] = json_encode($builder, JSON_UNESCAPED_SLASHES);
-        }
-
-        $color_mode = (string)($this->request->post['module_noveraile_color_mode'] ?? 'auto');
-        if (!in_array($color_mode, ['auto', 'light', 'dark'], true)) {
-            $json['error'] = $this->language->get('error_color_mode');
         }
 
         $blog_route = trim((string)($this->request->post['module_noveraile_blog_route'] ?? 'cms/blog'));

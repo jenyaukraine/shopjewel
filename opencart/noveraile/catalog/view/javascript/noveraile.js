@@ -2,32 +2,6 @@
   'use strict';
 
   const body = document.body;
-  const colorScheme = window.matchMedia('(prefers-color-scheme: dark)');
-  const themeRoot = document.documentElement;
-  const themeColor = document.querySelector('[data-six-theme-color]');
-  const applyTheme = (preference) => {
-    const mode = preference === 'auto' ? (colorScheme.matches ? 'dark' : 'light') : preference;
-    themeRoot.dataset.theme = mode;
-    themeRoot.dataset.themePreference = preference;
-    if (themeColor) themeColor.content = mode === 'dark' ? '#171614' : '#f8f5ef';
-    document.querySelectorAll('[data-six-theme-icon]').forEach((icon) => { icon.textContent = mode === 'dark' ? '☀' : '☾'; });
-    document.querySelectorAll('[data-six-theme-toggle]').forEach((button) => {
-      const isDark = mode === 'dark';
-      if (button.getAttribute('role') === 'switch') button.setAttribute('aria-checked', String(isDark));
-      else button.setAttribute('aria-pressed', String(isDark));
-      const label = button.querySelector('[data-six-theme-label]');
-      if (label) label.textContent = isDark ? button.dataset.darkLabel : button.dataset.lightLabel;
-    });
-  };
-  document.querySelectorAll('[data-six-theme-toggle]').forEach((button) => button.addEventListener('click', () => {
-    const next = themeRoot.dataset.theme === 'dark' ? 'light' : 'dark';
-    try { localStorage.setItem('noveraile-theme', next); } catch {}
-    applyTheme(next);
-  }));
-  colorScheme.addEventListener('change', () => {
-    if ((themeRoot.dataset.themePreference || 'auto') === 'auto') applyTheme('auto');
-  });
-  applyTheme(themeRoot.dataset.themePreference || 'auto');
 
   const menu = document.querySelector('.mobile-drawer-shell');
   const open = document.querySelector('[data-six-menu-open]');
