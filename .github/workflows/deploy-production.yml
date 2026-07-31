@@ -154,7 +154,11 @@ jobs:
           # previous container even though the new one is already healthy.
           edge_proxy=""
           for candidate in $(docker ps --filter network=web-edge --format '{{.ID}}'); do
-            if docker exec "$candidate" caddy version >/dev/null 2>&1; then
+            if docker exec "$candidate" sh -c \
+              "caddy version >/dev/null 2>&1 \
+                && test -f /etc/caddy/Caddyfile \
+                && grep -q 'katya-dev.duckdns.org' /etc/caddy/Caddyfile \
+                && grep -q 'noveraile-store' /etc/caddy/Caddyfile"; then
               edge_proxy="$candidate"
               break
             fi
