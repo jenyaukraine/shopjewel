@@ -43,6 +43,7 @@ test("mobile categories are deduplicated and use semantic jewellery icons", asyn
   assert.match(event, /\$category_names\s*=\s*\[\]/);
   assert.match(event, /mb_strtolower/);
   assert.match(event, /'icon'\s*=>\s*\$this->categoryIcon\(\$name\)/);
+  assert.match(event, /noveraile\.css\?v=2\.2\.0\.5/);
   assert.match(header, /class="mobile-category-icon"/);
   assert.match(header, /category\.icon == 'earring'/);
   assert.match(header, /class="mobile-main-icon"/);
@@ -51,6 +52,9 @@ test("mobile categories are deduplicated and use semantic jewellery icons", asyn
   assert.doesNotMatch(header, />⌂ \{\{ text_home \}\}/);
   assert.match(stylesheet, /\.mobile-category-icon svg/);
   assert.match(stylesheet, /\.mobile-main-icon svg/);
+  assert.match(stylesheet, /html\[data-theme="dark"\] \.mobile-drawer-header\s*\{[^}]*background:\s*#201e1b/);
+  assert.match(stylesheet, /html\[data-theme="dark"\] \.mobile-category-icon\s*\{[^}]*background:\s*transparent;[^}]*border:\s*0/);
+  assert.match(stylesheet, /html\[data-theme="dark"\] \.mobile-category-icon svg\s*\{[^}]*stroke:\s*currentColor/);
 });
 
 test("mobile theme control is a labelled, stateful switch", async () => {
