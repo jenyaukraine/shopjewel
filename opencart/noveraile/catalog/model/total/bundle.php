@@ -3,9 +3,28 @@ namespace Opencart\Catalog\Model\Extension\Noveraile\Total;
 
 class Bundle extends \Opencart\System\Engine\Model {
     public function getTotal(array &$totals, array &$taxes, float &$total): void {
-        $pairs = $this->session->data['noveraile_bundle_pairs'] ?? [];
-        if (!$pairs || !$this->config->get('total_bundle_status')) return;
+        if (!$this->config->get('total_bundle_status')) return;
         $products = $this->cart->getProducts();
+        $currency = (string)($this->session->data['currency'] ?? $this->config->get('config_currency'));
+        $this->load->model('extension/noveraile/pricing');
+        $market_adjustment = $this->model_extension_noveraile_pricing->cartAdjustment($products, $currency);
+        if (abs($market_adjustment) >= 0.005) {
+            $applied = false;
+            foreach ($totals as &$line) {
+                if (($line['code'] ?? '') !== 'sub_total') continue;
+                $line['value'] = (float)$line['value'] + $market_adjustment;
+                $applied = true;
+                break;
+            }
+            unset($line);
+            if (!$applied) {
+                $totals[] = ['extension'=>'noveraile','code'=>'market_price','title'=>'Fixed market price','value'=>$market_adjustment,'sort_order'=>1];
+            }
+            $total += $market_adjustment;
+        }
+
+        $pairs = $this->session->data['noveraile_bundle_pairs'] ?? [];
+        if (!$pairs) return;
         $by_id = [];
         foreach ($products as $product) $by_id[(int)$product['product_id']][] = $product;
         $discount_total = 0.0;

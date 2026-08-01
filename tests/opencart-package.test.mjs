@@ -62,8 +62,8 @@ test("mobile categories are deduplicated and use semantic jewellery icons", asyn
   assert.match(event, /\$category_names\s*=\s*\[\]/);
   assert.match(event, /mb_strtolower/);
   assert.match(event, /'icon'\s*=>\s*\$this->categoryIcon\(\$name\)/);
-  assert.match(event, /noveraile\.css\?v=2\.2\.0\.12/);
-  assert.match(event, /noveraile\.js\?v=2\.2\.0\.6/);
+  assert.match(event, /noveraile\.css\?v=2\.3\.0\.1/);
+  assert.match(event, /noveraile\.js\?v=2\.3\.0\.1/);
   assert.match(header, /class="mobile-category-icon"/);
   assert.match(header, /category\.icon == 'earring'/);
   assert.match(header, /class="mobile-main-icon"/);
@@ -229,7 +229,7 @@ test("all six sales-readiness promises are implemented and release-checked", asy
   const manifest = JSON.parse(manifestSource);
   const feed = JSON.parse(feedSource);
 
-  assert.equal(manifest.version, "2.2.0");
+  assert.equal(manifest.version, "2.3.0");
   assert.equal(feed.version, manifest.version);
   assert.deepEqual(feed.opencart.tested, ["4.0.2.3", "4.1.0.3"]);
   assert.match(admin, /version_compare\(VERSION, '4\.0\.2\.3', '<'\)/);
@@ -322,8 +322,36 @@ test("extension source contains no development artifacts or live Stripe secrets"
     assert.doesNotMatch(source, /sk_live_[A-Za-z0-9]+|whsec_[A-Za-z0-9]+/, file);
   }
   const source = combinedSource.join("\n");
-  assert.doesNotMatch(source, /sixmoments|6MOMENTS|Veloura|katya-dev\.duckdns\.org|noveraile\.store/i);
+  assert.doesNotMatch(source, /Veloura|katya-dev\.duckdns\.org|noveraile\.store/i);
   assert.doesNotMatch(source, /value="\{\{\s*payment_stripe_(?:secret_key|webhook_secret)\s*\}\}"/);
   assert.match(source, /function assertPublicHttpsEndpoint\(/);
   assert.match(source, /FILTER_FLAG_NO_PRIV_RANGE\s*\|\s*FILTER_FLAG_NO_RES_RANGE/);
+});
+
+test("6 Moments storefront requirements remain wired into the package", async () => {
+  const [installer, home, theme, cart, coupon, quiz, pricing, total, success] = await Promise.all([
+    readFile(path.join(root, "admin/model/module/noveraile.php"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/common/home.twig"), "utf8"),
+    readFile(path.join(root, "catalog/controller/event/theme.php"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/checkout/cart_list.twig"), "utf8"),
+    readFile(path.join(root, "catalog/controller/coupon.php"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/page/quiz.twig"), "utf8"),
+    readFile(path.join(root, "catalog/model/pricing.php"), "utf8"),
+    readFile(path.join(root, "catalog/model/total/bundle.php"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/checkout/success.twig"), "utf8"),
+  ]);
+  assert.match(installer, /module_noveraile_catalog_version', '6'/);
+  assert.equal((installer.match(/\['(?:promise-solitaire|union-band|arrival-pendant|becoming-hoops|gratitude-bracelet|legacy-signet|eternity-band|horizon-studs|keepsake-pendant|self-promise-ring)'/g) ?? []).length, 10);
+  assert.doesNotMatch(installer, /First Ride Balance Bike|NVR-SE-007/);
+  assert.match(home, /stone=lab-grown/);
+  assert.match(theme, /open\.er-api\.com\/v6\/latest\/USD/);
+  assert.match(theme, /six_coupon_action/);
+  assert.match(cart, /six_coupon-form|six-coupon-form/);
+  assert.match(coupon, /session->data\['coupon'\]/);
+  assert.match(quiz, /data-rules="\{\{ quiz_rules \}\}"/);
+  assert.match(installer, /module_noveraile_price_book/);
+  assert.match(pricing, /cartAdjustment/);
+  assert.match(total, /market_adjustment/);
+  assert.match(theme, /open\.er-api\.com\/v6\/latest\/USD/);
+  assert.match(success, /six_order_id/);
 });

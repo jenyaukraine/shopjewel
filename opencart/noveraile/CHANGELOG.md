@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.3.0 — 2026-08-01
+
+- Completed the 6 Moments brand migration, multilingual static content and browser-language selection.
+- Added ten discounted jewelry products with complete five-language descriptions and specifications.
+- Added configurable fixed prices for USD, EUR, CZK and UAH alongside automatic exchange-rate refresh.
+- Added geo-zone-aware DHL/DPD quotes, an explicit promotion-code form and a localized order confirmation summary.
+- Improved quiz ranking, currency-aware budgets, lab-grown navigation and storefront accessibility labels.
+
 ## 2.2.0 — 2026-07-31
 
 - Added an accessible two-handle price slider synchronized with the minimum and maximum price fields.

@@ -22,7 +22,8 @@ class Theme extends \Opencart\System\Engine\Controller {
 
     private function words(array &$data): void {
         $this->load->language('extension/noveraile/module/noveraile');
-        $brand = (string)($this->config->get('module_noveraile_brand_name') ?: $this->config->get('config_name') ?: 'NOVERAILE');
+        $configured_brand = trim((string)($this->config->get('module_noveraile_brand_name') ?: $this->config->get('config_name')));
+        $brand = in_array($configured_brand, ['', 'Your Store'], true) ? '6 Moments' : $configured_brand;
         foreach ($this->language->all() as $key => $value) {
             if (str_starts_with($key, 'six_')) $data[$key] = is_string($value) ? str_replace(['NOVERAILE', 'Six Moments'], $brand, $value) : $value;
         }
@@ -31,14 +32,15 @@ class Theme extends \Opencart\System\Engine\Controller {
 
     public function header(string &$route, array &$data, string &$code = '', string &$output = ''): void {
         if (!$this->enabled() || !$this->claimView($route, ['common/header'], 'extension/noveraile/common/header')) return;
+        $this->refreshCurrencyRates();
         $this->words($data);
 
         if (($data['title'] ?? '') === 'Your Store') {
             $data['title'] = $data['six_brand_name'];
         }
 
-        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.2.0.12';
-        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.2.0.6';
+        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.3.0.1';
+        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.3.0.1';
         $data['six_favicon'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/favicon.svg?v=2';
         $data['six_og_image'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/og-store.png';
         $data['six_native_menu_status'] = (bool)$this->config->get('module_noveraile_native_menu_status');
@@ -58,6 +60,8 @@ class Theme extends \Opencart\System\Engine\Controller {
         $data['six_cart_count'] = $this->cart->countProducts();
         $data['six_language_code'] = $this->config->get('config_language');
         $data['six_currency_code'] = $this->session->data['currency'] ?? $this->config->get('config_currency');
+        $data['six_phone'] = trim((string)($this->config->get('module_noveraile_phone') ?: $this->config->get('config_telephone')));
+        $data['six_phone_href'] = preg_replace('/[^+0-9]/', '', $data['six_phone']);
 
         $data['six_categories'] = [];
         $data['six_mega_menu_status'] = (bool)$this->config->get('module_noveraile_mega_menu_status');
@@ -110,10 +114,41 @@ class Theme extends \Opencart\System\Engine\Controller {
         return 'jewel';
     }
 
+    /** Refresh the four storefront currencies at most once every twelve hours. */
+    private function refreshCurrencyRates(): void {
+        $last_update = (int)$this->config->get('module_noveraile_currency_updated_at');
+        if ($last_update > time() - 43200 || !function_exists('curl_init')) return;
+
+        // Claim the refresh window before the network request to prevent a traffic
+        // spike from starting several identical API calls at once.
+        $this->db->query("DELETE FROM `" . DB_PREFIX . "setting` WHERE `store_id` = '" . (int)$this->config->get('config_store_id') . "' AND `key` = 'module_noveraile_currency_updated_at'");
+        $this->db->query("INSERT INTO `" . DB_PREFIX . "setting` SET `store_id` = '" . (int)$this->config->get('config_store_id') . "', `code` = 'module_noveraile', `key` = 'module_noveraile_currency_updated_at', `value` = '" . time() . "', `serialized` = '0'");
+
+        $handle = curl_init('https://open.er-api.com/v6/latest/USD');
+        curl_setopt_array($handle, [CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 2, CURLOPT_TIMEOUT => 4, CURLOPT_FOLLOWLOCATION => false, CURLOPT_HTTPHEADER => ['Accept: application/json']]);
+        $response = curl_exec($handle);
+        $status = (int)curl_getinfo($handle, CURLINFO_HTTP_CODE);
+        curl_close($handle);
+        if (!is_string($response) || $status !== 200) return;
+
+        $payload = json_decode($response, true);
+        $rates = is_array($payload['rates'] ?? null) ? $payload['rates'] : [];
+        $base = strtoupper((string)$this->config->get('config_currency'));
+        $base_rate = (float)($rates[$base] ?? ($base === 'USD' ? 1 : 0));
+        if ($base_rate <= 0) return;
+
+        foreach (['USD', 'EUR', 'CZK', 'UAH'] as $currency) {
+            $rate = (float)($rates[$currency] ?? 0);
+            if ($rate <= 0) continue;
+            $value = $currency === $base ? 1.0 : $rate / $base_rate;
+            $this->db->query("UPDATE `" . DB_PREFIX . "currency` SET `value` = '" . (float)$value . "', `date_modified` = NOW() WHERE `code` = '" . $this->db->escape($currency) . "'");
+        }
+    }
+
     public function footer(string &$route, array &$data, string &$code = '', string &$output = ''): void {
         if (!$this->enabled() || !$this->claimView($route, ['common/footer'], 'extension/noveraile/common/footer')) return;
         $this->words($data);
-        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.2.0.6';
+        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.3.0.1';
         $lang = 'language=' . $this->config->get('config_language');
         $data['six_home'] = $this->url->link('common/home', $lang);
         $data['six_about_url'] = $this->url->link('extension/noveraile/page/about', $lang);
@@ -218,6 +253,13 @@ class Theme extends \Opencart\System\Engine\Controller {
         $product_id = (int)($data['product_id'] ?? 0);
         $this->load->model('catalog/product');
         $info = $product_id ? $this->model_catalog_product->getProduct($product_id) : [];
+        $currency = (string)($this->session->data['currency'] ?? $this->config->get('config_currency'));
+        $this->load->model('extension/noveraile/pricing');
+        $market_price = $this->model_extension_noveraile_pricing->resolve($info, $currency);
+        if ($market_price['fixed']) {
+            $data['price'] = $this->model_extension_noveraile_pricing->format($market_price['price'], $currency, true);
+            $data['special'] = $market_price['special'] > 0 ? $this->model_extension_noveraile_pricing->format($market_price['special'], $currency, true) : false;
+        }
         $image = html_entity_decode((string)($info['image'] ?? ''), ENT_QUOTES, 'UTF-8');
 
         // OpenCart's configured 500 px thumbnail is visibly soft in the large
@@ -255,14 +297,17 @@ class Theme extends \Opencart\System\Engine\Controller {
             $candidate = $this->model_catalog_product->getProduct($candidate_id);
             if (!$candidate) continue;
             $this->load->model('tool/image');
-            $pair_price = (float)($candidate['special'] ?: $candidate['price']);
-            $main_price = (float)($info['special'] ?: $info['price']);
             $currency = $this->session->data['currency'] ?? $this->config->get('config_currency');
+            $candidate_market = $this->model_extension_noveraile_pricing->resolve($candidate, $currency);
+            $main_market = $this->model_extension_noveraile_pricing->resolve($info, $currency);
+            $pair_price = (float)($candidate_market['special'] ?: $candidate_market['price']);
+            $main_price = (float)($main_market['special'] ?: $main_market['price']);
+            $fixed_set = $candidate_market['fixed'] && $main_market['fixed'];
             $data['six_bundle_product'] = [
                 'product_id'=>(int)$candidate['product_id'], 'name'=>$candidate['name'],
                 'image'=>$this->model_tool_image->resize($candidate['image'] ?: 'placeholder.png', 520, 520),
-                'price'=>$this->currency->format($pair_price, $currency),
-                'set_price'=>$this->currency->format(($main_price + $pair_price) * .9, $currency),
+                'price'=>$this->model_extension_noveraile_pricing->format($pair_price, $currency, $candidate_market['fixed']),
+                'set_price'=>$this->model_extension_noveraile_pricing->format(($main_price + $pair_price) * .9, $currency, $fixed_set),
                 'href'=>$this->url->link('product/product', 'language=' . $this->config->get('config_language') . '&product_id=' . (int)$candidate['product_id'])
             ];
             break;
@@ -272,6 +317,13 @@ class Theme extends \Opencart\System\Engine\Controller {
     public function thumb(string &$route, array &$data, string &$code = '', string &$output = ''): void {
         if (!$this->enabled() || !$this->claimView($route, ['product/thumb'], 'extension/noveraile/product/thumb')) return;
         $this->words($data);
+        $currency = (string)($this->session->data['currency'] ?? $this->config->get('config_currency'));
+        $this->load->model('extension/noveraile/pricing');
+        $market_price = $this->model_extension_noveraile_pricing->resolve($data, $currency);
+        if ($market_price['fixed']) {
+            $data['price'] = $this->model_extension_noveraile_pricing->format($market_price['price'], $currency, true);
+            $data['special'] = $market_price['special'] > 0 ? $this->model_extension_noveraile_pricing->format($market_price['special'], $currency, true) : false;
+        }
         $tags = array_filter(array_map('trim', explode(',', (string)($data['tag'] ?? ''))));
         $data['six_moment'] = $this->momentFromTags($tags);
         $data['six_sku'] = $data['model'] ?? '';
@@ -351,6 +403,24 @@ class Theme extends \Opencart\System\Engine\Controller {
         $lang = 'language=' . $this->config->get('config_language');
         $data['continue'] = $this->url->link('extension/noveraile/page/catalog', $lang);
         $data['six_shipping_url'] = $this->url->link('extension/noveraile/page/shipping', $lang);
+        $data['six_coupon_action'] = $this->url->link('extension/noveraile/coupon.apply', $lang);
+        $data['six_coupon_status'] = in_array((string)($this->request->get['coupon_status'] ?? ''), ['success', 'error'], true) ? (string)$this->request->get['coupon_status'] : '';
+        $currency = (string)($this->session->data['currency'] ?? $this->config->get('config_currency'));
+        $this->load->model('extension/noveraile/pricing');
+        $cart_products = $this->cart->getProducts();
+        foreach ($data['products'] as &$display_product) {
+            $raw = null;
+            foreach ($cart_products as $candidate) {
+                if ((string)($candidate['cart_id'] ?? '') === (string)($display_product['cart_id'] ?? '') || (int)($candidate['product_id'] ?? 0) === (int)($display_product['product_id'] ?? 0)) { $raw = $candidate; break; }
+            }
+            if (!$raw) continue;
+            $market_price = $this->model_extension_noveraile_pricing->resolve($raw, $currency);
+            if (!$market_price['fixed']) continue;
+            $unit = $market_price['special'] > 0 ? $market_price['special'] : $market_price['price'];
+            $display_product['price'] = $this->model_extension_noveraile_pricing->format($unit, $currency, true);
+            $display_product['total'] = $this->model_extension_noveraile_pricing->format($unit * max(1, (int)($raw['quantity'] ?? 1)), $currency, true);
+        }
+        unset($display_product);
     }
 
     public function checkout(string &$route, array &$data, string &$code = '', string &$output = ''): void {
@@ -360,6 +430,36 @@ class Theme extends \Opencart\System\Engine\Controller {
         $data['six_cart_url'] = $this->url->link('checkout/cart', $lang);
         $data['six_catalog_url'] = $this->url->link('extension/noveraile/page/catalog', $lang);
         $data['six_contact_url'] = $this->url->link('information/contact', $lang);
+    }
+
+    public function captureSuccess(string &$route, array &$args = []): void {
+        if (!$this->enabled()) return;
+        $order_id = (int)($this->session->data['order_id'] ?? 0);
+        if ($order_id) $this->session->data['noveraile_last_order_id'] = $order_id;
+    }
+
+    public function success(string &$route, array &$data, string &$code = '', string &$output = ''): void {
+        if (!$this->enabled() || !$this->claimView($route, ['common/success'], 'extension/noveraile/checkout/success')) return;
+        $this->words($data);
+        $order_id = (int)($this->session->data['noveraile_last_order_id'] ?? 0);
+        $data['six_order_id'] = $order_id;
+        $data['order'] = $this->url->link('account/order', 'language=' . $this->config->get('config_language'));
+        $data['six_order_products'] = [];
+        $data['six_order_totals'] = [];
+        if ($order_id) {
+            $this->load->model('checkout/order');
+            $order = $this->model_checkout_order->getOrder($order_id);
+            if ($order) {
+                $currency = (string)$order['currency_code'];
+                $value = (float)$order['currency_value'];
+                foreach ($this->model_checkout_order->getProducts($order_id) as $product) {
+                    $data['six_order_products'][] = ['name'=>$product['name'], 'model'=>$product['model'], 'quantity'=>(int)$product['quantity'], 'total'=>$this->currency->format((float)$product['total'], $currency, $value)];
+                }
+                foreach ($this->model_checkout_order->getTotals($order_id) as $total_line) {
+                    $data['six_order_totals'][] = ['title'=>$total_line['title'], 'text'=>$this->currency->format((float)$total_line['value'], $currency, $value)];
+                }
+            }
+        }
     }
 
     public function accountLogin(string &$route, array &$data, string &$code = '', string &$output = ''): void {
@@ -428,8 +528,11 @@ class Theme extends \Opencart\System\Engine\Controller {
         $cards = [];
         foreach ($results as $result) {
             $image = !empty($result['image']) && is_file(DIR_IMAGE . html_entity_decode($result['image'], ENT_QUOTES, 'UTF-8')) ? $result['image'] : 'placeholder.png';
-            $price = $this->currency->format($this->tax->calculate((float)$result['price'], (int)$result['tax_class_id'], $this->config->get('config_tax')), $this->session->data['currency']);
-            $special = !empty($result['special']) ? $this->currency->format($this->tax->calculate((float)$result['special'], (int)$result['tax_class_id'], $this->config->get('config_tax')), $this->session->data['currency']) : false;
+            $currency = (string)($this->session->data['currency'] ?? $this->config->get('config_currency'));
+            $this->load->model('extension/noveraile/pricing');
+            $market_price = $this->model_extension_noveraile_pricing->resolve($result, $currency);
+            $price = $this->model_extension_noveraile_pricing->format($market_price['fixed'] ? $market_price['price'] : $this->tax->calculate((float)$result['price'], (int)$result['tax_class_id'], $this->config->get('config_tax')), $currency, $market_price['fixed']);
+            $special = $market_price['special'] > 0 ? $this->model_extension_noveraile_pricing->format($market_price['fixed'] ? $market_price['special'] : $this->tax->calculate((float)$result['special'], (int)$result['tax_class_id'], $this->config->get('config_tax')), $currency, $market_price['fixed']) : false;
             $product = array_merge($result, [
                 'thumb' => $this->model_tool_image->resize($image, 900, 900),
                 'description' => trim(strip_tags(html_entity_decode(html_entity_decode((string)$result['description'], ENT_QUOTES, 'UTF-8'), ENT_QUOTES, 'UTF-8'))),
@@ -468,7 +571,8 @@ class Theme extends \Opencart\System\Engine\Controller {
         $catalog_weights = [
             'NVR-RI-001' => '2.8 g', 'NVR-WE-002' => '3.9 g', 'NVR-NE-003' => '2.1 g',
             'NVR-EA-004' => '4.2 g', 'NVR-BR-005' => '2.6 g', 'NVR-RI-006' => '8.4 g',
-            'NVR-SE-007' => '3.1 kg'
+            'NVR-WE-007' => '3.4 g', 'NVR-EA-008' => '2.2 g', 'NVR-NE-009' => '2.4 g',
+            'NVR-RI-010' => '3.1 g'
         ];
         $model = (string)($product['model'] ?? '');
         if (isset($catalog_weights[$model])) return $catalog_weights[$model];

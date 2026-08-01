@@ -2,6 +2,25 @@
   'use strict';
 
   const body = document.body;
+
+  // On the first visit, select the closest installed storefront language from
+  // the browser preferences. A manual selection always wins afterwards.
+  const languageForms = Array.from(document.querySelectorAll('#form-language, #form-language-mobile'));
+  if (languageForms.length) {
+    languageForms.forEach((form) => form.addEventListener('click', (event) => {
+      if (event.target.closest('[name="code"]')) localStorage.setItem('six-language-selected', 'manual');
+    }));
+    if (!localStorage.getItem('six-language-selected')) {
+      const aliases = { en: 'en-gb', de: 'de-de', cs: 'cs-cz', cz: 'cs-cz', ru: 'ru-ru', uk: 'uk-ua', ua: 'uk-ua' };
+      const preferred = (navigator.languages || [navigator.language || 'en']).map((value) => aliases[String(value).toLowerCase().split('-')[0]]).find(Boolean);
+      const current = String(body.dataset.language || '').toLowerCase();
+      localStorage.setItem('six-language-selected', 'auto');
+      if (preferred && preferred !== current) {
+        const control = languageForms.flatMap((form) => Array.from(form.querySelectorAll('[name="code"]'))).find((item) => String(item.value || item.getAttribute('value')).toLowerCase() === preferred);
+        if (control) window.setTimeout(() => control.click(), 0);
+      }
+    }
+  }
   const statusMessage = (value) => {
     if (!value) return '';
     if (typeof value === 'string') return value;
@@ -777,12 +796,12 @@
       error.classList.remove('is-visible');
       if (index === steps.length - 1) return showResults();
       steps[index].hidden = true; steps[++index].hidden = false;
-      back.hidden = false; next.querySelector('span').textContent = index === steps.length - 1 ? root.dataset.finish || 'Show my edit' : 'Continue';
+      back.hidden = false; next.querySelector('span').textContent = index === steps.length - 1 ? root.dataset.finish || 'Show my edit' : root.dataset.next || 'Continue';
       updateProgress();
       steps[index].querySelector('input:checked')?.focus();
     });
     back.addEventListener('click', () => {
-      if (!index) return; steps[index].hidden = true; steps[--index].hidden = false; back.hidden = index === 0; next.querySelector('span').textContent = index === 0 ? 'Begin' : index === steps.length - 1 ? root.dataset.finish || 'Show my edit' : 'Continue'; error.classList.remove('is-visible'); updateProgress();
+      if (!index) return; steps[index].hidden = true; steps[--index].hidden = false; back.hidden = index === 0; next.querySelector('span').textContent = index === 0 ? root.dataset.start || 'Begin' : index === steps.length - 1 ? root.dataset.finish || 'Show my edit' : root.dataset.next || 'Continue'; error.classList.remove('is-visible'); updateProgress();
     });
     function updateProgress() {
       progress.style.width = ((index + 1) / steps.length * 100) + '%';
@@ -792,21 +811,26 @@
     function showResults() {
       const values = Object.fromEntries(new FormData(form).entries());
       const cards = Array.from(results.querySelectorAll('[data-tags]'));
-      let shown = 0;
-      cards.forEach((card) => {
+      const [budgetMin, budgetMax] = String(values.budget || '0:999999').split(':').map(Number);
+      const ranked = cards.map((card, order) => {
         const tags = card.dataset.tags || '';
         const price = Number(card.dataset.price || 0);
         const configured = rules[values.occasion] || rules[values.occasion === 'self-purchase' ? 'self' : values.occasion] || {};
         const occasionTags = Array.isArray(configured.tags) ? configured.tags : [values.occasion];
         const occasion = tags.includes(values.occasion) || occasionTags.some((tag) => tags.includes(tag));
-        const budget = price <= Number(values.budget || 999999);
+        const budget = price >= (budgetMin || 0) && price <= (budgetMax || 999999);
         const type = !values.type || tags.includes(values.type);
         const metal = !values.metal || tags.includes(values.metal);
         const stone = !values.stone || tags.includes(values.stone);
-        const visible = occasion && budget && type && metal && stone && shown < 8;
-        card.hidden = !visible; if (visible) shown++;
+        const score = (occasion ? 16 : 0) + (budget ? 8 : 0) + (type ? 4 : 0) + (metal ? 2 : 0) + (stone ? 1 : 0);
+        return { card, order, score, exact: occasion && budget && type && metal && stone };
       });
-      if (!shown) cards.slice(0, 4).forEach((card) => { card.hidden = false; });
+      const exact = ranked.filter((item) => item.exact).sort((a, b) => b.score - a.score || a.order - b.order);
+      const selected = exact.slice(0, 8);
+      if (selected.length < Math.min(4, cards.length)) {
+        ranked.filter((item) => !selected.includes(item)).sort((a, b) => b.score - a.score || a.order - b.order).slice(0, Math.min(4, cards.length) - selected.length).forEach((item) => selected.push(item));
+      }
+      cards.forEach((card) => { card.hidden = !selected.some((item) => item.card === card); });
       const choice = steps[0].querySelector('input:checked + span');
       results.querySelector('[data-quiz-moment]').textContent = choice ? choice.textContent : '';
       form.hidden = true; results.hidden = false; results.scrollIntoView({ behavior: 'smooth', block: 'start' });

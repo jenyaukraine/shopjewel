@@ -14,6 +14,8 @@ class Noveraile extends \Opencart\System\Engine\Model {
         $this->installEvents();
         $this->installServiceExtensions();
         $this->installPermissions();
+        $this->installLanguages();
+        $this->installCurrencies();
         $this->installSettings($with_demo_data);
 
         if ($with_demo_data) {
@@ -22,8 +24,6 @@ class Noveraile extends \Opencart\System\Engine\Model {
     }
 
     public function installDemo(): void {
-        $this->installLanguages();
-        $this->installCurrencies();
         $this->seedCatalog();
         $this->seedArticles();
     }
@@ -32,9 +32,9 @@ class Noveraile extends \Opencart\System\Engine\Model {
         $installed = $this->db->query("SELECT `extension_install_id` FROM `" . DB_PREFIX . "extension_install` WHERE `code` = 'noveraile' LIMIT 1");
 
         if (!$installed->num_rows) {
-            $this->db->query("INSERT INTO `" . DB_PREFIX . "extension_install` SET `extension_id` = '0', `extension_download_id` = '0', `name` = 'NOVERAILE Commerce Suite', `description` = 'OpenCart 4 storefront suite with Page Builder, catalog import/export, Mega Menu, progressive filters, checkout and reviewed AI tools', `code` = 'noveraile', `version` = '2.2.0', `author` = 'NOVERAILE', `link` = '', `status` = '1', `date_added` = NOW()");
+            $this->db->query("INSERT INTO `" . DB_PREFIX . "extension_install` SET `extension_id` = '0', `extension_download_id` = '0', `name` = 'NOVERAILE Commerce Suite', `description` = 'OpenCart 4 storefront suite with Page Builder, catalog import/export, Mega Menu, progressive filters, checkout and reviewed AI tools', `code` = 'noveraile', `version` = '2.3.0', `author` = 'NOVERAILE', `link` = '', `status` = '1', `date_added` = NOW()");
         } else {
-            $this->db->query("UPDATE `" . DB_PREFIX . "extension_install` SET `name` = 'NOVERAILE Commerce Suite', `version` = '2.2.0', `status` = '1' WHERE `extension_install_id` = '" . (int)$installed->row['extension_install_id'] . "'");
+            $this->db->query("UPDATE `" . DB_PREFIX . "extension_install` SET `name` = 'NOVERAILE Commerce Suite', `version` = '2.3.0', `status` = '1' WHERE `extension_install_id` = '" . (int)$installed->row['extension_install_id'] . "'");
         }
     }
 
@@ -52,6 +52,8 @@ class Noveraile extends \Opencart\System\Engine\Model {
             ['noveraile_cart', 'catalog/view/checkout/cart/before', 'extension/noveraile/event/theme.cart'],
             ['noveraile_cart_list', 'catalog/view/checkout/cart_list/before', 'extension/noveraile/event/theme.cartList'],
             ['noveraile_checkout', 'catalog/view/checkout/checkout/before', 'extension/noveraile/event/theme.checkout'],
+            ['noveraile_success_capture', 'catalog/controller/checkout/success/before', 'extension/noveraile/event/theme.captureSuccess'],
+            ['noveraile_success', 'catalog/view/common/success/before', 'extension/noveraile/event/theme.success'],
             ['noveraile_account_login', 'catalog/view/account/login/before', 'extension/noveraile/event/theme.accountLogin'],
             ['noveraile_blog', 'catalog/view/cms/blog/before', 'extension/noveraile/event/theme.blog'],
             ['noveraile_blog_info', 'catalog/view/cms/blog_info/before', 'extension/noveraile/event/theme.blogInfo'],
@@ -117,8 +119,8 @@ class Noveraile extends \Opencart\System\Engine\Model {
         $this->load->model('setting/setting');
         $defaults = [
             'module_noveraile_status' => (int)$enable_storefront,
-            'module_noveraile_brand_name' => (string)($this->config->get('config_name') ?: 'NOVERAILE'),
-            'module_noveraile_instagram' => '',
+            'module_noveraile_brand_name' => in_array(trim((string)$this->config->get('config_name')), ['', 'Your Store'], true) ? '6 Moments' : (string)$this->config->get('config_name'),
+            'module_noveraile_instagram' => 'https://www.instagram.com/6moments_jewelry?igsh=MTdnaHg4eWo0YzlrNQ==',
             'module_noveraile_email' => (string)($this->config->get('config_email') ?: ''),
             'module_noveraile_phone' => '',
             'module_noveraile_legal_name' => '',
@@ -163,9 +165,18 @@ class Noveraile extends \Opencart\System\Engine\Model {
                 'career' => ['moment' => 'victory', 'tags' => ['career', 'self-purchase']],
                 'self' => ['moment' => 'deserve', 'tags' => ['self-purchase']],
                 'milestone' => ['moment' => 'with-me', 'tags' => ['milestone']]
-            ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
+            ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),
+            'module_noveraile_price_book' => $this->defaultPriceBook()
         ];
         $this->installDefaultSettings('module_noveraile', $defaults);
+        $current_brand = trim((string)$this->config->get('module_noveraile_brand_name'));
+        if ($current_brand === '' || $current_brand === 'Your Store') {
+            $this->model_setting_setting->editValue('module_noveraile', 'module_noveraile_brand_name', '6 Moments');
+        }
+        $current_instagram = trim((string)$this->config->get('module_noveraile_instagram'));
+        if ($current_instagram === '' || str_contains($current_instagram, 'journal.framework')) {
+            $this->model_setting_setting->editValue('module_noveraile', 'module_noveraile_instagram', 'https://www.instagram.com/6moments_jewelry?igsh=MTdnaHg4eWo0YzlrNQ==');
+        }
 
         $this->installDefaultSettings('payment_noveraile_stripe', [
             'payment_noveraile_stripe_status' => 0,
@@ -205,7 +216,7 @@ class Noveraile extends \Opencart\System\Engine\Model {
             'shipping_dpd_geo_zone_id' => 0, 'shipping_dpd_sort_order' => 2
         ]);
         $this->installDefaultSettings('total_bundle', [
-            'total_bundle_status' => 0, 'total_bundle_sort_order' => 4
+            'total_bundle_status' => 1, 'total_bundle_sort_order' => 4
         ]);
     }
 
@@ -224,7 +235,7 @@ class Noveraile extends \Opencart\System\Engine\Model {
     private function seedCatalog(): void {
         $catalog_version = $this->db->query("SELECT `value` FROM `" . DB_PREFIX . "setting` WHERE `store_id` = '0' AND `key` = 'module_noveraile_catalog_version' LIMIT 1");
         $catalog_version_number = $catalog_version->num_rows ? (int)$catalog_version->row['value'] : 0;
-        if ($catalog_version_number >= 5) {
+        if ($catalog_version_number >= 6) {
             return;
         }
 
@@ -238,8 +249,7 @@ class Noveraile extends \Opencart\System\Engine\Model {
                     'NVR-NE-003' => 0.0021,
                     'NVR-EA-004' => 0.0042,
                     'NVR-BR-005' => 0.0026,
-                    'NVR-RI-006' => 0.0084,
-                    'NVR-SE-007' => 3.1
+                    'NVR-RI-006' => 0.0084
                 ];
                 $weight_class_id = (int)$this->config->get('config_weight_class_id');
                 foreach ($weights as $model => $weight) {
@@ -247,15 +257,11 @@ class Noveraile extends \Opencart\System\Engine\Model {
                 }
             }
 
-            $this->installJewelryAttributes();
-            $this->model_setting_setting->editValue('module_noveraile', 'module_noveraile_catalog_version', '5');
-            return;
         }
 
-        // Catalog migration v2 replaces both the stock OpenCart demo and the
-        // earlier placeholder NOVERAILE seed with the seven products published
-        // on the landing page. The predicates deliberately do not match normal
-        // merchant-created products.
+        // Catalog migration v6 replaces the earlier placeholder seed with ten
+        // discounted jewelry pieces. The predicates deliberately do not match
+        // normal merchant-created products.
         $this->load->model('catalog/option');
         $legacy_option_ids = array_map('intval', array_column($this->db->query("SELECT DISTINCT `po`.`option_id` FROM `" . DB_PREFIX . "product_option` `po` INNER JOIN `" . DB_PREFIX . "product` `p` ON (`p`.`product_id` = `po`.`product_id`) WHERE `p`.`model` LIKE 'NVR-%'")->rows, 'option_id'));
 
@@ -289,6 +295,8 @@ class Noveraile extends \Opencart\System\Engine\Model {
             if ($info) $language_ids[$code] = (int)$info['language_id'];
         }
         if (!$language_ids) return;
+        $configured_brand = trim((string)($this->config->get('module_noveraile_brand_name') ?: $this->config->get('config_name')));
+        $brand = in_array($configured_brand, ['', 'Your Store'], true) ? '6 Moments' : $configured_brand;
 
         $this->load->model('catalog/option');
         $option_names = ['en-gb'=>'Ring size','de-de'=>'Ringgröße','cs-cz'=>'Velikost prstenu','ru-ru'=>'Размер кольца','uk-ua'=>'Розмір каблучки'];
@@ -318,7 +326,7 @@ class Noveraile extends \Opencart\System\Engine\Model {
             $i = 0;
             foreach ($language_ids as $code => $language_id) {
                 $name = $names[$i++] ?? $names[0];
-                $description[$language_id] = ['name' => $name, 'description' => '', 'meta_title' => $name . ' | NOVERAILE', 'meta_description' => $name . ' by NOVERAILE Jewelry', 'meta_keyword' => ''];
+                $description[$language_id] = ['name' => $name, 'description' => '', 'meta_title' => $name . ' | ' . $brand, 'meta_description' => $name . ' by ' . $brand . ' Jewelry', 'meta_keyword' => ''];
                 $seo[$language_id] = 'noveraile-' . $slug . '-' . $code;
             }
             $category_ids[$slug] = $this->model_catalog_category->addCategory([
@@ -329,12 +337,15 @@ class Noveraile extends \Opencart\System\Engine\Model {
 
         $products = [
             ['promise-solitaire', 'NVR-RI-001', 'rings', 2750, 2450, 8, 2.8, 'Promise Solitaire', 'Verlobungssolitär Promise', 'Solitér Promise', 'Солитер «Обещание»', 'Солітер «Обіцянка»', 'moment-01,engagement,ring,yellow-gold,750,lab-grown,delivery-3,carat-0-50,stones-1', 'products/promise-solitaire.webp'],
-            ['union-band', 'NVR-WE-002', 'wedding', 980, 0, 0, 3.9, 'Union Band', 'Ehering Union', 'Snubní prsten Union', 'Обручальное кольцо «Союз»', 'Обручка «Союз»', 'moment-02,wedding,ring,yellow-gold,750,no-stones,delivery-10,stones-0', 'products/union-band.webp'],
+            ['union-band', 'NVR-WE-002', 'wedding', 980, 890, 0, 3.9, 'Union Band', 'Ehering Union', 'Snubní prsten Union', 'Обручальное кольцо «Союз»', 'Обручка «Союз»', 'moment-02,wedding,ring,yellow-gold,750,no-stones,delivery-10,stones-0', 'products/union-band.webp'],
             ['arrival-pendant', 'NVR-NE-003', 'necklaces', 1480, 1320, 7, 2.1, 'New Chapter Pendant', 'Anhänger Neues Kapitel', 'Přívěsek Nová kapitola', 'Подвеска «Новая глава»', 'Підвіска «Нова глава»', 'moment-03,motherhood,necklace,yellow-gold,750,natural,delivery-3,carat-0-10,stones-1', 'products/arrival-pendant.webp'],
-            ['becoming-hoops', 'NVR-EA-004', 'earrings', 1180, 0, 10, 4.2, 'Becoming Hoops', 'Creolen Becoming', 'Náušnice Becoming', 'Серьги «Становление»', 'Сережки «Становлення»', 'moment-04,career,earring,yellow-gold,750,no-stones,delivery-3,stones-0', 'products/becoming-hoops.webp'],
+            ['becoming-hoops', 'NVR-EA-004', 'earrings', 1180, 1040, 10, 4.2, 'Becoming Hoops', 'Creolen Becoming', 'Náušnice Becoming', 'Серьги «Становление»', 'Сережки «Становлення»', 'moment-04,career,earring,yellow-gold,750,no-stones,delivery-3,stones-0', 'products/becoming-hoops.webp'],
             ['gratitude-bracelet', 'NVR-BR-005', 'bracelets', 1790, 1560, 6, 2.6, 'Gratitude Bracelet', 'Armband Dankbarkeit', 'Náramek Vděčnost', 'Браслет «Благодарность»', 'Браслет «Вдячність»', 'moment-05,self-purchase,bracelet,yellow-gold,750,natural,delivery-3,carat-0-15,stones-1', 'products/gratitude-bracelet.webp'],
-            ['legacy-signet', 'NVR-RI-006', 'rings', 2250, 0, 0, 8.4, 'Legacy Signet', 'Siegelring Vermächtnis', 'Pečetní prsten Odkaz', 'Перстень «Наследие»', 'Перстень «Спадщина»', 'moment-06,milestone,ring,platinum,950,no-stones,delivery-10,stones-0', 'products/legacy-signet.webp'],
-            ['first-ride', 'NVR-SE-007', 'special', 890, 0, 4, 3100, 'First Ride Balance Bike', 'Laufrad Erste Fahrt', 'Odrážedlo První jízda', 'Беговел «Первая поездка»', 'Біговел «Перша поїздка»', 'moment-special,special-edition,alloy,no-stones,delivery-3,stones-0', 'products/first-ride.webp']
+            ['legacy-signet', 'NVR-RI-006', 'rings', 2250, 1990, 0, 8.4, 'Legacy Signet', 'Siegelring Vermächtnis', 'Pečetní prsten Odkaz', 'Перстень «Наследие»', 'Перстень «Спадщина»', 'moment-06,milestone,ring,platinum,950,no-stones,delivery-10,stones-0', 'products/legacy-signet.webp'],
+            ['eternity-band', 'NVR-WE-007', 'wedding', 1650, 1480, 5, 3.4, 'Eternity Band', 'Eternity-Ring', 'Prsten Eternity', 'Кольцо «Вечность»', 'Каблучка «Вічність»', 'moment-02,wedding,ring,rose-gold,750,natural,delivery-3,carat-0-20,stones-18', 'products/union-band.webp'],
+            ['horizon-studs', 'NVR-EA-008', 'earrings', 1320, 1160, 8, 2.2, 'Horizon Studs', 'Ohrstecker Horizont', 'Náušnice Horizont', 'Пусеты «Горизонт»', 'Пусети «Горизонт»', 'moment-04,career,earring,white-gold,750,lab-grown,delivery-3,carat-0-30,stones-2', 'products/becoming-hoops.webp'],
+            ['keepsake-pendant', 'NVR-NE-009', 'necklaces', 1540, 1390, 6, 2.4, 'Keepsake Pendant', 'Anhänger Erinnerung', 'Přívěsek Vzpomínka', 'Подвеска «Память»', 'Підвіска «Спогад»', 'moment-03,motherhood,necklace,rose-gold,750,lab-grown,delivery-3,carat-0-25,stones-1', 'products/arrival-pendant.webp'],
+            ['self-promise-ring', 'NVR-RI-010', 'rings', 1880, 1690, 7, 3.1, 'Self Promise Ring', 'Ring Selbstversprechen', 'Prsten Slib sobě', 'Кольцо «Обещание себе»', 'Каблучка «Обіцянка собі»', 'moment-05,self-purchase,ring,white-gold,750,natural,delivery-3,carat-0-35,stones-7', 'products/promise-solitaire.webp']
         ];
         $customer_group_id = (int)$this->config->get('config_customer_group_id');
         $product_bodies = [
@@ -345,7 +356,34 @@ class Noveraile extends \Opencart\System\Engine\Model {
                 'NVR-EA-004' => 'Light oval hoops with presence for every day and the restraint that makes them truly yours.',
                 'NVR-BR-005' => 'A fine bracelet with oval links and one diamond — a quiet thank-you that always stays close.',
                 'NVR-RI-006' => 'A substantial signet with a softened face for a monogram, date or symbol that belongs only to you.',
-                'NVR-SE-007' => 'An enduring piece for a first adventure, with selectable wheel diameter, frame size and colour.'
+                'NVR-WE-007' => 'A rose-gold eternity band set with eighteen natural diamonds to mark a promise that keeps unfolding.',
+                'NVR-EA-008' => 'Two lab-grown diamonds in clean white-gold settings, made for everyday milestones and quiet victories.',
+                'NVR-NE-009' => 'A rose-gold pendant with a lab-grown diamond, created to keep a new chapter close.',
+                'NVR-RI-010' => 'A white-gold diamond ring made as a personal promise and finished for comfortable daily wear.'
+            ],
+            'de-de' => [
+                'NVR-RI-001' => 'Ein tief gefasster Solitär mit sanft gerundeter Ringschiene für hohen Tragekomfort im Alltag.',
+                'NVR-WE-002' => 'Ein zeitloser Ehering mit weichem Profil, einzeln oder als Paar gefertigt und von Hand vollendet.',
+                'NVR-NE-003' => 'Ein kleiner Lichtpunkt an einer feinen Kette, geschaffen für den Tag, an dem ein neues Kapitel begann.',
+                'NVR-EA-004' => 'Leichte ovale Creolen mit Präsenz für jeden Tag und einer Zurückhaltung, die sie ganz persönlich macht.',
+                'NVR-BR-005' => 'Ein feines Armband mit ovalen Gliedern und einem Diamanten – ein stilles Dankeschön, das nahe bleibt.',
+                'NVR-RI-006' => 'Ein markanter Siegelring mit weicher Fläche für Monogramm, Datum oder ein persönliches Symbol.',
+                'NVR-WE-007' => 'Ein Eternity-Ring aus Roségold mit achtzehn natürlichen Diamanten für ein Versprechen, das weiterwächst.',
+                'NVR-EA-008' => 'Zwei im Labor gezüchtete Diamanten in klaren Weißgoldfassungen für tägliche Meilensteine.',
+                'NVR-NE-009' => 'Ein Roségoldanhänger mit Labordiamant, der ein neues Kapitel ganz nah bewahrt.',
+                'NVR-RI-010' => 'Ein Weißgoldring mit natürlichen Diamanten als persönliches Versprechen für jeden Tag.'
+            ],
+            'cs-cz' => [
+                'NVR-RI-001' => 'Nízký solitér s jemně zaoblenou obroučkou navržený pro pohodlné každodenní nošení.',
+                'NVR-WE-002' => 'Nadčasový snubní prsten s měkkým profilem, vyráběný jednotlivě nebo v páru a ručně dokončený.',
+                'NVR-NE-003' => 'Malý bod světla na jemném řetízku, vytvořený pro den, kdy začala nová kapitola.',
+                'NVR-EA-004' => 'Lehké oválné kruhy výrazné pro každý den a zároveň dokonale střídmé.',
+                'NVR-BR-005' => 'Jemný náramek s oválnými články a jedním diamantem – tiché poděkování, které zůstává nablízku.',
+                'NVR-RI-006' => 'Výrazný pečetní prsten s měkčenou plochou pro monogram, datum nebo osobní symbol.',
+                'NVR-WE-007' => 'Prsten z růžového zlata s osmnácti přírodními diamanty pro slib, který stále roste.',
+                'NVR-EA-008' => 'Dva laboratorní diamanty v čistých obrubách z bílého zlata pro každodenní vítězství.',
+                'NVR-NE-009' => 'Přívěsek z růžového zlata s laboratorním diamantem, který uchová novou kapitolu nablízku.',
+                'NVR-RI-010' => 'Prsten z bílého zlata s přírodními diamanty jako osobní slib pro každý den.'
             ],
             'ru-ru' => [
                 'NVR-RI-001' => 'Солитер с низкой посадкой и мягко закруглённой шинкой, созданный для комфорта и ежедневного ношения.',
@@ -354,7 +392,10 @@ class Noveraile extends \Opencart\System\Engine\Model {
                 'NVR-EA-004' => 'Лёгкие овальные серьги, выразительные на каждый день и сдержанные настолько, чтобы стать по-настоящему вашими.',
                 'NVR-BR-005' => 'Тонкий браслет с овальными звеньями и одним бриллиантом — тихое «спасибо», которое всегда рядом.',
                 'NVR-RI-006' => 'Весомый перстень со смягчённой площадкой для монограммы, даты или символа, принадлежащего только вам.',
-                'NVR-SE-007' => 'Долговечная вещь для самого первого приключения с выбором диаметра колёс, размера рамы и цвета.'
+                'NVR-WE-007' => 'Кольцо вечности из розового золота с восемнадцатью натуральными бриллиантами — знак обещания, которое продолжается.',
+                'NVR-EA-008' => 'Два лабораторных бриллианта в лаконичных оправах из белого золота — для ежедневных побед.',
+                'NVR-NE-009' => 'Подвеска из розового золота с лабораторным бриллиантом, сохраняющая новую главу рядом.',
+                'NVR-RI-010' => 'Кольцо из белого золота с натуральными бриллиантами — личное обещание на каждый день.'
             ],
             'uk-ua' => [
                 'NVR-RI-001' => 'Солітер із низькою посадкою та м’яко заокругленою шинкою, створений для зручності й щоденного носіння.',
@@ -363,7 +404,10 @@ class Noveraile extends \Opencart\System\Engine\Model {
                 'NVR-EA-004' => 'Легкі овальні сережки з виразністю для кожного дня та стриманістю, що робить їх по-справжньому вашими.',
                 'NVR-BR-005' => 'Тонкий браслет з овальними ланками та одним діамантом — тихе «дякую», яке завжди поруч.',
                 'NVR-RI-006' => 'Вагомий перстень із пом’якшеною площиною для знака, монограми, дати або символу, що належить лише вам.',
-                'NVR-SE-007' => 'Довговічна річ для найпершої пригоди з вибором діаметра коліс, розміру рами та кольору.'
+                'NVR-WE-007' => 'Каблучка вічності з рожевого золота з вісімнадцятьма природними діамантами — знак обіцянки, що триває.',
+                'NVR-EA-008' => 'Два лабораторні діаманти в лаконічних оправах із білого золота — для щоденних перемог.',
+                'NVR-NE-009' => 'Підвіска з рожевого золота з лабораторним діамантом, що зберігає новий розділ поруч.',
+                'NVR-RI-010' => 'Каблучка з білого золота з природними діамантами — особиста обіцянка на кожен день.'
             ]
         ];
         foreach ($products as $index => $p) {
@@ -375,7 +419,7 @@ class Noveraile extends \Opencart\System\Engine\Model {
                 $name = $names[$i++] ?? $names[0];
                 $copy = $product_bodies[$code][$p[1]] ?? $product_bodies['en-gb'][$p[1]];
                 $body = '<p>' . $copy . '</p>';
-                $descriptions[$language_id] = ['name' => $name, 'description' => $body, 'tag' => $p[12], 'meta_title' => $name . ' | NOVERAILE', 'meta_description' => $name . ' by NOVERAILE Jewelry', 'meta_keyword' => ''];
+                $descriptions[$language_id] = ['name' => $name, 'description' => $body, 'tag' => $p[12], 'meta_title' => $name . ' | ' . $brand, 'meta_description' => $name . ' by ' . $brand . ' Jewelry', 'meta_keyword' => ''];
                 $seo[$language_id] = $p[0] . '-' . $code;
             }
             $discounts = [];
@@ -398,10 +442,31 @@ class Noveraile extends \Opencart\System\Engine\Model {
         $this->installJewelryAttributes();
         $this->model_setting_setting->editValue('module_noveraile', 'module_noveraile_catalog_category_id', $category_ids['rings']);
         if ($catalog_version->num_rows) {
-            $this->model_setting_setting->editValue('module_noveraile', 'module_noveraile_catalog_version', '5');
+            $this->model_setting_setting->editValue('module_noveraile', 'module_noveraile_catalog_version', '6');
         } else {
-            $this->db->query("INSERT INTO `" . DB_PREFIX . "setting` SET `store_id` = '0', `code` = 'module_noveraile', `key` = 'module_noveraile_catalog_version', `value` = '5', `serialized` = '0'");
+            $this->db->query("INSERT INTO `" . DB_PREFIX . "setting` SET `store_id` = '0', `code` = 'module_noveraile', `key` = 'module_noveraile_catalog_version', `value` = '6', `serialized` = '0'");
         }
+        $this->model_setting_setting->editValue('total_bundle', 'total_bundle_status', '1');
+    }
+
+    private function defaultPriceBook(): string {
+        $base = [
+            'NVR-RI-001'=>[2750,2450], 'NVR-WE-002'=>[980,890], 'NVR-NE-003'=>[1480,1320],
+            'NVR-EA-004'=>[1180,1040], 'NVR-BR-005'=>[1790,1560], 'NVR-RI-006'=>[2250,1990],
+            'NVR-WE-007'=>[1650,1480], 'NVR-EA-008'=>[1320,1160], 'NVR-NE-009'=>[1540,1390],
+            'NVR-RI-010'=>[1880,1690]
+        ];
+        $markets = ['USD'=>[1.0,10], 'EUR'=>[0.94,10], 'CZK'=>[23.0,100], 'UAH'=>[41.0,100]];
+        $book = [];
+        foreach ($markets as $currency => [$multiplier, $step]) {
+            foreach ($base as $model => [$price, $special]) {
+                $book[$currency][$model] = [
+                    'price' => round($price * $multiplier / $step) * $step,
+                    'special' => round($special * $multiplier / $step) * $step
+                ];
+            }
+        }
+        return json_encode($book, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
     }
 
     private function installPermissions(): void {
@@ -486,6 +551,8 @@ class Noveraile extends \Opencart\System\Engine\Model {
 
         $translations = [
             'yellow-gold' => ['Yellow gold', 'Gelbgold', 'Žluté zlato', 'Жёлтое золото', 'Жовте золото'],
+            'white-gold' => ['White gold', 'Weißgold', 'Bílé zlato', 'Белое золото', 'Біле золото'],
+            'rose-gold' => ['Rose gold', 'Roségold', 'Růžové zlato', 'Розовое золото', 'Рожеве золото'],
             'platinum' => ['Platinum', 'Platin', 'Platina', 'Платина', 'Платина'],
             'diamond' => ['Diamond', 'Diamant', 'Diamant', 'Бриллиант', 'Діамант'],
             'no-stones' => ['No stones', 'Ohne Steine', 'Bez kamenů', 'Без камней', 'Без каменів'],
@@ -498,7 +565,9 @@ class Noveraile extends \Opencart\System\Engine\Model {
             'pendant' => ['Pendant', 'Anhänger', 'Přívěsek', 'Подвеска', 'Підвіска'],
             'hoops' => ['Hoops', 'Creolen', 'Kruhy', 'Кольца', 'Кільця'],
             'chain-bracelet' => ['Chain bracelet', 'Kettenarmband', 'Řetízkový náramek', 'Цепочный браслет', 'Ланцюжковий браслет'],
-            'signet' => ['Signet', 'Siegelring', 'Pečetní prsten', 'Перстень', 'Перстень']
+            'signet' => ['Signet', 'Siegelring', 'Pečetní prsten', 'Перстень', 'Перстень'],
+            'eternity' => ['Eternity band', 'Eternity-Ring', 'Eternity prsten', 'Кольцо вечности', 'Каблучка вічності'],
+            'studs' => ['Stud earrings', 'Ohrstecker', 'Pecky', 'Пусеты', 'Пусети']
         ];
         $specs = [
             'NVR-RI-001' => ['metal'=>'yellow-gold','fineness'=>'750','gemstone'=>'diamond','stone_origin'=>'lab-grown','carat'=>'0.50','stone_shape'=>'round','style'=>'solitaire'],
@@ -506,7 +575,11 @@ class Noveraile extends \Opencart\System\Engine\Model {
             'NVR-NE-003' => ['metal'=>'yellow-gold','fineness'=>'750','gemstone'=>'diamond','stone_origin'=>'natural','carat'=>'0.10','stone_shape'=>'round','style'=>'pendant'],
             'NVR-EA-004' => ['metal'=>'yellow-gold','fineness'=>'750','gemstone'=>'no-stones','stone_origin'=>'not-applicable','carat'=>'0','stone_shape'=>'not-applicable','style'=>'hoops'],
             'NVR-BR-005' => ['metal'=>'yellow-gold','fineness'=>'750','gemstone'=>'diamond','stone_origin'=>'natural','carat'=>'0.15','stone_shape'=>'round','style'=>'chain-bracelet'],
-            'NVR-RI-006' => ['metal'=>'platinum','fineness'=>'950','gemstone'=>'no-stones','stone_origin'=>'not-applicable','carat'=>'0','stone_shape'=>'not-applicable','style'=>'signet']
+            'NVR-RI-006' => ['metal'=>'platinum','fineness'=>'950','gemstone'=>'no-stones','stone_origin'=>'not-applicable','carat'=>'0','stone_shape'=>'not-applicable','style'=>'signet'],
+            'NVR-WE-007' => ['metal'=>'rose-gold','fineness'=>'750','gemstone'=>'diamond','stone_origin'=>'natural','carat'=>'0.20','stone_shape'=>'round','style'=>'eternity'],
+            'NVR-EA-008' => ['metal'=>'white-gold','fineness'=>'750','gemstone'=>'diamond','stone_origin'=>'lab-grown','carat'=>'0.30','stone_shape'=>'round','style'=>'studs'],
+            'NVR-NE-009' => ['metal'=>'rose-gold','fineness'=>'750','gemstone'=>'diamond','stone_origin'=>'lab-grown','carat'=>'0.25','stone_shape'=>'round','style'=>'pendant'],
+            'NVR-RI-010' => ['metal'=>'white-gold','fineness'=>'750','gemstone'=>'diamond','stone_origin'=>'natural','carat'=>'0.35','stone_shape'=>'round','style'=>'eternity']
         ];
 
         $this->load->model('catalog/product');
@@ -534,8 +607,8 @@ class Noveraile extends \Opencart\System\Engine\Model {
     }
 
     private function seedArticles(): void {
-        $exists = $this->db->query("SELECT `article_id` FROM `" . DB_PREFIX . "article` WHERE `author` = 'NOVERAILE' LIMIT 1");
-        if ($exists->num_rows) return;
+        $version = $this->db->query("SELECT `value` FROM `" . DB_PREFIX . "setting` WHERE `store_id` = '0' AND `key` = 'module_noveraile_article_version' LIMIT 1");
+        if ($version->num_rows && (int)$version->row['value'] >= 2) return;
         $this->load->model('localisation/language');
         $language_ids = [];
         foreach (['en-gb','de-de','cs-cz','ru-ru','uk-ua'] as $code) {
@@ -543,19 +616,26 @@ class Noveraile extends \Opencart\System\Engine\Model {
             if ($language) $language_ids[$code] = (int)$language['language_id'];
         }
         if (!$language_ids) return;
-        $articles = [
-            ['The architecture of a forever ring','Die Architektur eines Rings für immer','Architektura prstenu navždy','Архитектура кольца навсегда','Архітектура каблучки назавжди','editorial/journal-ring-architecture.webp','Proportion, comfort and the quiet details that allow a ring to become part of everyday life.'],
-            ['How modern heirlooms gather meaning','Wie moderne Erbstücke Bedeutung sammeln','Jak moderní šperky získávají význam','Как современные реликвии обретают смысл','Як сучасні реліквії набувають сенсу','editorial/journal-heirlooms.webp','A jewel becomes an heirloom through the life lived around it — through touch, memory and the stories passed forward.'],
-            ['Why gold changes beautifully over time','Warum Gold mit der Zeit schöner wird','Proč zlato časem krásní','Почему золото красиво меняется со временем','Чому золото з часом стає красивішим','editorial/journal-patina.webp','Fine marks and a softening polish are not flaws. They are the visible record of a piece that has stayed close.']
-        ];
         $this->load->model('cms/article');
+        $seeded = $this->db->query("SELECT `article_id` FROM `" . DB_PREFIX . "article` WHERE `author` IN ('NOVERAILE', '6 Moments')");
+        foreach ($seeded->rows as $row) $this->model_cms_article->deleteArticle((int)$row['article_id']);
+
+        $configured_brand = trim((string)($this->config->get('module_noveraile_brand_name') ?: $this->config->get('config_name')));
+        $brand = in_array($configured_brand, ['', 'Your Store'], true) ? '6 Moments' : $configured_brand;
+        $articles = [
+            ['image'=>'editorial/journal-ring-architecture.webp','name'=>['en-gb'=>'The architecture of a forever ring','de-de'=>'Die Architektur eines Rings für immer','cs-cz'=>'Architektura prstenu navždy','ru-ru'=>'Архитектура кольца навсегда','uk-ua'=>'Архітектура каблучки назавжди'],'copy'=>['en-gb'=>'Proportion, comfort and the quiet details that allow a ring to become part of everyday life.','de-de'=>'Proportion, Komfort und leise Details lassen einen Ring zum selbstverständlichen Teil des Alltags werden.','cs-cz'=>'Proporce, pohodlí a jemné detaily dovolují prstenu stát se přirozenou součástí každého dne.','ru-ru'=>'Пропорции, комфорт и тихие детали помогают кольцу стать естественной частью каждого дня.','uk-ua'=>'Пропорції, комфорт і тихі деталі допомагають каблучці стати природною частиною кожного дня.']],
+            ['image'=>'editorial/journal-heirlooms.webp','name'=>['en-gb'=>'How modern heirlooms gather meaning','de-de'=>'Wie moderne Erbstücke Bedeutung sammeln','cs-cz'=>'Jak moderní šperky získávají význam','ru-ru'=>'Как современные реликвии обретают смысл','uk-ua'=>'Як сучасні реліквії набувають сенсу'],'copy'=>['en-gb'=>'A jewel becomes an heirloom through the life lived around it — through touch, memory and the stories passed forward.','de-de'=>'Ein Schmuckstück wird durch Berührung, Erinnerung und weitergegebene Geschichten zum Erbstück.','cs-cz'=>'Šperk se stává dědictvím díky dotekům, vzpomínkám a příběhům předávaným dál.','ru-ru'=>'Украшение становится реликвией благодаря прикосновениям, памяти и историям, которые передают дальше.','uk-ua'=>'Прикраса стає реліквією завдяки дотикам, пам’яті та історіям, які передають далі.']],
+            ['image'=>'editorial/journal-patina.webp','name'=>['en-gb'=>'Why gold changes beautifully over time','de-de'=>'Warum Gold mit der Zeit schöner wird','cs-cz'=>'Proč zlato časem krásní','ru-ru'=>'Почему золото красиво меняется со временем','uk-ua'=>'Чому золото з часом стає красивішим'],'copy'=>['en-gb'=>'Fine marks and a softening polish are not flaws. They are the visible record of a piece that has stayed close.','de-de'=>'Feine Spuren und ein weicher werdender Glanz sind keine Fehler, sondern sichtbare Erinnerungen an ein getragenes Leben.','cs-cz'=>'Jemné stopy a měkčí lesk nejsou vadou, ale viditelným záznamem života nošeného šperku.','ru-ru'=>'Тонкие следы и мягкий блеск — не недостатки, а видимая запись жизни украшения рядом с вами.','uk-ua'=>'Тонкі сліди й м’який блиск — не недоліки, а видимий запис життя прикраси поруч із вами.']]
+        ];
         foreach ($articles as $index => $article) {
-            $descriptions=[];$seo=[];$i=0;
+            $descriptions=[];$seo=[];
             foreach ($language_ids as $code=>$language_id) {
-                $name=$article[$i++]??$article[0];$descriptions[$language_id]=['image'=>'catalog/noveraile/'.$article[5],'name'=>$name,'description'=>'<p>'.$article[6].'</p>','tag'=>'jewelry,craftsmanship,legacy','meta_title'=>$name.' | NOVERAILE Journal','meta_description'=>$article[6],'meta_keyword'=>''];$seo[$language_id]='noveraile-journal-'.($index+1).'-'.$code;
+                $name=$article['name'][$code]??$article['name']['en-gb'];$copy=$article['copy'][$code]??$article['copy']['en-gb'];
+                $descriptions[$language_id]=['image'=>'catalog/noveraile/'.$article['image'],'name'=>$name,'description'=>'<p>'.$copy.'</p>','tag'=>'jewelry,craftsmanship,legacy','meta_title'=>$name.' | '.$brand.' Journal','meta_description'=>$copy,'meta_keyword'=>''];$seo[$language_id]='noveraile-journal-'.($index+1).'-'.$code;
             }
-            $this->model_cms_article->addArticle(['topic_id'=>0,'author'=>'NOVERAILE','status'=>1,'article_description'=>$descriptions,'article_store'=>[0],'article_seo_url'=>[0=>$seo]]);
+            $this->model_cms_article->addArticle(['topic_id'=>0,'author'=>$brand,'status'=>1,'article_description'=>$descriptions,'article_store'=>[0],'article_seo_url'=>[0=>$seo]]);
         }
+        $this->model_setting_setting->editValue('module_noveraile', 'module_noveraile_article_version', '2');
     }
 
     public function getCatalogSummary(): array {
@@ -842,7 +922,7 @@ class Noveraile extends \Opencart\System\Engine\Model {
 
     public function uninstall(): void {
         $this->load->model('setting/event');
-        foreach (['noveraile_header','noveraile_footer','noveraile_home','noveraile_product','noveraile_product_thumb','noveraile_category','noveraile_search','noveraile_special','noveraile_cart','noveraile_cart_list','noveraile_checkout','noveraile_account_login','noveraile_blog','noveraile_blog_info','noveraile_information','noveraile_contact'] as $code) {
+        foreach (['noveraile_header','noveraile_footer','noveraile_home','noveraile_product','noveraile_product_thumb','noveraile_category','noveraile_search','noveraile_special','noveraile_cart','noveraile_cart_list','noveraile_checkout','noveraile_success_capture','noveraile_success','noveraile_account_login','noveraile_blog','noveraile_blog_info','noveraile_information','noveraile_contact'] as $code) {
             $this->model_setting_event->deleteEventByCode($code);
         }
 

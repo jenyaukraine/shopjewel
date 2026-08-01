@@ -1,3 +1,30 @@
 <?php
 namespace Opencart\Catalog\Model\Extension\Noveraile\Shipping;
-class Dhl extends \Opencart\System\Engine\Model { public function getQuote(array $address): array { return $this->quote('dhl','DHL Express','shipping_dhl'); } private function quote(string $code,string $name,string $key): array {if(!$this->config->get($key.'_status'))return[];$cost=(float)$this->config->get($key.'_cost');$quote=[$code=>['code'=>$code.'.'.$code,'name'=>$name.' · 3–10 business days','cost'=>$cost,'tax_class_id'=>(int)$this->config->get($key.'_tax_class_id'),'text'=>$this->currency->format($this->tax->calculate($cost,(int)$this->config->get($key.'_tax_class_id'),$this->config->get('config_tax')),$this->session->data['currency'])]];return['code'=>$code,'name'=>$name,'quote'=>$quote,'sort_order'=>(int)$this->config->get($key.'_sort_order'),'error'=>false];} }
+
+class Dhl extends \Opencart\System\Engine\Model {
+    public function getQuote(array $address): array {
+        $key = 'shipping_dhl';
+        if (!$this->config->get($key . '_status') || !$this->availableForAddress($address, (int)$this->config->get($key . '_geo_zone_id'))) return [];
+
+        $cost = (float)$this->config->get($key . '_cost');
+        $tax_class_id = (int)$this->config->get($key . '_tax_class_id');
+        $quote = ['dhl' => [
+            'code' => 'dhl.dhl',
+            'name' => 'DHL Express · 3–10 business days',
+            'cost' => $cost,
+            'tax_class_id' => $tax_class_id,
+            'text' => $this->currency->format($this->tax->calculate($cost, $tax_class_id, $this->config->get('config_tax')), $this->session->data['currency'])
+        ]];
+
+        return ['code' => 'dhl', 'name' => 'DHL Express', 'quote' => $quote, 'sort_order' => (int)$this->config->get($key . '_sort_order'), 'error' => false];
+    }
+
+    private function availableForAddress(array $address, int $geo_zone_id): bool {
+        if (!$geo_zone_id) return true;
+        $country_id = (int)($address['country_id'] ?? 0);
+        $zone_id = (int)($address['zone_id'] ?? 0);
+        if (!$country_id) return false;
+        $query = $this->db->query("SELECT `zone_to_geo_zone_id` FROM `" . DB_PREFIX . "zone_to_geo_zone` WHERE `geo_zone_id` = '" . $geo_zone_id . "' AND `country_id` = '" . $country_id . "' AND (`zone_id` = '0' OR `zone_id` = '" . $zone_id . "') LIMIT 1");
+        return (bool)$query->num_rows;
+    }
+}

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.3.0 — 2026-08-01
+
+- Completed the 6 Moments multilingual storefront requirements.
+- Added ten sale products, fixed four-currency price books, exchange-rate refresh and geo-zone shipping.
+- Added promotion-code and localized order-success flows plus improved quiz matching.
+
 ## 2.2.0 — 2026-07-31
 
 - Added a two-handle storefront price slider synchronized with the minimum and maximum price fields.

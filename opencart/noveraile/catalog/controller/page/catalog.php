@@ -4,8 +4,10 @@ namespace Opencart\Catalog\Controller\Extension\Noveraile\Page;
 class Catalog extends \Opencart\System\Engine\Controller {
     public function index(): void {
         $this->load->language('extension/noveraile/module/noveraile');
-        $this->document->setTitle($this->language->get('six_catalog_title') . ' | NOVERAILE');
+        $brand = $this->brand();
+        $this->document->setTitle($this->language->get('six_catalog_title') . ' | ' . $brand);
         $data = $this->language->all();
+        $data['six_brand_name'] = $brand;
 
         $allowed = [
             'type' => ['rings','earrings','necklaces','bracelets','wedding'],
@@ -132,11 +134,13 @@ class Catalog extends \Opencart\System\Engine\Controller {
         $this->load->model('tool/image');
         $image = !empty($result['image']) && is_file(DIR_IMAGE . html_entity_decode($result['image'], ENT_QUOTES, 'UTF-8')) ? $result['image'] : 'placeholder.png';
         $currency = $this->session->data['currency'] ?? $this->config->get('config_currency');
+        $this->load->model('extension/noveraile/pricing');
+        $market_price = $this->model_extension_noveraile_pricing->resolve($result, $currency);
         $data = array_merge($result, [
             'thumb' => $this->model_tool_image->resize($image, 700, 700),
             'description' => trim(strip_tags(html_entity_decode((string)$result['description'], ENT_QUOTES, 'UTF-8'))),
-            'price' => $this->currency->format($this->tax->calculate((float)$result['price'], (int)$result['tax_class_id'], $this->config->get('config_tax')), $currency),
-            'special' => !empty($result['special']) ? $this->currency->format($this->tax->calculate((float)$result['special'], (int)$result['tax_class_id'], $this->config->get('config_tax')), $currency) : false,
+            'price' => $this->model_extension_noveraile_pricing->format($market_price['fixed'] ? $market_price['price'] : $this->tax->calculate((float)$result['price'], (int)$result['tax_class_id'], $this->config->get('config_tax')), $currency, $market_price['fixed']),
+            'special' => $market_price['special'] > 0 ? $this->model_extension_noveraile_pricing->format($market_price['fixed'] ? $market_price['special'] : $this->tax->calculate((float)$result['special'], (int)$result['tax_class_id'], $this->config->get('config_tax')), $currency, $market_price['fixed']) : false,
             'tax' => false, 'minimum' => max(1, (int)$result['minimum']),
             'href' => $this->url->link('product/product', 'language=' . $this->config->get('config_language') . '&product_id=' . (int)$result['product_id']),
             'cart_add' => $this->url->link('checkout/cart.add', 'language=' . $this->config->get('config_language')),
@@ -161,5 +165,10 @@ class Catalog extends \Opencart\System\Engine\Controller {
         $query = $this->request->get;
         foreach (array_merge(['route','_route_','language','ajax'], $exclude) as $key) unset($query[$key]);
         return $query ? '&' . http_build_query($query) : '';
+    }
+
+    private function brand(): string {
+        $brand = trim((string)($this->config->get('module_noveraile_brand_name') ?: $this->config->get('config_name')));
+        return in_array($brand, ['', 'Your Store'], true) ? '6 Moments' : $brand;
     }
 }

@@ -2,7 +2,7 @@
 namespace Opencart\Admin\Controller\Extension\Noveraile\Module;
 
 class Noveraile extends \Opencart\System\Engine\Controller {
-    private const VERSION = '2.2.0';
+    private const VERSION = '2.3.0';
     private const CATALOG_HEADERS = [
         'product_id', 'model', 'sku', 'language_code', 'name', 'description', 'meta_title',
         'meta_description', 'meta_keyword', 'tag', 'price', 'quantity', 'status',
@@ -28,7 +28,7 @@ class Noveraile extends \Opencart\System\Engine\Controller {
         $data['ai_generate'] = $this->url->link('extension/noveraile/module/noveraile.aiGenerate', 'user_token=' . $this->session->data['user_token']);
         $data['ai_apply'] = $this->url->link('extension/noveraile/module/noveraile.aiApply', 'user_token=' . $this->session->data['user_token']);
         $data['back'] = $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=module');
-        $data['demo_installed'] = (int)$this->config->get('module_noveraile_catalog_version') >= 5;
+        $data['demo_installed'] = (int)$this->config->get('module_noveraile_catalog_version') >= 6;
         $data['noveraile_version'] = self::VERSION;
         $data['opencart_version'] = defined('VERSION') ? VERSION : '4.x';
         $this->load->model('extension/noveraile/module/noveraile');
@@ -45,7 +45,7 @@ class Noveraile extends \Opencart\System\Engine\Controller {
             'module_noveraile_supervisory_authority', 'module_noveraile_content_responsible',
             'module_noveraile_privacy_email', 'module_noveraile_data_authority',
             'module_noveraile_retention_periods', 'module_noveraile_catalog_category_id',
-            'module_noveraile_lab_category_id', 'module_noveraile_quiz_rules',
+            'module_noveraile_lab_category_id', 'module_noveraile_quiz_rules', 'module_noveraile_price_book',
             'module_noveraile_page_builder', 'module_noveraile_hero_kicker', 'module_noveraile_hero_title',
             'module_noveraile_hero_cta', 'module_noveraile_mega_menu_status', 'module_noveraile_mega_menu_title',
             'module_noveraile_mega_menu_promo_text', 'module_noveraile_mega_menu_promo_url',
@@ -93,6 +93,14 @@ class Noveraile extends \Opencart\System\Engine\Controller {
             $json['error'] = $this->language->get('error_json');
         } else {
             $this->request->post['module_noveraile_quiz_rules'] = json_encode($rules, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        }
+
+        $price_book_json = htmlspecialchars_decode((string)($this->request->post['module_noveraile_price_book'] ?? '{}'), ENT_COMPAT);
+        $price_book = json_decode($price_book_json, true);
+        if (!is_array($price_book)) {
+            $json['error'] = $this->language->get('error_json');
+        } else {
+            $this->request->post['module_noveraile_price_book'] = json_encode($price_book, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         }
 
         $builder_json = htmlspecialchars_decode((string)($this->request->post['module_noveraile_page_builder'] ?? '[]'), ENT_COMPAT);
