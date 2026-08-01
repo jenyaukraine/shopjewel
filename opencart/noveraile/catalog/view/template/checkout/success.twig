@@ -1,0 +1,12 @@
+{{ header }}
+<main class="checkout-success-page">
+  <section class="checkout-success-card">
+    <p class="eyebrow">{{ six_brand_name }} · {{ six_order_received }}</p>
+    <h1>{{ six_thank_you }}</h1>
+    <p>{{ six_thank_you_copy }}</p>
+    {% if six_order_id %}<p class="checkout-success-number">{{ six_order_number }} <strong>#{{ six_order_id }}</strong></p>{% endif %}
+    {% if six_order_products %}<div class="checkout-success-summary"><h2>{{ six_order_summary }}</h2>{% for product in six_order_products %}<div><span>{{ product.name }} · {{ product.model }} × {{ product.quantity }}</span><strong>{{ product.total }}</strong></div>{% endfor %}{% for total in six_order_totals %}<div class="is-total"><span>{{ total.title }}</span><strong>{{ total.text }}</strong></div>{% endfor %}</div>{% endif %}
+    <div class="about-closing-actions"><a class="button button--dark" href="{{ continue }}">{{ six_continue_shopping }}</a>{% if order %}<a class="about-text-link" href="{{ order }}">{{ six_order_history }} <span aria-hidden="true">→</span></a>{% endif %}</div>
+  </section>
+</main>
+{{ footer }}
