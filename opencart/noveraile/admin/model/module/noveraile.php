@@ -22,6 +22,14 @@ class Noveraile extends \Opencart\System\Engine\Model {
         if ($with_demo_data) {
             $this->installDemo();
         } else {
+            // Production keeps the OpenCart database between deployments. If
+            // this installation already owns a versioned demo catalog, apply
+            // its pending catalog migrations without seeding products into a
+            // merchant store that never opted into demo content.
+            $managed_catalog = $this->db->query("SELECT `setting_id` FROM `" . DB_PREFIX . "setting` WHERE `store_id` = '0' AND `key` = 'module_noveraile_catalog_version' LIMIT 1");
+            if ($managed_catalog->num_rows) {
+                $this->seedCatalog();
+            }
             $this->installJewelryAttributes();
         }
     }
@@ -258,7 +266,7 @@ class Noveraile extends \Opencart\System\Engine\Model {
     private function seedCatalog(): void {
         $catalog_version = $this->db->query("SELECT `value` FROM `" . DB_PREFIX . "setting` WHERE `store_id` = '0' AND `key` = 'module_noveraile_catalog_version' LIMIT 1");
         $catalog_version_number = $catalog_version->num_rows ? (int)$catalog_version->row['value'] : 0;
-        if ($catalog_version_number >= 6) {
+        if ($catalog_version_number >= 7) {
             return;
         }
 
@@ -282,7 +290,7 @@ class Noveraile extends \Opencart\System\Engine\Model {
 
         }
 
-        // Catalog migration v6 replaces the earlier placeholder seed with ten
+        // Catalog migration v7 replaces the earlier placeholder seed with ten
         // discounted jewelry pieces. The predicates deliberately do not match
         // normal merchant-created products.
         $this->load->model('catalog/option');
@@ -465,9 +473,9 @@ class Noveraile extends \Opencart\System\Engine\Model {
         $this->installJewelryAttributes();
         $this->model_setting_setting->editValue('module_noveraile', 'module_noveraile_catalog_category_id', $category_ids['rings']);
         if ($catalog_version->num_rows) {
-            $this->model_setting_setting->editValue('module_noveraile', 'module_noveraile_catalog_version', '6');
+            $this->model_setting_setting->editValue('module_noveraile', 'module_noveraile_catalog_version', '7');
         } else {
-            $this->db->query("INSERT INTO `" . DB_PREFIX . "setting` SET `store_id` = '0', `code` = 'module_noveraile', `key` = 'module_noveraile_catalog_version', `value` = '6', `serialized` = '0'");
+            $this->db->query("INSERT INTO `" . DB_PREFIX . "setting` SET `store_id` = '0', `code` = 'module_noveraile', `key` = 'module_noveraile_catalog_version', `value` = '7', `serialized` = '0'");
         }
         $this->model_setting_setting->editValue('total_bundle', 'total_bundle_status', '1');
     }

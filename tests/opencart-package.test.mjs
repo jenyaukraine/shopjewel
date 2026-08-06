@@ -346,7 +346,8 @@ test("6 Moments storefront requirements remain wired into the package", async ()
     readFile(path.join(root, "catalog/view/template/information/contact.twig"), "utf8"),
     readFile(path.join(root, "catalog/view/template/page/faq.twig"), "utf8"),
   ]);
-  assert.match(installer, /module_noveraile_catalog_version', '6'/);
+  assert.match(installer, /module_noveraile_catalog_version', '7'/);
+  assert.match(installer, /if \(\$managed_catalog->num_rows\) \{\s*\$this->seedCatalog\(\);/);
   assert.equal((installer.match(/\['(?:promise-solitaire|union-band|arrival-pendant|becoming-hoops|gratitude-bracelet|legacy-signet|eternity-band|horizon-studs|keepsake-pendant|self-promise-ring)'/g) ?? []).length, 10);
   assert.doesNotMatch(installer, /First Ride Balance Bike|NVR-SE-007/);
   assert.match(home, /stone=lab-grown/);
