@@ -3,7 +3,7 @@
 <section class="interior-hero interior-hero--contact" aria-labelledby="contact-title">
   <div>
     <p class="eyebrow">{{ six_contact_eyebrow }}</p>
-    <h1 id="contact-title">{{ six_contact_hero_title }}</h1>
+    <h1 id="contact-title">{{ six_contact_hero_title|trim('.') }}</h1>
     <p>{{ six_contact_hero_copy }}</p>
   </div>
   <span class="interior-mark" aria-hidden="true">C</span>
@@ -12,7 +12,7 @@
 <section class="contact-layout" aria-labelledby="contact-details-title">
   <div class="contact-details">
     <p class="eyebrow">{{ six_contact_details_eyebrow }}</p>
-    <h2 id="contact-details-title">{{ six_contact_details_title }}</h2>
+    <h2 id="contact-details-title">{{ six_contact_details_title|trim('.') }}</h2>
     <p>{{ six_contact_details_copy }}</p>
     <dl>
       <div>

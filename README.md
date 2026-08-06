@@ -51,5 +51,6 @@ Production secrets:
 - `DEPLOY_SSH_KEY`, `DEPLOY_KNOWN_HOSTS`
 - `OPENCART_DB_PASSWORD`, `OPENCART_DB_ROOT_PASSWORD`
 - `OPENCART_ADMIN_PASSWORD` (от 5 до 20 символов — ограничение CLI-инсталлятора OpenCart 4.1)
+- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` — оба обязательны для автоматического включения Stripe Checkout; без них модуль остаётся выключенным
 
 Бэкапы БД хранятся в `$DEPLOY_PATH/backups` 14 дней. Значения admin-переменных используются только при первой установке; дальнейшие учётные данные живут в БД OpenCart.

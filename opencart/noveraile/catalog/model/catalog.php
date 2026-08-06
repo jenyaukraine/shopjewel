@@ -71,6 +71,67 @@ class Catalog extends \Opencart\System\Engine\Model {
             $facets[$key] = $this->db->query($sql)->rows;
         }
 
+        // Supplier feeds often encode colour/clarity in a selectable variant
+        // (for example "14K · D/VVS2") instead of an OpenCart attribute.
+        // Merge those values so the customer-facing quality filter remains
+        // useful without forcing merchants to rewrite the source feed.
+        $quality_totals = [];
+        foreach ($facets['stone_quality'] as $facet) {
+            $quality_totals[(string)$facet['value']] = (int)$facet['total'];
+        }
+        foreach ($this->getOptionStoneQualityFacets() as $facet) {
+            $quality_totals[(string)$facet['value']] = max($quality_totals[(string)$facet['value']] ?? 0, (int)$facet['total']);
+        }
+        ksort($quality_totals, SORT_NATURAL | SORT_FLAG_CASE);
+        $facets['stone_quality'] = [];
+        foreach ($quality_totals as $value => $total) {
+            $facets['stone_quality'][] = ['value' => $value, 'total' => $total];
+        }
+
+        return $facets;
+    }
+
+    public function getStoneShapeFacets(): array {
+        $language_id = (int)$this->config->get('config_language_id');
+        $store_id = (int)$this->config->get('config_store_id');
+        $attribute_id = (int)($this->attributeMap()['stone_shape'] ?? 0);
+        $join = $attribute_id
+            ? " LEFT JOIN `" . DB_PREFIX . "product_attribute` `pa_shape` ON (`pa_shape`.`product_id` = `p`.`product_id` AND `pa_shape`.`language_id` = '" . $language_id . "' AND `pa_shape`.`attribute_id` = '" . $attribute_id . "')"
+            : '';
+        $attribute_text = $attribute_id ? ", GROUP_CONCAT(`pa_shape`.`text` SEPARATOR ' ') AS `shape_text`" : ", '' AS `shape_text`";
+        $sql = "SELECT `p`.`product_id`, `pd`.`name`, `pd`.`description`, `pd`.`tag`" . $attribute_text . " FROM `" . DB_PREFIX . "product` `p` INNER JOIN `" . DB_PREFIX . "product_description` `pd` ON (`pd`.`product_id` = `p`.`product_id` AND `pd`.`language_id` = '" . $language_id . "') INNER JOIN `" . DB_PREFIX . "product_to_store` `p2s` ON (`p2s`.`product_id` = `p`.`product_id` AND `p2s`.`store_id` = '" . $store_id . "')" . $join . " WHERE `p`.`status` = '1' AND `p`.`date_available` <= NOW() GROUP BY `p`.`product_id`, `pd`.`name`, `pd`.`description`, `pd`.`tag`";
+        $totals = array_fill_keys(array_keys($this->stoneShapeAliases()), 0);
+        foreach ($this->db->query($sql)->rows as $row) {
+            $haystack = mb_strtolower(strip_tags(html_entity_decode(implode(' ', [$row['name'], $row['description'], $row['tag'], $row['shape_text']]), ENT_QUOTES, 'UTF-8')));
+            foreach ($this->stoneShapeAliases() as $shape => $aliases) {
+                foreach ($aliases as $alias) {
+                    $pattern = '/(?<![\p{L}\p{N}])' . preg_quote(mb_strtolower($alias), '/') . '(?![\p{L}\p{N}])/u';
+                    if (preg_match($pattern, $haystack)) {
+                        $totals[$shape]++;
+                        break;
+                    }
+                }
+            }
+        }
+        return $totals;
+    }
+
+    private function getOptionStoneQualityFacets(): array {
+        $language_id = (int)$this->config->get('config_language_id');
+        $store_id = (int)$this->config->get('config_store_id');
+        $sql = "SELECT DISTINCT `p`.`product_id`, `ovd`.`name` FROM `" . DB_PREFIX . "product` `p` INNER JOIN `" . DB_PREFIX . "product_to_store` `p2s` ON (`p2s`.`product_id` = `p`.`product_id` AND `p2s`.`store_id` = '" . $store_id . "') INNER JOIN `" . DB_PREFIX . "product_option_value` `pov` ON (`pov`.`product_id` = `p`.`product_id`) INNER JOIN `" . DB_PREFIX . "option_value_description` `ovd` ON (`ovd`.`option_value_id` = `pov`.`option_value_id` AND `ovd`.`language_id` = '" . $language_id . "') WHERE `p`.`status` = '1' AND `p`.`date_available` <= NOW()";
+        $products = [];
+        foreach ($this->db->query($sql)->rows as $row) {
+            if (!preg_match_all('/\b(?:[D-J]\/(?:FL|IF|VVS[12]?|VS[12]?|SI[12]?|I[123]?)|LAB)\b/i', (string)$row['name'], $matches)) continue;
+            foreach (array_unique(array_map('strtoupper', $matches[0])) as $quality) {
+                $products[$quality][(int)$row['product_id']] = true;
+            }
+        }
+        ksort($products, SORT_NATURAL | SORT_FLAG_CASE);
+        $facets = [];
+        foreach ($products as $quality => $product_ids) {
+            $facets[] = ['value' => $quality, 'total' => count($product_ids)];
+        }
         return $facets;
     }
 
@@ -120,12 +181,35 @@ class Catalog extends \Opencart\System\Engine\Model {
             $value = $this->db->escape($this->localizedAttributeValue($filter_key, (string)$filter[$filter_key]));
             $sql .= " AND EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_attribute` `pa_" . $attribute_key . "` WHERE `pa_" . $attribute_key . "`.`product_id` = `p`.`product_id` AND `pa_" . $attribute_key . "`.`attribute_id` = '" . $attribute_id . "' AND `pa_" . $attribute_key . "`.`language_id` = '" . (int)$this->config->get('config_language_id') . "' AND TRIM(`pa_" . $attribute_key . "`.`text`) = '" . $value . "')";
         }
-        foreach (['gemstone', 'stone_shape', 'stone_quality', 'style'] as $key) {
+        foreach (['gemstone', 'style'] as $key) {
             $attribute_id = (int)($attribute_map[$key] ?? 0);
             if ($attribute_id && !empty($filter[$key])) {
                 $filter_value = trim((string)$filter[$key]);
-                $value = $this->db->escape($key === 'stone_shape' ? $this->localizedAttributeValue($key, $filter_value) : $filter_value);
+                $value = $this->db->escape($filter_value);
                 $sql .= " AND EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_attribute` `pa_" . $key . "` WHERE `pa_" . $key . "`.`product_id` = `p`.`product_id` AND `pa_" . $key . "`.`attribute_id` = '" . $attribute_id . "' AND `pa_" . $key . "`.`language_id` = '" . (int)$this->config->get('config_language_id') . "' AND TRIM(`pa_" . $key . "`.`text`) = '" . $value . "')";
+            }
+        }
+        if (!empty($filter['stone_shape']) && isset($this->stoneShapeAliases()[(string)$filter['stone_shape']])) {
+            $shape = (string)$filter['stone_shape'];
+            $predicates = [];
+            foreach ($this->stoneShapeAliases()[$shape] as $alias) {
+                $value = $this->db->escape('(^|[^[:alnum:]_])' . mb_strtolower($alias) . '([^[:alnum:]_]|$)');
+                $predicates[] = "LOWER(CONCAT_WS(' ', `pd`.`name`, `pd`.`description`, `pd`.`tag`)) REGEXP '" . $value . "'";
+                if (!empty($attribute_map['stone_shape'])) {
+                    $predicates[] = "EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_attribute` `pa_shape` WHERE `pa_shape`.`product_id` = `p`.`product_id` AND `pa_shape`.`attribute_id` = '" . (int)$attribute_map['stone_shape'] . "' AND `pa_shape`.`language_id` = '" . (int)$this->config->get('config_language_id') . "' AND LOWER(TRIM(`pa_shape`.`text`)) REGEXP '" . $value . "')";
+                }
+            }
+            $sql .= ' AND (' . implode(' OR ', $predicates) . ')';
+        }
+        if (!empty($filter['stone_quality'])) {
+            $quality = strtoupper(preg_replace('/[^A-Z0-9\/-]/i', '', (string)$filter['stone_quality']));
+            if ($quality !== '') {
+                $value = $this->db->escape($quality);
+                $predicates = ["EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_option_value` `pov_quality` INNER JOIN `" . DB_PREFIX . "option_value_description` `ovd_quality` ON (`ovd_quality`.`option_value_id` = `pov_quality`.`option_value_id` AND `ovd_quality`.`language_id` = '" . (int)$this->config->get('config_language_id') . "') WHERE `pov_quality`.`product_id` = `p`.`product_id` AND UPPER(`ovd_quality`.`name`) LIKE '%" . $value . "%')"];
+                if (!empty($attribute_map['stone_quality'])) {
+                    $predicates[] = "EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_attribute` `pa_quality` WHERE `pa_quality`.`product_id` = `p`.`product_id` AND `pa_quality`.`attribute_id` = '" . (int)$attribute_map['stone_quality'] . "' AND `pa_quality`.`language_id` = '" . (int)$this->config->get('config_language_id') . "' AND UPPER(TRIM(`pa_quality`.`text`)) = '" . $value . "')";
+                }
+                $sql .= ' AND (' . implode(' OR ', $predicates) . ')';
             }
         }
         $carat_attribute_id = (int)($attribute_map['carat'] ?? 0);
@@ -165,6 +249,22 @@ class Catalog extends \Opencart\System\Engine\Model {
         if (is_array($value)) return $value;
         $decoded = json_decode((string)$value, true);
         return is_array($decoded) ? $decoded : [];
+    }
+
+    private function stoneShapeAliases(): array {
+        return [
+            'round' => ['round', 'rund', 'kulatý', 'круглый', 'кругла'],
+            'princess' => ['princess', 'prinzess', 'принцесса', 'принцеса'],
+            'marquise' => ['marquise', 'markýza', 'маркиз', 'маркіз'],
+            'baguette' => ['baguette', 'bageta', 'багет'],
+            'cushion' => ['cushion', 'kissen', 'polštářek', 'кушон'],
+            'heart' => ['heart', 'herz', 'srdce', 'сердце', 'серце'],
+            'oval' => ['oval', 'ovál', 'овал'],
+            'pear' => ['pear', 'birne', 'hruška', 'груша'],
+            'emerald' => ['emerald', 'smaragd', 'smaragdový', 'изумруд', 'смарагд'],
+            'radiant' => ['radiant', 'radiant-cut', 'радиант'],
+            'asscher' => ['asscher', 'ашер']
+        ];
     }
 
     private function localizedAttributeValue(string $key, string $value): string {

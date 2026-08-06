@@ -6,7 +6,9 @@ class Noveraile extends \Opencart\System\Engine\Controller {
     private const CATALOG_HEADERS = [
         'product_id', 'model', 'sku', 'language_code', 'name', 'description', 'meta_title',
         'meta_description', 'meta_keyword', 'tag', 'price', 'quantity', 'status',
-        'category_ids', 'image', 'weight', 'sort_order', 'date_available'
+        'category_ids', 'image', 'additional_images', 'weight', 'sort_order', 'date_available',
+        'metal', 'fineness', 'stone_origin', 'gemstone', 'stone_shape',
+        'stone_quality', 'carat', 'stone_count', 'style'
     ];
 
     public function index(): void {
@@ -55,11 +57,23 @@ class Noveraile extends \Opencart\System\Engine\Controller {
             'module_noveraile_blog_route',
             'module_noveraile_native_menu_status',
             'payment_stripe_secret_key', 'payment_stripe_webhook_secret',
-            'payment_stripe_status', 'shipping_dhl_cost', 'shipping_dpd_cost'
+            'payment_stripe_status',
+            'shipping_dhl_status', 'shipping_dhl_eu_cost', 'shipping_dhl_world_cost',
+            'shipping_dpd_status', 'shipping_dpd_ukraine_cost', 'shipping_dpd_eu_cost'
         ];
 
         foreach ($keys as $key) {
             $data[$key] = $this->config->get($key);
+        }
+        foreach ([
+            'shipping_dhl_eu_cost' => 25,
+            'shipping_dhl_world_cost' => 25,
+            'shipping_dpd_ukraine_cost' => 15,
+            'shipping_dpd_eu_cost' => 15
+        ] as $key => $default) {
+            if ($data[$key] === null || $data[$key] === '') {
+                $data[$key] = $default;
+            }
         }
         $data['module_noveraile_blog_route'] = $data['module_noveraile_blog_route'] ?: 'cms/blog';
 
@@ -115,6 +129,27 @@ class Noveraile extends \Opencart\System\Engine\Controller {
         $blog_route = trim((string)($this->request->post['module_noveraile_blog_route'] ?? 'cms/blog'));
         if (!preg_match('#^[a-z0-9_]+(?:/[a-z0-9_]+)+(?:\.[a-zA-Z0-9_]+)?$#', $blog_route)) {
             $json['error'] = $this->language->get('error_blog_route');
+        }
+
+        foreach (['shipping_dhl_eu_cost', 'shipping_dhl_world_cost', 'shipping_dpd_ukraine_cost', 'shipping_dpd_eu_cost'] as $rate_key) {
+            $rate = $this->request->post[$rate_key] ?? null;
+            if (!is_numeric($rate) || (float)$rate < 0 || (float)$rate > 10000) {
+                $json['error'] = $this->language->get('error_shipping_rate');
+                break;
+            }
+        }
+        if (!empty($this->request->post['payment_stripe_status'])) {
+            $stripe_secret = trim((string)($this->request->post['payment_stripe_secret_key'] ?? ''));
+            $stripe_webhook = trim((string)($this->request->post['payment_stripe_webhook_secret'] ?? ''));
+            if ($stripe_secret === '') {
+                $stripe_secret = trim((string)$this->config->get('payment_stripe_secret_key'));
+            }
+            if ($stripe_webhook === '') {
+                $stripe_webhook = trim((string)$this->config->get('payment_stripe_webhook_secret'));
+            }
+            if (!preg_match('/^sk_(?:test|live)_[A-Za-z0-9]+$/', $stripe_secret) || !preg_match('/^whsec_[A-Za-z0-9]+$/', $stripe_webhook)) {
+                $json['error'] = $this->language->get('error_stripe_config');
+            }
         }
 
         if (!$json) {
@@ -259,9 +294,19 @@ class Noveraile extends \Opencart\System\Engine\Controller {
             'status' => '1',
             'category_ids' => '',
             'image' => 'catalog/products/example.jpg',
+            'additional_images' => 'catalog/products/example-side.jpg|catalog/products/example-detail.jpg',
             'weight' => '0',
             'sort_order' => '0',
-            'date_available' => date('Y-m-d')
+            'date_available' => date('Y-m-d'),
+            'metal' => 'Yellow gold',
+            'fineness' => '750',
+            'stone_origin' => 'Natural',
+            'gemstone' => 'Diamond',
+            'stone_shape' => 'Round',
+            'stone_quality' => 'G/VS2',
+            'carat' => '0.50',
+            'stone_count' => '1',
+            'style' => 'Classic'
         ]]);
     }
 

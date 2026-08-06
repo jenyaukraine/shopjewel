@@ -2,7 +2,7 @@
 <section class="quiz-shell" data-six-quiz data-rules="{{ quiz_rules }}" data-start="{{ six_start }}" data-next="{{ six_next }}" data-finish="{{ six_show_results }}">
   <header class="quiz-heading">
     <div class="quiz-heading__meta"><p class="eyebrow">{{ six_brand_name }} · {{ six_personal_edit }}</p><span><b data-quiz-current>01</b> / 05</span></div>
-    <h1>{{ six_quiz_title }}</h1>
+    <h1>{{ six_quiz_title|trim('.') }}</h1>
     <p>{{ six_quiz_intro }}</p>
     <div class="quiz-progress" aria-label="{{ six_quiz_progress }}"><span></span><i></i><i></i><i></i><i></i><i></i></div>
   </header>
@@ -15,6 +15,6 @@
     <p class="quiz-error" role="alert" data-quiz-error>{{ six_quiz_select_error }}</p>
     <div class="quiz-actions"><button class="quiz-back" type="button" data-quiz-back hidden><span>←</span> {{ six_back }}</button><button class="quiz-next" type="button" data-quiz-next><span>{{ six_start }}</span><b>→</b></button></div>
   </form>
-  <section class="quiz-results" hidden><p class="eyebrow">{{ six_result }}</p><h2 data-quiz-moment></h2><p class="quiz-results__intro">{{ six_quiz_result_intro }}</p><div class="collection-grid product-grid quiz-product-grid">{% for product in products %}{{ product.card }}{% endfor %}</div><form class="quiz-email" action="{{ newsletter_action }}" method="post" data-six-ajax-form><h3>{{ six_email_edit }}</h3><p>{{ six_email_edit_copy }}</p><div><input type="email" name="email" placeholder="{{ six_newsletter_placeholder }}" required><button class="button button--dark" type="submit">{{ six_send_edit }}</button></div><label><input type="checkbox" name="consent" value="1" required> {{ six_consent }}</label><p class="six-form-status" role="status"></p></form></section>
+  <section class="quiz-results" hidden><p class="eyebrow">{{ six_result }}</p><h2 data-quiz-moment></h2><p class="quiz-results__intro">{{ six_quiz_result_intro }}</p><div class="collection-grid product-grid quiz-product-grid">{% for product in products %}{{ product.card }}{% endfor %}</div><form class="quiz-email" action="{{ newsletter_action }}" method="post" data-six-ajax-form><h3>{{ six_email_edit|trim('.') }}</h3><p>{{ six_email_edit_copy }}</p><div><input type="email" name="email" placeholder="{{ six_newsletter_placeholder }}" required><button class="button button--dark" type="submit">{{ six_send_edit }}</button></div><label><input type="checkbox" name="consent" value="1" required> {{ six_consent }}</label><p class="six-form-status" role="status"></p></form></section>
 </section>
 {{ footer }}

@@ -8,7 +8,7 @@
     </div>
     <div class="listing-hero__copy">
       <p class="eyebrow">{{ six_collections }}</p>
-      <h1>{{ heading_title }}</h1>
+      <h1>{{ heading_title|trim('.') }}</h1>
       <div class="listing-description">
         {% if description %}{{ description }}{% else %}<p>{{ six_catalog_intro }}</p>{% endif %}
       </div>
@@ -23,7 +23,7 @@
       <section class="listing-categories" aria-labelledby="listing-categories-title">
         <header class="listing-section-heading">
           <div>
-            <h2 id="listing-categories-title">{{ six_shop_by_type }}</h2>
+            <h2 id="listing-categories-title">{{ six_shop_by_type|trim('.') }}</h2>
             <span>{{ six_listing_categories|length < 10 ? '0' : '' }}{{ six_listing_categories|length }}</span>
           </div>
           <a class="listing-category-all" href="{{ six_catalog_url }}">
@@ -75,7 +75,7 @@
           <div class="listing-empty-state__mark" aria-hidden="true"><span>6</span><i></i></div>
           <div class="listing-empty-state__copy">
             <p class="eyebrow">{{ six_collections }}</p>
-            <h2>{{ six_no_products }}</h2>
+            <h2>{{ six_no_products|trim('.') }}</h2>
             <p>{{ six_catalog_intro }}</p>
             <a class="button button--dark" href="{{ six_catalog_url }}">{{ six_view_all }}</a>
           </div>

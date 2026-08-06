@@ -3,7 +3,7 @@
   <header class="journal-article-hero">
     <a class="journal-back-link" href="{{ six_journal_url }}"><span aria-hidden="true">←</span> {{ six_journal_kicker }}</a>
     <p class="eyebrow">{{ author }} · {{ date_added }}</p>
-    <h1>{{ heading_title }}</h1>
+    <h1>{{ heading_title|trim('.') }}</h1>
   </header>
 
   <figure class="journal-article-image">
