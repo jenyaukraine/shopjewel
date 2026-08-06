@@ -39,7 +39,8 @@ class Noveraile extends \Opencart\System\Engine\Controller {
 
         $keys = [
             'module_noveraile_status', 'module_noveraile_brand_name', 'module_noveraile_instagram', 'module_noveraile_email',
-            'module_noveraile_phone', 'module_noveraile_legal_name', 'module_noveraile_legal_form',
+            'module_noveraile_phone', 'module_noveraile_whatsapp', 'module_noveraile_telegram', 'module_noveraile_facebook',
+            'module_noveraile_legal_name', 'module_noveraile_legal_form',
             'module_noveraile_legal_representative', 'module_noveraile_legal_address',
             'module_noveraile_legal_register', 'module_noveraile_vat_id',
             'module_noveraile_supervisory_authority', 'module_noveraile_content_responsible',

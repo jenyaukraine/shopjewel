@@ -50,6 +50,7 @@ class Theme extends \Opencart\System\Engine\Controller {
         }
         $data['six_home'] = $this->url->link('common/home', 'language=' . $this->config->get('config_language'));
         $data['six_catalog_url'] = $this->url->link('extension/noveraile/page/catalog', 'language=' . $this->config->get('config_language'));
+        $data['six_contact_url'] = (string)($this->config->get('module_noveraile_whatsapp') ?: 'https://wa.me/491707647729');
         $data['six_about_url'] = $this->url->link('extension/noveraile/page/about', 'language=' . $this->config->get('config_language'));
         $data['six_diamonds_url'] = $this->url->link('extension/noveraile/page/diamonds', 'language=' . $this->config->get('config_language'));
         $data['six_quiz_url'] = $this->url->link('extension/noveraile/page/quiz', 'language=' . $this->config->get('config_language'));
@@ -157,7 +158,7 @@ class Theme extends \Opencart\System\Engine\Controller {
         $data['six_faq_url'] = $this->url->link('extension/noveraile/page/faq', $lang);
         $data['six_journal_url'] = $this->url->link($this->blogRoute(), $lang);
         $data['six_catalog_url'] = $this->url->link('extension/noveraile/page/catalog', $lang);
-        $data['six_contact_url'] = $this->url->link('information/contact', $lang);
+        $data['six_contact_url'] = (string)($this->config->get('module_noveraile_whatsapp') ?: 'https://wa.me/491707647729');
         $data['six_privacy_url'] = $this->url->link('extension/noveraile/page/privacy', $lang);
         $data['six_imprint_url'] = $this->url->link('extension/noveraile/page/imprint', $lang);
         $data['six_terms_url'] = $this->url->link('extension/noveraile/page/terms', $lang);
@@ -165,7 +166,10 @@ class Theme extends \Opencart\System\Engine\Controller {
         $data['six_instagram'] = $this->config->get('module_noveraile_instagram');
         $instagram_path = trim((string)parse_url((string)$data['six_instagram'], PHP_URL_PATH), '/');
         $data['six_instagram_label'] = $instagram_path ? '@' . basename($instagram_path) : '@' . strtolower(preg_replace('/[^a-z0-9]+/i', '', $data['six_brand_name']));
-        $data['six_email'] = $this->config->get('module_noveraile_email');
+        $data['six_email'] = (string)($this->config->get('module_noveraile_email') ?: '6moments.jewelry@gmail.com');
+        $data['six_whatsapp'] = (string)($this->config->get('module_noveraile_whatsapp') ?: 'https://wa.me/491707647729');
+        $data['six_telegram'] = (string)($this->config->get('module_noveraile_telegram') ?: 'https://wa.me/491707647729');
+        $data['six_facebook'] = (string)($this->config->get('module_noveraile_facebook') ?: 'https://www.facebook.com/profile.php?id=61587187514053');
         $data['six_year'] = date('Y');
     }
 
@@ -279,8 +283,8 @@ class Theme extends \Opencart\System\Engine\Controller {
         $data['six_shipping_url'] = $this->url->link('extension/noveraile/page/shipping', 'language=' . $this->config->get('config_language'));
         $data['six_cart_add'] = $this->url->link('checkout/cart.add', 'language=' . $this->config->get('config_language'));
         $data['six_bundle_add'] = $this->url->link('extension/noveraile/bundle.add', 'language=' . $this->config->get('config_language'));
-        $metal = $this->tagChoice($data['six_tags'], ['white-gold','yellow-gold','rose-gold','platinum','alloy']) ?: 'yellow-gold';
-        $metal_keys = ['white-gold'=>'six_white_gold','yellow-gold'=>'six_yellow_gold','rose-gold'=>'six_rose_gold','platinum'=>'six_platinum','alloy'=>'six_alloy'];
+        $metal = $this->tagChoice($data['six_tags'], ['white-gold','yellow-gold','rose-gold','alloy']) ?: 'yellow-gold';
+        $metal_keys = ['white-gold'=>'six_white_gold','yellow-gold'=>'six_yellow_gold','rose-gold'=>'six_rose_gold','alloy'=>'six_alloy'];
         $data['six_metal_value'] = $this->language->get($metal_keys[$metal] ?? 'six_yellow_gold');
         $stone = $this->tagChoice($data['six_tags'], ['natural','lab-grown']);
         $data['six_stone_value'] = in_array('no-stones', $data['six_tags'], true) ? $this->language->get('six_no_stones') : $this->language->get($stone === 'lab-grown' ? 'six_lab_grown' : 'six_natural');
@@ -288,7 +292,7 @@ class Theme extends \Opencart\System\Engine\Controller {
         $tag_stones = $this->tagPrefix($data['six_tags'], 'stones-');
         $data['six_carat_value'] = $tag_carat !== '' ? $tag_carat . ' ct' : '—';
         $data['six_stones_value'] = $tag_stones !== '' ? $tag_stones : '—';
-        $data['six_fineness_value'] = $this->tagChoice($data['six_tags'], ['585','750','950']) ?: '—';
+        $data['six_fineness_value'] = $this->tagChoice($data['six_tags'], ['585','750']) ?: '—';
         $data['six_delivery_value'] = in_array('delivery-3', $data['six_tags'], true) || (int)($info['quantity'] ?? 0) > 0 ? $this->language->get('six_delivery_3') : $this->language->get('six_delivery_10');
         $data['six_bundle_product'] = [];
         $this->load->model('extension/noveraile/catalog');
@@ -387,7 +391,11 @@ class Theme extends \Opencart\System\Engine\Controller {
     public function contact(string &$route, array &$data, string &$code = '', string &$output = ''): void {
         if (!$this->enabled() || !$this->claimView($route, ['information/contact'], 'extension/noveraile/information/contact')) return;
         $this->words($data);
-        $data['six_contact_email'] = $this->config->get('module_noveraile_email') ?: $this->config->get('config_email');
+        $data['six_contact_email'] = $this->config->get('module_noveraile_email') ?: '6moments.jewelry@gmail.com';
+        $data['six_whatsapp'] = (string)($this->config->get('module_noveraile_whatsapp') ?: 'https://wa.me/491707647729');
+        $data['six_telegram'] = (string)($this->config->get('module_noveraile_telegram') ?: 'https://wa.me/491707647729');
+        $data['six_instagram'] = (string)($this->config->get('module_noveraile_instagram') ?: 'https://www.instagram.com/6moments_jewelry');
+        $data['six_facebook'] = (string)($this->config->get('module_noveraile_facebook') ?: 'https://www.facebook.com/profile.php?id=61587187514053');
     }
 
     public function cart(string &$route, array &$data, string &$code = '', string &$output = ''): void {
@@ -429,7 +437,7 @@ class Theme extends \Opencart\System\Engine\Controller {
         $lang = 'language=' . $this->config->get('config_language');
         $data['six_cart_url'] = $this->url->link('checkout/cart', $lang);
         $data['six_catalog_url'] = $this->url->link('extension/noveraile/page/catalog', $lang);
-        $data['six_contact_url'] = $this->url->link('information/contact', $lang);
+        $data['six_contact_url'] = (string)($this->config->get('module_noveraile_whatsapp') ?: 'https://wa.me/491707647729');
     }
 
     public function captureSuccess(string &$route, array &$args = []): void {

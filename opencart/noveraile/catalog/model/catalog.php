@@ -55,7 +55,7 @@ class Catalog extends \Opencart\System\Engine\Model {
      * a new cut, gemstone or style in admin without changing this template.
      */
     public function getAttributeFacets(): array {
-        $facets = ['gemstone' => [], 'stone_shape' => [], 'style' => []];
+        $facets = ['gemstone' => [], 'stone_shape' => [], 'stone_quality' => [], 'style' => []];
         $attribute_map = $this->attributeMap();
         $language_id = (int)$this->config->get('config_language_id');
         $store_id = (int)$this->config->get('config_store_id');
@@ -64,7 +64,7 @@ class Catalog extends \Opencart\System\Engine\Model {
             $attribute_id = (int)($attribute_map[$key] ?? 0);
             if (!$attribute_id) continue;
             $sql = "SELECT TRIM(`pa`.`text`) AS `value`, COUNT(DISTINCT `p`.`product_id`) AS `total` FROM `" . DB_PREFIX . "product_attribute` `pa` INNER JOIN `" . DB_PREFIX . "product` `p` ON (`p`.`product_id` = `pa`.`product_id` AND `p`.`status` = '1' AND `p`.`date_available` <= NOW()) INNER JOIN `" . DB_PREFIX . "product_to_store` `p2s` ON (`p2s`.`product_id` = `p`.`product_id` AND `p2s`.`store_id` = '" . $store_id . "') WHERE `pa`.`attribute_id` = '" . $attribute_id . "' AND `pa`.`language_id` = '" . $language_id . "' AND TRIM(`pa`.`text`) <> ''";
-            if ($key === 'stone_shape' && !empty($attribute_map['carat'])) {
+            if (in_array($key, ['stone_shape', 'stone_quality'], true) && !empty($attribute_map['carat'])) {
                 $sql .= " AND EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_attribute` `pa_carat` WHERE `pa_carat`.`product_id` = `p`.`product_id` AND `pa_carat`.`attribute_id` = '" . (int)$attribute_map['carat'] . "' AND `pa_carat`.`language_id` = '" . $language_id . "' AND CAST(REPLACE(`pa_carat`.`text`, ',', '.') AS DECIMAL(10,3)) > 0)";
             }
             $sql .= " GROUP BY TRIM(`pa`.`text`) ORDER BY TRIM(`pa`.`text`) ASC";
@@ -120,10 +120,11 @@ class Catalog extends \Opencart\System\Engine\Model {
             $value = $this->db->escape($this->localizedAttributeValue($filter_key, (string)$filter[$filter_key]));
             $sql .= " AND EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_attribute` `pa_" . $attribute_key . "` WHERE `pa_" . $attribute_key . "`.`product_id` = `p`.`product_id` AND `pa_" . $attribute_key . "`.`attribute_id` = '" . $attribute_id . "' AND `pa_" . $attribute_key . "`.`language_id` = '" . (int)$this->config->get('config_language_id') . "' AND TRIM(`pa_" . $attribute_key . "`.`text`) = '" . $value . "')";
         }
-        foreach (['gemstone', 'stone_shape', 'style'] as $key) {
+        foreach (['gemstone', 'stone_shape', 'stone_quality', 'style'] as $key) {
             $attribute_id = (int)($attribute_map[$key] ?? 0);
             if ($attribute_id && !empty($filter[$key])) {
-                $value = $this->db->escape(trim((string)$filter[$key]));
+                $filter_value = trim((string)$filter[$key]);
+                $value = $this->db->escape($key === 'stone_shape' ? $this->localizedAttributeValue($key, $filter_value) : $filter_value);
                 $sql .= " AND EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_attribute` `pa_" . $key . "` WHERE `pa_" . $key . "`.`product_id` = `p`.`product_id` AND `pa_" . $key . "`.`attribute_id` = '" . $attribute_id . "' AND `pa_" . $key . "`.`language_id` = '" . (int)$this->config->get('config_language_id') . "' AND TRIM(`pa_" . $key . "`.`text`) = '" . $value . "')";
             }
         }
@@ -180,6 +181,15 @@ class Catalog extends \Opencart\System\Engine\Model {
                 'natural' => ['Natural','Natürlich','Přírodní','Натуральный','Натуральний'],
                 'lab-grown' => ['Lab-grown','Laborgezüchtet','Laboratorní','Лабораторный','Лабораторний'],
                 'no-stones' => ['Not applicable','Nicht zutreffend','Nevztahuje se','Не применяется','Не застосовується']
+            ],
+            'stone_shape' => [
+                'round' => ['Round','Rund','Kulatý','Круглая','Кругла'],
+                'princess' => ['Princess','Prinzess','Princess','Принцесса','Принцеса'],
+                'marquise' => ['Marquise','Marquise','Markýza','Маркиз','Маркіз'],
+                'baguette' => ['Baguette','Baguette','Bageta','Багет','Багет'],
+                'cushion' => ['Cushion','Kissen','Polštářek','Кушон','Кушон'],
+                'heart' => ['Heart','Herz','Srdce','Сердце','Серце'],
+                'oval' => ['Oval','Oval','Ovál','Овал','Овал']
             ]
         ];
         return $values[$key][$value][$language_index] ?? $value;

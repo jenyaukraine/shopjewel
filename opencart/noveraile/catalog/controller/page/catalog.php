@@ -12,8 +12,8 @@ class Catalog extends \Opencart\System\Engine\Controller {
         $allowed = [
             'type' => ['rings','earrings','necklaces','bracelets','wedding'],
             'moment' => ['engagement','wedding','motherhood','career','self-purchase','milestone'],
-            'metal' => ['white-gold','yellow-gold','rose-gold','platinum'],
-            'fineness' => ['585','750','950'],
+            'metal' => ['white-gold','yellow-gold','rose-gold'],
+            'fineness' => ['585','750'],
             'stone' => ['natural','lab-grown','no-stones'],
             'availability' => ['ready','preorder'],
             'delivery' => ['delivery-3','delivery-10'],
@@ -51,12 +51,27 @@ class Catalog extends \Opencart\System\Engine\Controller {
             $data['price_slider_min'] = $data['price_slider_max'];
         }
         $facets = $this->model_extension_noveraile_catalog->getAttributeFacets();
-        foreach (['gemstone' => 'gemstones', 'stone_shape' => 'stone_shapes', 'style' => 'styles'] as $key => $data_key) {
+        foreach (['gemstone' => 'gemstones', 'stone_quality' => 'stone_qualities', 'style' => 'styles'] as $key => $data_key) {
             $data[$data_key] = $facets[$key] ?? [];
             $values = array_column($data[$data_key], 'value');
             $value = trim((string)($this->request->get[$key] ?? ''));
             $filter[$key] = in_array($value, $values, true) ? $value : '';
         }
+        $shape_facets = [];
+        foreach ($facets['stone_shape'] ?? [] as $facet) {
+            $shape_facets[mb_strtolower(trim((string)$facet['value']))] = (int)$facet['total'];
+        }
+        $data['stone_shapes'] = [];
+        foreach (['round','princess','marquise','baguette','cushion','heart','oval'] as $shape) {
+            $localized = (string)($data['six_shape_' . $shape] ?? ucfirst($shape));
+            $data['stone_shapes'][] = [
+                'value' => $shape,
+                'name' => $localized,
+                'total' => $shape_facets[mb_strtolower($localized)] ?? 0
+            ];
+        }
+        $shape = trim((string)($this->request->get['stone_shape'] ?? ''));
+        $filter['stone_shape'] = in_array($shape, array_column($data['stone_shapes'], 'value'), true) ? $shape : '';
         $data['ring_sizes'] = $this->model_extension_noveraile_catalog->getRingSizes();
         $ring_size = trim((string)($this->request->get['ring_size'] ?? ''));
         $filter['ring_size'] = in_array($ring_size, array_column($data['ring_sizes'], 'value'), true) ? $ring_size : '';

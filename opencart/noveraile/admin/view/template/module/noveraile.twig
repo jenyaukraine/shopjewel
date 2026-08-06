@@ -52,6 +52,9 @@
               <div class="row mb-3"><label class="col-sm-3 col-form-label">{{ entry_instagram }}</label><div class="col-sm-9"><input class="form-control" type="url" name="module_noveraile_instagram" value="{{ module_noveraile_instagram }}"></div></div>
               <div class="row mb-3"><label class="col-sm-3 col-form-label">{{ entry_email }}</label><div class="col-sm-9"><input class="form-control" type="email" name="module_noveraile_email" value="{{ module_noveraile_email }}"></div></div>
               <div class="row mb-3"><label class="col-sm-3 col-form-label">{{ entry_phone }}</label><div class="col-sm-9"><input class="form-control" name="module_noveraile_phone" value="{{ module_noveraile_phone }}"></div></div>
+              <div class="row mb-3"><label class="col-sm-3 col-form-label">{{ entry_whatsapp }}</label><div class="col-sm-9"><input class="form-control" type="url" name="module_noveraile_whatsapp" value="{{ module_noveraile_whatsapp }}"></div></div>
+              <div class="row mb-3"><label class="col-sm-3 col-form-label">{{ entry_telegram }}</label><div class="col-sm-9"><input class="form-control" type="url" name="module_noveraile_telegram" value="{{ module_noveraile_telegram }}"></div></div>
+              <div class="row mb-3"><label class="col-sm-3 col-form-label">{{ entry_facebook }}</label><div class="col-sm-9"><input class="form-control" type="url" name="module_noveraile_facebook" value="{{ module_noveraile_facebook }}"></div></div>
               <div class="card bg-light border-0 mt-4"><div class="card-body"><h5>{{ text_demo_title }}</h5><p>{{ text_demo_help }}</p>{% if demo_installed %}<span class="badge bg-success">{{ text_demo_installed }}</span>{% else %}<button type="submit" formaction="{{ install_demo }}" class="btn btn-warning" onclick="return confirm('{{ text_demo_confirm|escape('js') }}');"><i class="fa-solid fa-database"></i> {{ button_install_demo }}</button>{% endif %}</div></div>
             </section>
 

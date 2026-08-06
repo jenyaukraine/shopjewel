@@ -329,7 +329,7 @@ test("extension source contains no development artifacts or live Stripe secrets"
 });
 
 test("6 Moments storefront requirements remain wired into the package", async () => {
-  const [installer, home, theme, cart, coupon, quiz, pricing, total, success] = await Promise.all([
+  const [installer, home, theme, cart, coupon, quiz, pricing, total, success, catalogController, catalogTemplate, language, footer, contact] = await Promise.all([
     readFile(path.join(root, "admin/model/module/noveraile.php"), "utf8"),
     readFile(path.join(root, "catalog/view/template/common/home.twig"), "utf8"),
     readFile(path.join(root, "catalog/controller/event/theme.php"), "utf8"),
@@ -339,6 +339,11 @@ test("6 Moments storefront requirements remain wired into the package", async ()
     readFile(path.join(root, "catalog/model/pricing.php"), "utf8"),
     readFile(path.join(root, "catalog/model/total/bundle.php"), "utf8"),
     readFile(path.join(root, "catalog/view/template/checkout/success.twig"), "utf8"),
+    readFile(path.join(root, "catalog/controller/page/catalog.php"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/page/catalog.twig"), "utf8"),
+    readFile(path.join(root, "catalog/language/en-gb/module/noveraile.php"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/common/footer.twig"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/information/contact.twig"), "utf8"),
   ]);
   assert.match(installer, /module_noveraile_catalog_version', '6'/);
   assert.equal((installer.match(/\['(?:promise-solitaire|union-band|arrival-pendant|becoming-hoops|gratitude-bracelet|legacy-signet|eternity-band|horizon-studs|keepsake-pendant|self-promise-ring)'/g) ?? []).length, 10);
@@ -354,4 +359,15 @@ test("6 Moments storefront requirements remain wired into the package", async ()
   assert.match(total, /market_adjustment/);
   assert.match(theme, /open\.er-api\.com\/v6\/latest\/USD/);
   assert.match(success, /six_order_id/);
+  assert.match(installer, /6moments\.jewelry@gmail\.com/);
+  assert.match(installer, /https:\/\/wa\.me\/491707647729/);
+  assert.match(installer, /'stone_quality'\s*=>/);
+  assert.doesNotMatch(catalogController, /'metal'\s*=>\s*\[[^\]]*'platinum'/);
+  assert.doesNotMatch(catalogController, /'fineness'\s*=>\s*\[[^\]]*'950'/);
+  assert.match(catalogController, /\['round','princess','marquise','baguette','cushion','heart','oval'\]/);
+  assert.doesNotMatch(catalogTemplate, /value="(?:platinum|950)"/);
+  assert.match(catalogTemplate, /name="stone_quality"/);
+  assert.match(language, /six_contact'\]\s*=\s*'Personal consultation'/);
+  assert.match(footer, /six_facebook/);
+  assert.match(contact, /six_whatsapp/);
 });

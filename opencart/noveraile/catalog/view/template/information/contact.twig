@@ -19,6 +19,10 @@
         <dt>Email</dt>
         <dd><a href="mailto:{{ six_contact_email }}">{{ six_contact_email }}</a></dd>
       </div>
+      <div><dt>WhatsApp</dt><dd><a href="{{ six_whatsapp }}" target="_blank" rel="noopener">+49 170 7647729</a></dd></div>
+      <div><dt>Instagram</dt><dd><a href="{{ six_instagram }}" target="_blank" rel="noopener">@6moments_jewelry</a></dd></div>
+      <div><dt>Facebook</dt><dd><a href="{{ six_facebook }}" target="_blank" rel="noopener">6 Moments Jewelry</a></dd></div>
+      <div><dt>Telegram</dt><dd><a href="{{ six_telegram }}" target="_blank" rel="noopener">6 Moments Jewelry</a></dd></div>
       {% if telephone %}
         <div><dt>{{ text_telephone }}</dt><dd><a href="tel:{{ telephone|replace({' ': '', '(': '', ')': '', '-': ''}) }}">{{ telephone }}</a></dd></div>
       {% else %}

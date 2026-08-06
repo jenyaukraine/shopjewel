@@ -17,9 +17,12 @@ class Noveraile extends \Opencart\System\Engine\Model {
         $this->installLanguages();
         $this->installCurrencies();
         $this->installSettings($with_demo_data);
+        $this->refreshProjectSettings();
 
         if ($with_demo_data) {
             $this->installDemo();
+        } else {
+            $this->installJewelryAttributes();
         }
     }
 
@@ -121,8 +124,11 @@ class Noveraile extends \Opencart\System\Engine\Model {
             'module_noveraile_status' => (int)$enable_storefront,
             'module_noveraile_brand_name' => in_array(trim((string)$this->config->get('config_name')), ['', 'Your Store'], true) ? '6 Moments' : (string)$this->config->get('config_name'),
             'module_noveraile_instagram' => 'https://www.instagram.com/6moments_jewelry?igsh=MTdnaHg4eWo0YzlrNQ==',
-            'module_noveraile_email' => (string)($this->config->get('config_email') ?: ''),
-            'module_noveraile_phone' => '',
+            'module_noveraile_email' => '6moments.jewelry@gmail.com',
+            'module_noveraile_phone' => '+49 170 7647729',
+            'module_noveraile_whatsapp' => 'https://wa.me/491707647729',
+            'module_noveraile_telegram' => 'https://wa.me/491707647729',
+            'module_noveraile_facebook' => 'https://www.facebook.com/profile.php?id=61587187514053',
             'module_noveraile_legal_name' => '',
             'module_noveraile_legal_form' => '',
             'module_noveraile_legal_representative' => '',
@@ -218,6 +224,23 @@ class Noveraile extends \Opencart\System\Engine\Model {
         $this->installDefaultSettings('total_bundle', [
             'total_bundle_status' => 1, 'total_bundle_sort_order' => 4
         ]);
+    }
+
+    private function refreshProjectSettings(): void {
+        $replacements = [
+            'module_noveraile_brand_name' => ['value' => '6 Moments', 'legacy' => ['', 'Your Store', 'NOVERAILE']],
+            'module_noveraile_email' => ['value' => '6moments.jewelry@gmail.com', 'legacy' => ['', 'atelier@6moments.store']],
+            'module_noveraile_phone' => ['value' => '+49 170 7647729', 'legacy' => ['']],
+            'module_noveraile_whatsapp' => ['value' => 'https://wa.me/491707647729', 'legacy' => ['']],
+            'module_noveraile_telegram' => ['value' => 'https://wa.me/491707647729', 'legacy' => ['']],
+            'module_noveraile_facebook' => ['value' => 'https://www.facebook.com/profile.php?id=61587187514053', 'legacy' => ['']]
+        ];
+        foreach ($replacements as $key => $replacement) {
+            $current = $this->db->query("SELECT `value` FROM `" . DB_PREFIX . "setting` WHERE `store_id` = '0' AND `key` = '" . $this->db->escape($key) . "' LIMIT 1");
+            if ($current->num_rows && in_array(trim((string)$current->row['value']), $replacement['legacy'], true)) {
+                $this->model_setting_setting->editValue('module_noveraile', $key, $replacement['value']);
+            }
+        }
     }
 
     private function installDefaultSettings(string $code, array $defaults): void {
@@ -341,7 +364,7 @@ class Noveraile extends \Opencart\System\Engine\Model {
             ['arrival-pendant', 'NVR-NE-003', 'necklaces', 1480, 1320, 7, 2.1, 'New Chapter Pendant', 'Anhänger Neues Kapitel', 'Přívěsek Nová kapitola', 'Подвеска «Новая глава»', 'Підвіска «Нова глава»', 'moment-03,motherhood,necklace,yellow-gold,750,natural,delivery-3,carat-0-10,stones-1', 'products/arrival-pendant.webp'],
             ['becoming-hoops', 'NVR-EA-004', 'earrings', 1180, 1040, 10, 4.2, 'Becoming Hoops', 'Creolen Becoming', 'Náušnice Becoming', 'Серьги «Становление»', 'Сережки «Становлення»', 'moment-04,career,earring,yellow-gold,750,no-stones,delivery-3,stones-0', 'products/becoming-hoops.webp'],
             ['gratitude-bracelet', 'NVR-BR-005', 'bracelets', 1790, 1560, 6, 2.6, 'Gratitude Bracelet', 'Armband Dankbarkeit', 'Náramek Vděčnost', 'Браслет «Благодарность»', 'Браслет «Вдячність»', 'moment-05,self-purchase,bracelet,yellow-gold,750,natural,delivery-3,carat-0-15,stones-1', 'products/gratitude-bracelet.webp'],
-            ['legacy-signet', 'NVR-RI-006', 'rings', 2250, 1990, 0, 8.4, 'Legacy Signet', 'Siegelring Vermächtnis', 'Pečetní prsten Odkaz', 'Перстень «Наследие»', 'Перстень «Спадщина»', 'moment-06,milestone,ring,platinum,950,no-stones,delivery-10,stones-0', 'products/legacy-signet.webp'],
+            ['legacy-signet', 'NVR-RI-006', 'rings', 2250, 1990, 0, 8.4, 'Legacy Signet', 'Siegelring Vermächtnis', 'Pečetní prsten Odkaz', 'Перстень «Наследие»', 'Перстень «Спадщина»', 'moment-06,milestone,ring,yellow-gold,750,no-stones,delivery-10,stones-0', 'products/legacy-signet.webp'],
             ['eternity-band', 'NVR-WE-007', 'wedding', 1650, 1480, 5, 3.4, 'Eternity Band', 'Eternity-Ring', 'Prsten Eternity', 'Кольцо «Вечность»', 'Каблучка «Вічність»', 'moment-02,wedding,ring,rose-gold,750,natural,delivery-3,carat-0-20,stones-18', 'products/union-band.webp'],
             ['horizon-studs', 'NVR-EA-008', 'earrings', 1320, 1160, 8, 2.2, 'Horizon Studs', 'Ohrstecker Horizont', 'Náušnice Horizont', 'Пусеты «Горизонт»', 'Пусети «Горизонт»', 'moment-04,career,earring,white-gold,750,lab-grown,delivery-3,carat-0-30,stones-2', 'products/becoming-hoops.webp'],
             ['keepsake-pendant', 'NVR-NE-009', 'necklaces', 1540, 1390, 6, 2.4, 'Keepsake Pendant', 'Anhänger Erinnerung', 'Přívěsek Vzpomínka', 'Подвеска «Память»', 'Підвіска «Спогад»', 'moment-03,motherhood,necklace,rose-gold,750,lab-grown,delivery-3,carat-0-25,stones-1', 'products/arrival-pendant.webp'],
@@ -525,6 +548,7 @@ class Noveraile extends \Opencart\System\Engine\Model {
             'stone_origin' => ['Stone origin', 'Steinherkunft', 'Původ kamene', 'Происхождение камня', 'Походження каменю'],
             'carat' => ['Total carat weight', 'Gesamtkaratgewicht', 'Celková karátová hmotnost', 'Общая каратность', 'Загальна каратність'],
             'stone_shape' => ['Stone shape', 'Steinform', 'Tvar kamene', 'Форма огранки', 'Форма огранювання'],
+            'stone_quality' => ['Stone quality', 'Steinqualität', 'Kvalita kamene', 'Качество камня', 'Якість каменю'],
             'style' => ['Jewelry style', 'Schmuckstil', 'Styl šperku', 'Стиль украшения', 'Стиль прикраси']
         ];
         $codes = array_keys($language_ids);
@@ -553,13 +577,18 @@ class Noveraile extends \Opencart\System\Engine\Model {
             'yellow-gold' => ['Yellow gold', 'Gelbgold', 'Žluté zlato', 'Жёлтое золото', 'Жовте золото'],
             'white-gold' => ['White gold', 'Weißgold', 'Bílé zlato', 'Белое золото', 'Біле золото'],
             'rose-gold' => ['Rose gold', 'Roségold', 'Růžové zlato', 'Розовое золото', 'Рожеве золото'],
-            'platinum' => ['Platinum', 'Platin', 'Platina', 'Платина', 'Платина'],
             'diamond' => ['Diamond', 'Diamant', 'Diamant', 'Бриллиант', 'Діамант'],
             'no-stones' => ['No stones', 'Ohne Steine', 'Bez kamenů', 'Без камней', 'Без каменів'],
             'lab-grown' => ['Lab-grown', 'Laborgezüchtet', 'Laboratorní', 'Лабораторный', 'Лабораторний'],
             'natural' => ['Natural', 'Natürlich', 'Přírodní', 'Натуральный', 'Натуральний'],
             'not-applicable' => ['Not applicable', 'Nicht zutreffend', 'Nevztahuje se', 'Не применяется', 'Не застосовується'],
             'round' => ['Round', 'Rund', 'Kulatý', 'Круглая', 'Кругла'],
+            'princess' => ['Princess', 'Prinzess', 'Princess', 'Принцесса', 'Принцеса'],
+            'marquise' => ['Marquise', 'Marquise', 'Markýza', 'Маркиз', 'Маркіз'],
+            'baguette' => ['Baguette', 'Baguette', 'Bageta', 'Багет', 'Багет'],
+            'cushion' => ['Cushion', 'Kissen', 'Polštářek', 'Кушон', 'Кушон'],
+            'heart' => ['Heart', 'Herz', 'Srdce', 'Сердце', 'Серце'],
+            'oval' => ['Oval', 'Oval', 'Ovál', 'Овал', 'Овал'],
             'solitaire' => ['Solitaire', 'Solitär', 'Solitér', 'Солитер', 'Солітер'],
             'wedding-band' => ['Wedding band', 'Ehering', 'Snubní prsten', 'Обручальное кольцо', 'Обручка'],
             'pendant' => ['Pendant', 'Anhänger', 'Přívěsek', 'Подвеска', 'Підвіска'],
@@ -570,16 +599,16 @@ class Noveraile extends \Opencart\System\Engine\Model {
             'studs' => ['Stud earrings', 'Ohrstecker', 'Pecky', 'Пусеты', 'Пусети']
         ];
         $specs = [
-            'NVR-RI-001' => ['metal'=>'yellow-gold','fineness'=>'750','gemstone'=>'diamond','stone_origin'=>'lab-grown','carat'=>'0.50','stone_shape'=>'round','style'=>'solitaire'],
+            'NVR-RI-001' => ['metal'=>'yellow-gold','fineness'=>'750','gemstone'=>'diamond','stone_origin'=>'lab-grown','carat'=>'0.50','stone_shape'=>'round','stone_quality'=>'G/VS2','style'=>'solitaire'],
             'NVR-WE-002' => ['metal'=>'yellow-gold','fineness'=>'750','gemstone'=>'no-stones','stone_origin'=>'not-applicable','carat'=>'0','stone_shape'=>'not-applicable','style'=>'wedding-band'],
-            'NVR-NE-003' => ['metal'=>'yellow-gold','fineness'=>'750','gemstone'=>'diamond','stone_origin'=>'natural','carat'=>'0.10','stone_shape'=>'round','style'=>'pendant'],
+            'NVR-NE-003' => ['metal'=>'yellow-gold','fineness'=>'750','gemstone'=>'diamond','stone_origin'=>'natural','carat'=>'0.10','stone_shape'=>'round','stone_quality'=>'G/SI','style'=>'pendant'],
             'NVR-EA-004' => ['metal'=>'yellow-gold','fineness'=>'750','gemstone'=>'no-stones','stone_origin'=>'not-applicable','carat'=>'0','stone_shape'=>'not-applicable','style'=>'hoops'],
-            'NVR-BR-005' => ['metal'=>'yellow-gold','fineness'=>'750','gemstone'=>'diamond','stone_origin'=>'natural','carat'=>'0.15','stone_shape'=>'round','style'=>'chain-bracelet'],
-            'NVR-RI-006' => ['metal'=>'platinum','fineness'=>'950','gemstone'=>'no-stones','stone_origin'=>'not-applicable','carat'=>'0','stone_shape'=>'not-applicable','style'=>'signet'],
-            'NVR-WE-007' => ['metal'=>'rose-gold','fineness'=>'750','gemstone'=>'diamond','stone_origin'=>'natural','carat'=>'0.20','stone_shape'=>'round','style'=>'eternity'],
-            'NVR-EA-008' => ['metal'=>'white-gold','fineness'=>'750','gemstone'=>'diamond','stone_origin'=>'lab-grown','carat'=>'0.30','stone_shape'=>'round','style'=>'studs'],
-            'NVR-NE-009' => ['metal'=>'rose-gold','fineness'=>'750','gemstone'=>'diamond','stone_origin'=>'lab-grown','carat'=>'0.25','stone_shape'=>'round','style'=>'pendant'],
-            'NVR-RI-010' => ['metal'=>'white-gold','fineness'=>'750','gemstone'=>'diamond','stone_origin'=>'natural','carat'=>'0.35','stone_shape'=>'round','style'=>'eternity']
+            'NVR-BR-005' => ['metal'=>'yellow-gold','fineness'=>'750','gemstone'=>'diamond','stone_origin'=>'natural','carat'=>'0.15','stone_shape'=>'round','stone_quality'=>'F/VS2','style'=>'chain-bracelet'],
+            'NVR-RI-006' => ['metal'=>'yellow-gold','fineness'=>'750','gemstone'=>'no-stones','stone_origin'=>'not-applicable','carat'=>'0','stone_shape'=>'not-applicable','style'=>'signet'],
+            'NVR-WE-007' => ['metal'=>'rose-gold','fineness'=>'750','gemstone'=>'diamond','stone_origin'=>'natural','carat'=>'0.20','stone_shape'=>'round','stone_quality'=>'G/VS2','style'=>'eternity'],
+            'NVR-EA-008' => ['metal'=>'white-gold','fineness'=>'750','gemstone'=>'diamond','stone_origin'=>'lab-grown','carat'=>'0.30','stone_shape'=>'round','stone_quality'=>'LAB','style'=>'studs'],
+            'NVR-NE-009' => ['metal'=>'rose-gold','fineness'=>'750','gemstone'=>'diamond','stone_origin'=>'lab-grown','carat'=>'0.25','stone_shape'=>'round','stone_quality'=>'LAB','style'=>'pendant'],
+            'NVR-RI-010' => ['metal'=>'white-gold','fineness'=>'750','gemstone'=>'diamond','stone_origin'=>'natural','carat'=>'0.35','stone_shape'=>'round','stone_quality'=>'D/VVS2','style'=>'eternity']
         ];
 
         $this->load->model('catalog/product');
@@ -604,6 +633,7 @@ class Noveraile extends \Opencart\System\Engine\Model {
             $settings['module_noveraile_ring_size_option_id'] = (string)(int)$ring_option->row['option_id'];
         }
         $this->installDefaultSettings('module_noveraile', $settings);
+        $this->model_setting_setting->editValue('module_noveraile', 'module_noveraile_attribute_map', json_encode($attribute_map));
     }
 
     private function seedArticles(): void {

@@ -9,7 +9,7 @@ $_['six_catalog_moment_06'] = 'Момент 06 — Спадщина';
 $_['six_catalog_moment_special'] = 'Спецпропозиція';
 $_['six_no_stones'] = 'Без каменів'; $_['six_platinum'] = 'Платина'; $_['six_alloy'] = 'Сплав';
 $_['six_announcement'] = 'Безкоштовна застрахована доставка та повернення';
-$_['six_catalog'] = 'Каталог'; $_['six_about'] = 'Про нас'; $_['six_journal'] = 'Журнал'; $_['six_quiz'] = 'Знайди свій момент'; $_['six_diamonds'] = 'Діаманти'; $_['six_contact'] = 'Приватна консультація'; $_['six_account'] = 'Акаунт'; $_['six_wishlist'] = 'Обране'; $_['six_bag'] = 'Кошик'; $_['six_menu'] = 'Меню'; $_['six_home_label'] = 'Головна'; $_['six_search'] = 'Пошук прикрас';
+$_['six_catalog'] = 'Каталог'; $_['six_about'] = 'Про нас'; $_['six_journal'] = 'Журнал'; $_['six_quiz'] = 'Знайди свій момент'; $_['six_diamonds'] = 'Діаманти'; $_['six_contact'] = 'Персональна консультація'; $_['six_account'] = 'Акаунт'; $_['six_wishlist'] = 'Обране'; $_['six_bag'] = 'Кошик'; $_['six_menu'] = 'Меню'; $_['six_home_label'] = 'Головна'; $_['six_search'] = 'Пошук прикрас';
 $_['six_hero_kicker'] = 'Прикраси для життя, сповненого сенсу'; $_['six_hero_title'] = 'Де моменти стають спадщиною.'; $_['six_hero_primary'] = 'Переглянути каталог'; $_['six_hero_secondary'] = 'Пройти квіз';
 $_['six_signature'] = 'Знакові прикраси'; $_['six_desired'] = 'Найбажаніші'; $_['six_desired_copy'] = 'Позачасові прикраси, які обирають знову і знову'; $_['six_view_all'] = 'Переглянути всі';
 $_['six_collections'] = 'Колекції'; $_['six_collections_title'] = 'Відкрийте позачасові прикраси'; $_['six_collections_copy'] = 'Сучасні реліквії із золота та діамантів';
@@ -63,7 +63,7 @@ $_['six_craft_kicker'] = 'Створено пережити сам момент'
 $_['six_craft_title'] = 'Створено неквапливо. Збережено назавжди.';
 $_['six_craft_copy'] = 'Кожна деталь продумана, оздоблена вручну й з часом стає дедалі особистішою.';
 $_['six_craft_link'] = 'Дізнатися про нашу майстерність';
-$_['six_contact_eyebrow'] = 'Приватні консультації';
+$_['six_contact_eyebrow'] = 'Персональні консультації';
 $_['six_contact_hero_title'] = 'Ми поруч у ваш особливий момент.';
 $_['six_contact_hero_copy'] = 'Поговоріть із нашою майстернею про розмір, камені, гравіювання або прикрасу, створену лише для вас.';
 $_['six_contact_details_eyebrow'] = 'Майстерня';
@@ -133,3 +133,5 @@ $_['six_about_closing_copy']='Це емоція. Присутність. Іст�
 $_['six_coupon_title']='Маєте персональний код?'; $_['six_coupon_copy']='Застосуйте знижку до переходу до оформлення.'; $_['six_coupon_label']='Промокод'; $_['six_coupon_apply']='Застосувати'; $_['six_coupon_success']='Промокод застосовано.'; $_['six_coupon_error']='Цей промокод не діє для поточного кошика.';
 $_['six_order_received']='Замовлення прийнято'; $_['six_thank_you']='Дякуємо за ваше замовлення.'; $_['six_thank_you_copy']='Підтвердження надіслано на email мовою замовлення. Наше ательє дбайливо підготує кожну деталь.'; $_['six_order_number']='Номер замовлення'; $_['six_order_summary']='Склад замовлення'; $_['six_continue_shopping']='Продовжити покупки';
 $_['six_zoom']='Збільшити'; $_['six_close_zoom']='Закрити збільшення'; $_['six_zoom_controls']='Керування збільшенням'; $_['six_zoom_out']='Зменшити'; $_['six_zoom_in']='Збільшити'; $_['six_close']='Закрити'; $_['six_primary_navigation']='Основна навігація'; $_['six_carousel']='Карусель'; $_['six_quiz_progress']='Прогрес квізу'; $_['six_about_belief_label']='Наше переконання';
+$_['six_contact']='Персональна консультація'; $_['six_contact_eyebrow']='Персональні консультації'; $_['six_about_appointment']='Записатися на персональну консультацію';
+$_['six_stone_quality']='Якість каменю'; $_['six_shape_round']='Кругла'; $_['six_shape_princess']='Принцеса'; $_['six_shape_marquise']='Маркіз'; $_['six_shape_baguette']='Багет'; $_['six_shape_cushion']='Кушон'; $_['six_shape_heart']='Серце'; $_['six_shape_oval']='Овал';
