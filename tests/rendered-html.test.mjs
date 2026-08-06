@@ -106,7 +106,7 @@ test("OpenCart in-stock labels use the storefront success color", async () => {
   ]);
 
   assert.match(stylesheet, /--success:\s*#4e7658/);
-  assert.match(stylesheet, /\.product-details-list li:first-child,[\s\S]*?li:first-child::before\s*\{\s*color:\s*var\(--success\)/);
+  assert.match(stylesheet, /\.product-service-icon--stock\s*\{\s*color:\s*var\(--success\)/);
   assert.match(controller, /noveraile\.css\?v=\d+\.\d+\.\d+/);
 });
 

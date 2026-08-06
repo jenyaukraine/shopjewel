@@ -39,8 +39,8 @@ class Theme extends \Opencart\System\Engine\Controller {
             $data['title'] = $data['six_brand_name'];
         }
 
-        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.3.0.1';
-        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.3.0.1';
+        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.3.0.2';
+        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.3.0.2';
         $data['six_favicon'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/favicon.svg?v=2';
         $data['six_og_image'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/og-store.png';
         $data['six_native_menu_status'] = (bool)$this->config->get('module_noveraile_native_menu_status');
@@ -149,7 +149,7 @@ class Theme extends \Opencart\System\Engine\Controller {
     public function footer(string &$route, array &$data, string &$code = '', string &$output = ''): void {
         if (!$this->enabled() || !$this->claimView($route, ['common/footer'], 'extension/noveraile/common/footer')) return;
         $this->words($data);
-        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.3.0.1';
+        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.3.0.2';
         $lang = 'language=' . $this->config->get('config_language');
         $data['six_home'] = $this->url->link('common/home', $lang);
         $data['six_about_url'] = $this->url->link('extension/noveraile/page/about', $lang);
@@ -176,7 +176,8 @@ class Theme extends \Opencart\System\Engine\Controller {
     public function home(string &$route, array &$data, string &$code = '', string &$output = ''): void {
         if (!$this->enabled() || !$this->claimView($route, ['common/home'], 'extension/noveraile/common/home')) return;
         $this->words($data);
-        $data['six_products'] = $this->productThumbs($this->getNoveraileProducts(false, 6));
+        $home_products = $this->getNoveraileProducts(false, 8);
+        $data['six_products'] = $this->productThumbs($home_products);
         $data['six_special_products'] = $this->productThumbs($this->getNoveraileProducts(true, 10));
         $lang = 'language=' . $this->config->get('config_language');
         $data['six_catalog'] = $this->url->link('extension/noveraile/page/catalog', $lang);
@@ -191,8 +192,14 @@ class Theme extends \Opencart\System\Engine\Controller {
         if (!is_array($builder) || !$builder) $builder = array_map(static fn($id) => ['id' => $id, 'enabled' => 1], $default_blocks);
         $allowed_blocks = array_flip($default_blocks);
         $data['six_home_blocks'] = [];
+        $merchant_catalog = $this->db->query("SELECT `product_id` FROM `" . DB_PREFIX . "product` WHERE `status` = '1' AND `model` NOT LIKE 'NVR-%' LIMIT 1");
+        $uses_current_catalog = (bool)$merchant_catalog->num_rows;
         foreach ($builder as $block) {
             $id = (string)($block['id'] ?? '');
+            // The six editorial moment tiles belong to the bundled sample
+            // catalog. Once real products are imported, keep the homepage
+            // focused on their imagery and working category destinations.
+            if ($uses_current_catalog && $id === 'collections') continue;
             if (isset($allowed_blocks[$id]) && !empty($block['enabled'])) $data['six_home_blocks'][] = $id;
         }
         // Root-relative paths also resolve correctly when used inside CSS custom properties.
@@ -223,8 +230,22 @@ class Theme extends \Opencart\System\Engine\Controller {
         $category_images = ['rings'=>'promise-solitaire.webp','earrings'=>'becoming-hoops.webp','necklaces'=>'arrival-pendant.webp','bracelets'=>'gratitude-bracelet.webp','wedding'=>'union-band.webp'];
         $category_names = ['rings'=>$data['six_type_rings'],'earrings'=>$data['six_type_earrings'],'necklaces'=>$data['six_type_necklaces'],'bracelets'=>$data['six_type_bracelets'],'wedding'=>$data['six_type_wedding']];
         $data['six_category_tiles'] = [];
-        foreach ($category_images as $type => $image) {
-            $data['six_category_tiles'][] = ['name'=>$category_names[$type], 'image'=>$data['six_asset'] . 'products/' . $image, 'href'=>$this->url->link('extension/noveraile/page/catalog', $lang . '&type=' . $type)];
+        if ($uses_current_catalog) {
+            $category_query = $this->db->query("SELECT `c`.`category_id`, `cd`.`name`, `c`.`image` AS `category_image`, MIN(NULLIF(`p`.`image`, '')) AS `product_image` FROM `" . DB_PREFIX . "category` `c` INNER JOIN `" . DB_PREFIX . "category_description` `cd` ON (`cd`.`category_id` = `c`.`category_id` AND `cd`.`language_id` = '" . (int)$this->config->get('config_language_id') . "') INNER JOIN `" . DB_PREFIX . "product_to_category` `p2c` ON (`p2c`.`category_id` = `c`.`category_id`) INNER JOIN `" . DB_PREFIX . "product` `p` ON (`p`.`product_id` = `p2c`.`product_id` AND `p`.`status` = '1' AND `p`.`model` NOT LIKE 'NVR-%') WHERE `c`.`status` = '1' GROUP BY `c`.`category_id`, `cd`.`name`, `c`.`image`, `c`.`sort_order` ORDER BY `c`.`sort_order`, `c`.`category_id` LIMIT 5");
+            foreach ($category_query->rows as $category) {
+                $image = trim((string)($category['category_image'] ?: $category['product_image']));
+                if ($image === '') continue;
+                $data['six_category_tiles'][] = [
+                    'name' => (string)$category['name'],
+                    'image' => '/image/' . ltrim(str_replace('\\', '/', $image), '/'),
+                    'href' => $this->url->link('product/category', $lang . '&path=' . (int)$category['category_id'])
+                ];
+            }
+        }
+        if (!$data['six_category_tiles']) {
+            foreach ($category_images as $type => $image) {
+                $data['six_category_tiles'][] = ['name'=>$category_names[$type], 'image'=>$data['six_asset'] . 'products/' . $image, 'href'=>$this->url->link('extension/noveraile/page/catalog', $lang . '&type=' . $type)];
+            }
         }
 
         $data['six_articles'] = [];
@@ -293,7 +314,12 @@ class Theme extends \Opencart\System\Engine\Controller {
         $data['six_carat_value'] = $tag_carat !== '' ? $tag_carat . ' ct' : '—';
         $data['six_stones_value'] = $tag_stones !== '' ? $tag_stones : '—';
         $data['six_fineness_value'] = $this->tagChoice($data['six_tags'], ['585','750']) ?: '—';
-        $data['six_delivery_value'] = in_array('delivery-3', $data['six_tags'], true) || (int)($info['quantity'] ?? 0) > 0 ? $this->language->get('six_delivery_3') : $this->language->get('six_delivery_10');
+        $description_text = trim(strip_tags(html_entity_decode((string)($info['description'] ?? ''), ENT_QUOTES, 'UTF-8')));
+        $explicit_ten_day_delivery = in_array('delivery-10', $data['six_tags'], true)
+            || (bool)preg_match('/(?:10\s*(?:days?|Tage|dn[ií]|дн(?:ей|я)|днів)|(?:days?|Tage|дн(?:ей|я)|днів)\s*10)/ui', $description_text);
+        $data['six_delivery_value'] = in_array('delivery-3', $data['six_tags'], true) || (!$explicit_ten_day_delivery && (int)($info['quantity'] ?? 0) > 0)
+            ? $this->language->get('six_delivery_3')
+            : $this->language->get('six_delivery_10');
         $data['six_bundle_product'] = [];
         $this->load->model('extension/noveraile/catalog');
         foreach ($this->model_extension_noveraile_catalog->getProductIds(['sort'=>'popular','start'=>0,'limit'=>12]) as $candidate_id) {
@@ -599,6 +625,12 @@ class Theme extends \Opencart\System\Engine\Controller {
         }
 
         $grams = $this->weight->convert($weight, $weight_class_id, $this->gram_weight_class_id);
+        // Jewelry imports commonly provide a gram value while retaining the
+        // store's kilogram class. A 1.82 kg ring is not plausible; preserve
+        // the supplied number as grams for this small-product catalog.
+        if ($grams >= 500 && $weight > 0 && $weight <= 50) {
+            $grams = $weight;
+        }
         if ($grams >= 1000) {
             return rtrim(rtrim(number_format($grams / 1000, 2, '.', ''), '0'), '.') . ' kg';
         }

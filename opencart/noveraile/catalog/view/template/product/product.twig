@@ -29,7 +29,7 @@
       <p class="eyebrow">{{ six_moment }}</p><h1>{{ heading_title }}</h1>
       <p class="product-price">{% if special %}<del>{{ price }}</del> {{ special }}{% else %}{{ price }}{% endif %}</p>
       <div class="product-status-line"><span>{{ six_product_code }}: <strong>{{ model }}</strong></span><span>{{ six_stock }}: <strong>{{ stock }}</strong></span><span>{{ six_weight }}: <strong>{{ six_product_weight }}</strong></span></div>
-      <dl class="product-key-specs"><div><dt>{{ six_metal }}</dt><dd>{{ six_metal_value }}</dd></div><div><dt>{{ six_fineness }}</dt><dd>{{ six_fineness_value }}</dd></div><div><dt>{{ six_stone }}</dt><dd>{{ six_stone_value }}</dd></div><div><dt>{{ six_carat }}</dt><dd>{{ six_carat_value }}</dd></div><div><dt>{{ six_stone_count }}</dt><dd>{{ six_stones_value }}</dd></div><div><dt>{{ six_delivery }}</dt><dd>{{ six_delivery_value }}</dd></div></dl>
+      <dl class="product-key-specs"><div><dt>{{ six_metal }}</dt><dd>{{ six_metal_value }}</dd></div>{% if six_fineness_value and six_fineness_value != '—' %}<div><dt>{{ six_fineness }}</dt><dd>{{ six_fineness_value }}</dd></div>{% endif %}<div><dt>{{ six_stone }}</dt><dd>{{ six_stone_value }}</dd></div>{% if six_carat_value and six_carat_value != '—' %}<div><dt>{{ six_carat }}</dt><dd>{{ six_carat_value }}</dd></div>{% endif %}{% if six_stones_value and six_stones_value != '—' %}<div><dt>{{ six_stone_count }}</dt><dd>{{ six_stones_value }}</dd></div>{% endif %}<div><dt>{{ six_delivery }}</dt><dd>{{ six_delivery_value }}</dd></div></dl>
       <div class="product-description">{{ description|raw }}</div>
       <div class="product-purchase">
         <form id="form-product" class="six-product-form">
@@ -52,7 +52,11 @@
         </form>
         <form method="post" data-oc-toggle="ajax" class="product-secondary-actions"><button type="submit" formaction="{{ wishlist_add }}"><svg class="wishlist-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.7a5.5 5.5 0 0 0-7.8 0L12 5.8l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21.3l7.8-7.7 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg><span>{{ six_wishlist }}</span></button><input type="hidden" name="product_id" value="{{ product_id }}"></form>
       </div>
-      <ul class="product-details-list"><li><strong>{{ stock }}</strong></li><li><a href="{{ six_shipping_url }}">{{ six_delivery }}</a></li><li>{{ six_packaging }}</li></ul>
+      <ul class="product-service-links">
+        <li><span class="product-service-icon product-service-icon--stock" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6.5 12.5 3.4 3.4L17.8 8"/></svg></span><span><small>{{ six_stock }}</small><strong>{{ stock }}</strong></span></li>
+        <li><a href="{{ six_shipping_url }}"><span class="product-service-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 6h11v10H3zM14 9h4l3 3v4h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg></span><span><small>{{ six_delivery }}</small><strong>{{ six_delivery_value }}</strong></span><span class="product-service-arrow" aria-hidden="true">↗</span></a></li>
+        <li><span class="product-service-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 9h16v11H4zM3 6h18v3H3zM12 6v14M12 6c-1.5-3.2-5.7-3.2-5.7-.5C6.3 7.2 8.3 8 12 8M12 6c1.5-3.2 5.7-3.2 5.7-.5 0 1.7-2 2.5-5.7 2.5"/></svg></span><span><strong>{{ six_packaging }}</strong></span></li>
+      </ul>
       <details class="product-accordion"><summary>{{ six_description }}</summary><div>{{ description|raw }}</div></details>
       {% if attribute_groups %}<details class="product-accordion"><summary>{{ six_details }}</summary><dl class="specification-block">{% for group in attribute_groups %}{% for attribute in group.attribute %}<div><dt>{{ attribute.name }}</dt><dd>{{ attribute.text }}</dd></div>{% endfor %}{% endfor %}</dl></details>{% endif %}
     </div>
