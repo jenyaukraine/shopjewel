@@ -310,3 +310,14 @@ $_['six_order_received']='Order received'; $_['six_thank_you']='Thank you for yo
 $_['six_zoom']='Zoom'; $_['six_close_zoom']='Close zoom'; $_['six_zoom_controls']='Zoom controls'; $_['six_zoom_out']='Zoom out'; $_['six_zoom_in']='Zoom in'; $_['six_close']='Close'; $_['six_primary_navigation']='Primary navigation'; $_['six_carousel']='Carousel'; $_['six_quiz_progress']='Quiz progress'; $_['six_about_belief_label']='Our belief';
 $_['six_contact']='Personal consultation'; $_['six_contact_eyebrow']='Personal consultations'; $_['six_about_appointment']='Book a personal consultation';
 $_['six_stone_quality']='Stone quality'; $_['six_shape_round']='Round'; $_['six_shape_princess']='Princess'; $_['six_shape_marquise']='Marquise'; $_['six_shape_baguette']='Baguette'; $_['six_shape_cushion']='Cushion'; $_['six_shape_heart']='Heart'; $_['six_shape_oval']='Oval';
+$_['six_faq_materials_q']='What materials do you use?'; $_['six_faq_materials_a']='Our jewelry is crafted from high-quality 14K and 18K solid gold with carefully selected diamonds and gemstones.';
+$_['six_faq_origin_q']='Are your diamonds natural or lab-grown?'; $_['six_faq_origin_a']='We offer both natural and lab-grown diamonds. Each product page clearly specifies the type of stone used.';
+$_['six_faq_worldwide_q']='Do you ship worldwide?'; $_['six_faq_worldwide_a']='Yes. We provide insured worldwide shipping with tracking for every order.';
+$_['six_faq_delivery_q']='How long does delivery take?'; $_['six_faq_delivery_a']='Orders are normally prepared within 1–3 business days. Delivery then takes 1–3 business days in Ukraine, 3–7 in the EU, and 5–10 elsewhere.';
+$_['six_faq_packaging_q']='Is luxury packaging included?'; $_['six_faq_packaging_a']='Yes. Every order arrives in our signature luxury packaging, ready for gifting or safe storage.';
+$_['six_faq_returns_q']='Can I return or exchange my order?'; $_['six_faq_returns_a']='Yes. Returns and exchanges are accepted within the return-policy period when items are unworn and in their original condition.';
+$_['six_faq_handmade_q']='Is your jewelry handmade?'; $_['six_faq_handmade_a']='Every piece is carefully crafted and individually inspected by professionals before shipping.';
+$_['six_faq_tarnish_q']='Do your pieces tarnish?'; $_['six_faq_tarnish_a']='Our solid-gold jewelry and premium materials are designed for lasting everyday wear with proper care.';
+$_['six_faq_payment_q']='Is payment on your website secure?'; $_['six_faq_payment_a']='Yes. Payments are securely processed through trusted encrypted providers, including Stripe.';
+$_['six_faq_gift_q']='Can I buy jewelry as a gift?'; $_['six_faq_gift_a']='Absolutely. Every order is beautifully packaged and ready for gifting.';
+$_['six_faq_support_q']='How can I contact customer support?'; $_['six_faq_support_a']='Contact us through WhatsApp, the contact page, or email. We will be happy to help.';

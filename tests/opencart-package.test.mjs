@@ -329,7 +329,7 @@ test("extension source contains no development artifacts or live Stripe secrets"
 });
 
 test("6 Moments storefront requirements remain wired into the package", async () => {
-  const [installer, home, theme, cart, coupon, quiz, pricing, total, success, catalogController, catalogTemplate, language, footer, contact] = await Promise.all([
+  const [installer, home, theme, cart, coupon, quiz, pricing, total, success, catalogController, catalogTemplate, language, footer, contact, faq] = await Promise.all([
     readFile(path.join(root, "admin/model/module/noveraile.php"), "utf8"),
     readFile(path.join(root, "catalog/view/template/common/home.twig"), "utf8"),
     readFile(path.join(root, "catalog/controller/event/theme.php"), "utf8"),
@@ -344,6 +344,7 @@ test("6 Moments storefront requirements remain wired into the package", async ()
     readFile(path.join(root, "catalog/language/en-gb/module/noveraile.php"), "utf8"),
     readFile(path.join(root, "catalog/view/template/common/footer.twig"), "utf8"),
     readFile(path.join(root, "catalog/view/template/information/contact.twig"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/page/faq.twig"), "utf8"),
   ]);
   assert.match(installer, /module_noveraile_catalog_version', '6'/);
   assert.equal((installer.match(/\['(?:promise-solitaire|union-band|arrival-pendant|becoming-hoops|gratitude-bracelet|legacy-signet|eternity-band|horizon-studs|keepsake-pendant|self-promise-ring)'/g) ?? []).length, 10);
@@ -370,4 +371,6 @@ test("6 Moments storefront requirements remain wired into the package", async ()
   assert.match(language, /six_contact'\]\s*=\s*'Personal consultation'/);
   assert.match(footer, /six_facebook/);
   assert.match(contact, /six_whatsapp/);
+  assert.equal((faq.match(/<details/g) ?? []).length, 15);
+  assert.match(language, /six_faq_worldwide_q'\]\s*=\s*'Do you ship worldwide\?'/);
 });

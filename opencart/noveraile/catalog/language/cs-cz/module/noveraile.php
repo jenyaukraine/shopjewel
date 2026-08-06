@@ -130,3 +130,14 @@ $_['six_order_received']='Objednávka přijata'; $_['six_thank_you']='Děkujeme 
 $_['six_zoom']='Přiblížit'; $_['six_close_zoom']='Zavřít přiblížení'; $_['six_zoom_controls']='Ovládání přiblížení'; $_['six_zoom_out']='Oddálit'; $_['six_zoom_in']='Přiblížit'; $_['six_close']='Zavřít'; $_['six_primary_navigation']='Hlavní navigace'; $_['six_carousel']='Karusel'; $_['six_quiz_progress']='Průběh kvízu'; $_['six_about_belief_label']='Naše přesvědčení';
 $_['six_contact']='Osobní konzultace'; $_['six_contact_eyebrow']='Osobní konzultace'; $_['six_about_appointment']='Rezervovat osobní konzultaci';
 $_['six_stone_quality']='Kvalita kamene'; $_['six_shape_round']='Kulatý'; $_['six_shape_princess']='Princess'; $_['six_shape_marquise']='Markýza'; $_['six_shape_baguette']='Bageta'; $_['six_shape_cushion']='Polštářek'; $_['six_shape_heart']='Srdce'; $_['six_shape_oval']='Ovál';
+$_['six_faq_materials_q']='Jaké materiály používáte?'; $_['six_faq_materials_a']='Naše šperky vyrábíme z kvalitního masivního 14K a 18K zlata a pečlivě vybraných diamantů a drahokamů.';
+$_['six_faq_origin_q']='Jsou vaše diamanty přírodní, nebo laboratorní?'; $_['six_faq_origin_a']='Nabízíme přírodní i laboratorně vytvořené diamanty. Typ kamene je jasně uveden na stránce každého produktu.';
+$_['six_faq_worldwide_q']='Doručujete do celého světa?'; $_['six_faq_worldwide_a']='Ano. Každá mezinárodní zásilka je pojištěná a má sledovací číslo.';
+$_['six_faq_delivery_q']='Jak dlouho trvá doručení?'; $_['six_faq_delivery_a']='Objednávky obvykle připravujeme 1–3 pracovní dny. Doručení trvá 1–3 pracovní dny na Ukrajině, 3–7 v EU a 5–10 do ostatních zemí.';
+$_['six_faq_packaging_q']='Je luxusní balení součástí objednávky?'; $_['six_faq_packaging_a']='Ano. Každá objednávka přijde v našem prémiovém balení, připravená jako dárek nebo k bezpečnému uložení.';
+$_['six_faq_returns_q']='Mohu objednávku vrátit nebo vyměnit?'; $_['six_faq_returns_a']='Ano. Vrácení a výměna jsou možné v období stanoveném zásadami vrácení, pokud šperk nebyl nošen a je v původním stavu.';
+$_['six_faq_handmade_q']='Jsou vaše šperky vyráběny ručně?'; $_['six_faq_handmade_a']='Každý kus je pečlivě zhotoven a před odesláním jednotlivě zkontrolován odborníky.';
+$_['six_faq_tarnish_q']='Ztrácejí vaše šperky lesk?'; $_['six_faq_tarnish_a']='Masivní zlato a prémiové materiály jsou při správné péči určené k dlouhodobému každodennímu nošení.';
+$_['six_faq_payment_q']='Je platba na webu bezpečná?'; $_['six_faq_payment_a']='Ano. Platby bezpečně zpracovávají důvěryhodní šifrovaní poskytovatelé včetně Stripe.';
+$_['six_faq_gift_q']='Mohu koupit šperk jako dárek?'; $_['six_faq_gift_a']='Samozřejmě. Každá objednávka je krásně zabalená a připravená k darování.';
+$_['six_faq_support_q']='Jak mohu kontaktovat podporu?'; $_['six_faq_support_a']='Napište nám přes WhatsApp, kontaktní stránku nebo e-mail. Rádi vám pomůžeme.';
