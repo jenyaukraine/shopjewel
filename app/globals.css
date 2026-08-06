@@ -1542,6 +1542,32 @@ body.cart-open .floating-bag { opacity: 0; visibility: hidden; pointer-events: n
   .cookie-icon { display: none; }
   .cookie-banner p { font-size: 12px; line-height: 1.45; }
   .cookie-banner button { width: 46px; height: 46px; font-size: 17px; }
+
+  /* Keep understated controls comfortably tappable without changing their visual weight. */
+  .hero-pagination { gap: 0; }
+  .hero-pagination button { width: 44px; height: 44px; }
+  .text-link,
+  .hero-learn,
+  .lab-learn-link,
+  .gallery-link,
+  .journal-grid article > a,
+  .contact-details dd a,
+  .footer-brand li a { min-height: 44px; display: inline-flex; align-items: center; }
+  .footer-socials a { width: 44px; height: 44px; }
+  .footer-column a,
+  .footer-bottom nav a { min-height: 44px; }
+  .filter-select-trigger,
+  .filter-options button,
+  .catalog-results .card-footer button { min-height: 44px; }
+  .engraving-field input,
+  .hint-form input,
+  .hint-form textarea,
+  .cart-header > button,
+  .csv-drop input { min-height: 44px; }
+  .price-filter__slider { height: 44px; }
+  .price-filter__slider::before,
+  .price-filter__slider::after { top: 21px; }
+  .price-filter__slider input { height: 44px; }
 }
 
 @media (max-width: 360px) {
