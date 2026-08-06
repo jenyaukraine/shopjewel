@@ -28,7 +28,7 @@
 
     <header class="account-login__intro">
       <p class="eyebrow">{{ six_brand_name }} · {{ text_account }}</p>
-      <h1>{{ heading_title }}</h1>
+      <h1>{{ heading_title|trim('.') }}</h1>
       <span aria-hidden="true">01 — 06</span>
     </header>
 
@@ -39,7 +39,7 @@
             <span aria-hidden="true">01</span>
             <div>
               <p class="eyebrow">{{ text_account }}</p>
-              <h2>{{ text_returning_customer }}</h2>
+              <h2>{{ text_returning_customer|trim('.') }}</h2>
             </div>
           </div>
           <p class="account-login__lead">{{ text_i_am_returning_customer }}</p>
@@ -72,7 +72,7 @@
             <span aria-hidden="true">02</span>
             <div>
               <p class="eyebrow">{{ six_brand_name }}</p>
-              <h2>{{ text_new_customer }}</h2>
+              <h2>{{ text_new_customer|trim('.') }}</h2>
             </div>
           </div>
           <p><strong>{{ text_register }}</strong></p>

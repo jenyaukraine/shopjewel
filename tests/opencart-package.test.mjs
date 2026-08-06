@@ -62,8 +62,8 @@ test("mobile categories are deduplicated and use semantic jewellery icons", asyn
   assert.match(event, /\$category_names\s*=\s*\[\]/);
   assert.match(event, /mb_strtolower/);
   assert.match(event, /'icon'\s*=>\s*\$this->categoryIcon\(\$name\)/);
-  assert.match(event, /noveraile\.css\?v=2\.3\.0\.2/);
-  assert.match(event, /noveraile\.js\?v=2\.3\.0\.2/);
+  assert.match(event, /noveraile\.css\?v=2\.3\.0\.3/);
+  assert.match(event, /noveraile\.js\?v=2\.3\.0\.3/);
   assert.match(header, /class="mobile-category-icon"/);
   assert.match(header, /category\.icon == 'earring'/);
   assert.match(header, /class="mobile-main-icon"/);
@@ -89,11 +89,45 @@ test("product listing presents unique image-led category cards", async () => {
   assert.match(event, /public function listing\([\s\S]*?mb_strtolower/);
   assert.match(event, /public function listing\([\s\S]*?category_image/);
   assert.match(event, /public function listing\([\s\S]*?product_image/);
+  assert.match(event, /\$category\['product_image'\]\s*\?:\s*\$category\['category_image'\]/);
   assert.match(listing, /class="listing-category-all"/);
   assert.match(listing, /<img src="\{\{ category\.image \}\}"/);
   assert.doesNotMatch(listing, /listing-category-link listing-category-link--all/);
   assert.match(stylesheet, /\.listing-category-link img\s*\{/);
   assert.match(stylesheet, /linear-gradient\(180deg,rgba\(18,15,12,\.05\)/);
+});
+
+test("catalog identifies gold colors and uses a compact pagination footer", async () => {
+  const [event, thumb, product, catalog, stylesheet] = await Promise.all([
+    readFile(path.join(root, "catalog/controller/event/theme.php"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/product/thumb.twig"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/product/product.twig"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/page/catalog.twig"), "utf8"),
+    readFile(path.join(root, "catalog/view/stylesheet/noveraile.css"), "utf8"),
+  ]);
+
+  assert.match(event, /private function metalOptions\(array \$tags\): array/);
+  assert.match(event, /six_metal_options/);
+  assert.match(thumb, /class="card-metal-line"/);
+  assert.match(product, /class="product-metal-list"/);
+  assert.match(catalog, /class="filter-metal-option"/);
+  assert.match(catalog, /metal-swatch--white-gold/);
+  assert.match(stylesheet, /\.metal-swatch--rose-gold/);
+  assert.match(stylesheet, /\.pagination-shell\s*\{[^}]*display:\s*flex;[^}]*border-top:/);
+});
+
+test("homepage Instagram callout can never render as an empty shell", async () => {
+  const [event, home] = await Promise.all([
+    readFile(path.join(root, "catalog/controller/event/theme.php"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/common/home.twig"), "utf8"),
+  ]);
+
+  assert.match(event, /public function home[\s\S]*?six_instagram_label/);
+  assert.match(event, /public function home[\s\S]*?social_fallbacks/);
+  assert.match(event, /noveraile\.css\?v=2\.3\.0\.3/);
+  assert.match(home, /six_follow\|default/);
+  assert.match(home, /six_follow_copy\|default/);
+  assert.match(home, /six_instagram_label\|default/);
 });
 
 test("storefront is light-only and ships no theme control", async () => {
@@ -286,12 +320,67 @@ test("admin ships transactional multilingual product import and one-click export
   assert.match(model, /version_compare\(VERSION, '4\.1\.0\.0', '>='\)/);
   assert.match(model, /DELETE FROM `" \. DB_PREFIX \. "product_to_category`/);
   assert.match(model, /'sku' => \$product\['sku'\]/);
+  assert.match(controller, /'additional_images'[\s\S]*'stone_shape'[\s\S]*'stone_quality'/);
+  assert.match(model, /replaceCatalogMediaAndAttributes/);
+  assert.match(model, /product_attribute/);
+  assert.match(model, /product_image/);
   assert.doesNotMatch(model.match(/if \(\$product\['product_id'\]\)[\s\S]*?\} else \{/s)?.[0] ?? "", /deleteOptions|deleteImages|deleteDiscounts|deleteRelated/);
   assert.match(template, /id="tab-catalog"/);
   assert.match(template, /id="catalog-drop"/);
   assert.match(template, /id="catalog-preview"/);
   assert.match(template, /href="\{\{ catalog_export \}\}"/);
   assert.match(language, /text_catalog_import_notice/);
+});
+
+test("Stripe and zonal delivery are checkout-ready without embedding credentials", async () => {
+  const [admin, installer, payment, paymentModel, dhl, dpd, commerceTemplate, envExample] = await Promise.all([
+    readFile(path.join(root, "admin/controller/module/noveraile.php"), "utf8"),
+    readFile(path.join(root, "admin/model/module/noveraile.php"), "utf8"),
+    readFile(path.join(root, "catalog/controller/payment/stripe.php"), "utf8"),
+    readFile(path.join(root, "catalog/model/payment/stripe.php"), "utf8"),
+    readFile(path.join(root, "catalog/model/shipping/dhl.php"), "utf8"),
+    readFile(path.join(root, "catalog/model/shipping/dpd.php"), "utf8"),
+    readFile(path.join(root, "admin/view/template/module/noveraile.twig"), "utf8"),
+    readFile(path.resolve(".env.example"), "utf8"),
+  ]);
+
+  assert.match(envExample, /STRIPE_SECRET_KEY=/);
+  assert.match(envExample, /STRIPE_WEBHOOK_SECRET=/);
+  assert.match(installer, /getenv\('STRIPE_SECRET_KEY'\)/);
+  assert.match(admin, /error_stripe_config/);
+  assert.match(payment, /'payment_method_types'\s*=>\s*\['card'\]/);
+  assert.match(payment, /payment_status'[\]\s]*\?\? ''\) === 'paid'/);
+  assert.match(payment, /amount_total/);
+  assert.match(payment, /currency_value/);
+  assert.match(paymentModel, /payment_stripe_webhook_secret/);
+  assert.match(dpd, /\$code === 'UA'/);
+  assert.match(dpd, /'ukraine' \? \$key \. '_ukraine_cost' : \$key \. '_eu_cost'/);
+  assert.match(dpd, /'1–3' : '3–7'/);
+  assert.match(dhl, /\$region === 'eu' \? \$key \. '_eu_cost' : \$key \. '_world_cost'/);
+  assert.match(dhl, /'3–7' : '5–10'/);
+  assert.match(commerceTemplate, /shipping_dpd_ukraine_cost/);
+  assert.match(commerceTemplate, /shipping_dhl_world_cost/);
+});
+
+test("storefront uses the 6 Moments wordmark and data-backed stone filters", async () => {
+  const [header, footer, theme, catalogController, catalogModel, logo] = await Promise.all([
+    readFile(path.join(root, "catalog/view/template/common/header.twig"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/common/footer.twig"), "utf8"),
+    readFile(path.join(root, "catalog/controller/event/theme.php"), "utf8"),
+    readFile(path.join(root, "catalog/controller/page/catalog.php"), "utf8"),
+    readFile(path.join(root, "catalog/model/catalog.php"), "utf8"),
+    readFile(path.join(root, "image/catalog/noveraile/logo-6-moments.svg"), "utf8"),
+  ]);
+
+  assert.match(header, /logo-6-moments\.svg/);
+  assert.match(footer, /logo-6-moments\.svg/);
+  assert.match(theme, /\$data\['six_asset'\]\s*=\s*'\/image\/catalog\/noveraile\/'/);
+  assert.match(logo, /6 MOMENTS/);
+  assert.doesNotMatch(header, />Your Store</);
+  assert.match(catalogController, /getStoneShapeFacets/);
+  assert.match(catalogModel, /getOptionStoneQualityFacets/);
+  assert.match(catalogModel, /option_value_description/);
+  assert.match(catalogModel, /'круглый'/);
 });
 
 test("storefront catalog accepts normal merchant products", async () => {
@@ -368,7 +457,7 @@ test("6 Moments storefront requirements remain wired into the package", async ()
   assert.match(theme, /\$grams >= 500 && \$weight > 0 && \$weight <= 50/);
   assert.doesNotMatch(catalogController, /'metal'\s*=>\s*\[[^\]]*'platinum'/);
   assert.doesNotMatch(catalogController, /'fineness'\s*=>\s*\[[^\]]*'950'/);
-  assert.match(catalogController, /\['round','princess','marquise','baguette','cushion','heart','oval'\]/);
+  assert.match(catalogController, /\['round','princess','marquise','baguette','cushion','heart','oval','pear','emerald','radiant','asscher'\]/);
   assert.doesNotMatch(catalogTemplate, /value="(?:platinum|950)"/);
   assert.match(catalogTemplate, /name="stone_quality"/);
   assert.match(language, /six_contact'\]\s*=\s*'Personal consultation'/);

@@ -2,7 +2,7 @@
 <section class="interior-hero about-hero" aria-labelledby="about-title">
   <div class="about-hero-copy">
     <p class="eyebrow"><span aria-hidden="true"></span> {{ six_about_story }}</p>
-    <h1 id="about-title">{{ six_about_title }}</h1>
+    <h1 id="about-title">{{ six_about_title|trim('.') }}</h1>
     <p class="about-hero-lead">{{ six_about_hero_lead }}</p>
     <a class="about-hero-link" href="#our-story">{{ six_about_discover }} <span aria-hidden="true">&#8595;</span></a>
     <p class="about-hero-signature" aria-hidden="true">{{ six_about_signature }}</p>
@@ -18,7 +18,7 @@
     <div class="about-section-index" aria-hidden="true"><span>01</span><small>{{ six_about_beginning }}</small></div>
     <div class="about-origin-copy">
       <p class="eyebrow">{{ six_about_idea }}</p>
-      <h2 id="origin-title">{{ six_about_origin_title }}</h2>
+      <h2 id="origin-title">{{ six_about_origin_title|trim('.') }}</h2>
       <p class="about-lead">{{ six_about_origin_one }}</p>
       <p>{{ six_about_origin_two }}</p>
       <p>{{ six_about_origin_three }}</p>
@@ -42,7 +42,7 @@
     </figure>
     <div class="about-craft-copy">
       <p class="eyebrow">{{ six_about_thoughtfully }}</p>
-      <h2 id="craft-title">{{ six_about_craft_title }}</h2>
+      <h2 id="craft-title">{{ six_about_craft_title|trim('.') }}</h2>
       <p class="about-lead">{{ six_about_craft_one }}</p>
       <p>{{ six_about_craft_two }}</p>
       <p>{{ six_about_craft_three }}</p>
@@ -53,12 +53,12 @@
   <section class="about-values" aria-labelledby="values-title">
     <header>
       <p class="eyebrow">{{ six_about_standards }}</p>
-      <h2 id="values-title">{{ six_about_values_title }}</h2>
+      <h2 id="values-title">{{ six_about_values_title|trim('.') }}</h2>
     </header>
     <div class="about-values-grid">
-      <article><span>01</span><h3>{{ six_about_value_one_title }}</h3><p>{{ six_about_value_one_copy }}</p></article>
-      <article><span>02</span><h3>{{ six_about_value_two_title }}</h3><p>{{ six_about_value_two_copy }}</p></article>
-      <article><span>03</span><h3>{{ six_about_value_three_title }}</h3><p>{{ six_about_value_three_copy }}</p></article>
+      <article><span>01</span><h3>{{ six_about_value_one_title|trim('.') }}</h3><p>{{ six_about_value_one_copy }}</p></article>
+      <article><span>02</span><h3>{{ six_about_value_two_title|trim('.') }}</h3><p>{{ six_about_value_two_copy }}</p></article>
+      <article><span>03</span><h3>{{ six_about_value_three_title|trim('.') }}</h3><p>{{ six_about_value_three_copy }}</p></article>
     </div>
   </section>
 
@@ -66,7 +66,7 @@
     <span class="about-closing-number" aria-hidden="true">6</span>
     <div>
       <p class="eyebrow">{{ six_about_tagline }}</p>
-      <h2 id="closing-title">{{ six_about_closing_title }}</h2>
+      <h2 id="closing-title">{{ six_about_closing_title|trim('.') }}</h2>
       <p>{{ six_about_closing_copy }}</p>
       <div class="about-closing-actions">
         <a class="button button--light" href="{{ six_catalog_url }}">{{ six_about_collection }}</a>

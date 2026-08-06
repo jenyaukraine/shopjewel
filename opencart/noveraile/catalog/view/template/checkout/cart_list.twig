@@ -7,7 +7,7 @@
   <div id="output-cart" class="cart-page-layout">
     <section class="cart-page-products" aria-label="{{ six_bag }}">
       <div class="cart-page-section-heading">
-        <div><p class="eyebrow">{{ six_cart_kicker }}</p><h2>{{ six_bag }} <sup>{{ products|length }}</sup></h2></div>
+        <div><p class="eyebrow">{{ six_cart_kicker }}</p><h2>{{ six_bag|trim('.') }} <sup>{{ products|length }}</sup></h2></div>
         {% if weight %}<span>{{ weight }}</span>{% endif %}
       </div>
       {% for product in products %}
@@ -15,7 +15,7 @@
           <a class="cart-page-item-image" href="{{ product.href }}">{% if product.thumb %}<img src="{{ product.thumb }}" alt="{{ product.name }}" loading="lazy">{% endif %}<span aria-hidden="true">↗</span></a>
           <div class="cart-page-item-body">
             <div class="cart-page-item-heading">
-              <div><p>{{ text_model }} · {{ product.model }}</p><h3><a href="{{ product.href }}">{{ product.name }}</a>{% if not product.stock %}<span class="cart-page-stock">*</span>{% endif %}</h3></div>
+              <div><p>{{ text_model }} · {{ product.model }}</p><h3><a href="{{ product.href }}">{{ product.name|trim('.') }}</a>{% if not product.stock %}<span class="cart-page-stock">*</span>{% endif %}</h3></div>
               <strong>{{ product.total }}</strong>
             </div>
             {% if product.option or product.subscription or product.reward %}
@@ -44,7 +44,7 @@
     </section>
 
     <aside class="cart-page-summary">
-      <div class="cart-page-summary-heading"><div><p class="eyebrow">{{ six_brand_name }}</p><h2>{{ six_cart_summary }}</h2></div><svg class="summary-bag-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.5 8.5h11l1 11h-13l1-11Z"/><path d="M9 9V6.5a3 3 0 0 1 6 0V9"/></svg></div>
+      <div class="cart-page-summary-heading"><div><p class="eyebrow">{{ six_brand_name }}</p><h2>{{ six_cart_summary|trim('.') }}</h2></div><svg class="summary-bag-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.5 8.5h11l1 11h-13l1-11Z"/><path d="M9 9V6.5a3 3 0 0 1 6 0V9"/></svg></div>
       <div class="cart-page-totals">
         {% for total in totals %}<div><span>{{ total.title }}</span><strong>{{ total.text }}</strong></div>{% endfor %}
       </div>
@@ -59,7 +59,7 @@
   </div>
 
   <section class="cart-page-modules">
-    <div class="cart-page-modules-intro"><p class="eyebrow">{{ six_brand_name }} · {{ six_bag }}</p><h2>{{ six_coupon_title }}</h2><p>{{ six_coupon_copy }}</p></div>
+    <div class="cart-page-modules-intro"><p class="eyebrow">{{ six_brand_name }} · {{ six_bag }}</p><h2>{{ six_coupon_title|trim('.') }}</h2><p>{{ six_coupon_copy }}</p></div>
     <div class="cart-page-module-grid">
       <form action="{{ six_coupon_action }}" method="post" class="six-coupon-form"><label for="six-coupon">{{ six_coupon_label }}</label><div><input id="six-coupon" type="text" name="coupon" value="{{ coupon|default('') }}" autocomplete="off" required><button class="button button--dark" type="submit">{{ six_coupon_apply }}</button></div>{% if six_coupon_status == 'success' %}<p class="six-form-status is-success">{{ six_coupon_success }}</p>{% elseif six_coupon_status == 'error' %}<p class="six-form-status is-error">{{ six_coupon_error }}</p>{% endif %}</form>
       {% for module in modules %}{{ module }}{% endfor %}
@@ -70,7 +70,7 @@
     <div class="cart-page-empty-mark" aria-hidden="true"><small>01 / 06</small><svg class="summary-bag-icon" viewBox="0 0 24 24" focusable="false"><path d="M6.5 8.5h11l1 11h-13l1-11Z"/><path d="M9 9V6.5a3 3 0 0 1 6 0V9"/></svg></div>
     <div class="cart-page-empty-copy">
       <p class="eyebrow">{{ six_bag }} · 0</p>
-      <h2>{{ six_cart_empty_title }}</h2>
+      <h2>{{ six_cart_empty_title|trim('.') }}</h2>
       <p>{{ six_cart_empty_copy }}</p>
       <a class="button button--dark" href="{{ continue }}">{{ six_catalog }} <span>→</span></a>
     </div>

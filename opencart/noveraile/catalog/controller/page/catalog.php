@@ -57,17 +57,14 @@ class Catalog extends \Opencart\System\Engine\Controller {
             $value = trim((string)($this->request->get[$key] ?? ''));
             $filter[$key] = in_array($value, $values, true) ? $value : '';
         }
-        $shape_facets = [];
-        foreach ($facets['stone_shape'] ?? [] as $facet) {
-            $shape_facets[mb_strtolower(trim((string)$facet['value']))] = (int)$facet['total'];
-        }
+        $shape_facets = $this->model_extension_noveraile_catalog->getStoneShapeFacets();
         $data['stone_shapes'] = [];
-        foreach (['round','princess','marquise','baguette','cushion','heart','oval'] as $shape) {
+        foreach (['round','princess','marquise','baguette','cushion','heart','oval','pear','emerald','radiant','asscher'] as $shape) {
             $localized = (string)($data['six_shape_' . $shape] ?? ucfirst($shape));
             $data['stone_shapes'][] = [
                 'value' => $shape,
                 'name' => $localized,
-                'total' => $shape_facets[mb_strtolower($localized)] ?? 0
+                'total' => $shape_facets[$shape] ?? 0
             ];
         }
         $shape = trim((string)($this->request->get['stone_shape'] ?? ''));

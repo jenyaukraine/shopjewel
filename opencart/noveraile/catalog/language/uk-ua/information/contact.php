@@ -1,6 +1,6 @@
 <?php
 // Heading
-$_['heading_title']  = 'Приватна консультація';
+$_['heading_title']  = 'Персональна консультація';
 
 // Text
 $_['text_location']  = 'Наші контакти';

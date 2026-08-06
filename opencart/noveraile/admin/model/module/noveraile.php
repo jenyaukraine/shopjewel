@@ -17,6 +17,7 @@ class Noveraile extends \Opencart\System\Engine\Model {
         $this->installLanguages();
         $this->installCurrencies();
         $this->installSettings($with_demo_data);
+        $this->normalizeCatalogJsonColumns();
         $this->refreshProjectSettings();
 
         if ($with_demo_data) {
@@ -221,12 +222,21 @@ class Noveraile extends \Opencart\System\Engine\Model {
             'payment_stripe_order_status_id' => (int)($this->config->get('payment_noveraile_stripe_order_status_id') ?: (((array)$this->config->get('config_processing_status'))[0] ?? 0)),
             'payment_stripe_sort_order' => 1
         ]);
+        $stripe_secret = trim((string)(getenv('STRIPE_SECRET_KEY') ?: ''));
+        $stripe_webhook = trim((string)(getenv('STRIPE_WEBHOOK_SECRET') ?: ''));
+        if (preg_match('/^sk_(?:test|live)_[A-Za-z0-9]+$/', $stripe_secret) && preg_match('/^whsec_[A-Za-z0-9]+$/', $stripe_webhook)) {
+            $this->model_setting_setting->editValue('payment_stripe', 'payment_stripe_secret_key', $stripe_secret);
+            $this->model_setting_setting->editValue('payment_stripe', 'payment_stripe_webhook_secret', $stripe_webhook);
+            $this->model_setting_setting->editValue('payment_stripe', 'payment_stripe_status', '1');
+        }
         $this->installDefaultSettings('shipping_dhl', [
-            'shipping_dhl_status' => 0, 'shipping_dhl_cost' => 25, 'shipping_dhl_tax_class_id' => 0,
+            'shipping_dhl_status' => 0, 'shipping_dhl_cost' => 25,
+            'shipping_dhl_eu_cost' => 25, 'shipping_dhl_world_cost' => 25, 'shipping_dhl_tax_class_id' => 0,
             'shipping_dhl_geo_zone_id' => 0, 'shipping_dhl_sort_order' => 1
         ]);
         $this->installDefaultSettings('shipping_dpd', [
-            'shipping_dpd_status' => 0, 'shipping_dpd_cost' => 15, 'shipping_dpd_tax_class_id' => 0,
+            'shipping_dpd_status' => 0, 'shipping_dpd_cost' => 15,
+            'shipping_dpd_ukraine_cost' => 15, 'shipping_dpd_eu_cost' => 15, 'shipping_dpd_tax_class_id' => 0,
             'shipping_dpd_geo_zone_id' => 0, 'shipping_dpd_sort_order' => 2
         ]);
         $this->installDefaultSettings('total_bundle', [
@@ -247,6 +257,26 @@ class Noveraile extends \Opencart\System\Engine\Model {
             $current = $this->db->query("SELECT `value` FROM `" . DB_PREFIX . "setting` WHERE `store_id` = '0' AND `key` = '" . $this->db->escape($key) . "' LIMIT 1");
             if ($current->num_rows && in_array(trim((string)$current->row['value']), $replacement['legacy'], true)) {
                 $this->model_setting_setting->editValue('module_noveraile', $key, $replacement['value']);
+            }
+        }
+
+        // The bundled 6 Moments production catalog has fixed, credential-free
+        // delivery rates. Keep marketplace installs opt-in, but make an
+        // existing managed storefront checkout-ready after every deployment.
+        $managed_catalog = $this->db->query("SELECT `setting_id` FROM `" . DB_PREFIX . "setting` WHERE `store_id` = '0' AND `key` = 'module_noveraile_catalog_version' LIMIT 1");
+        if ($managed_catalog->num_rows && $this->config->get('module_noveraile_status')) {
+            $this->model_setting_setting->editValue('shipping_dhl', 'shipping_dhl_status', '1');
+            $this->model_setting_setting->editValue('shipping_dpd', 'shipping_dpd_status', '1');
+        }
+    }
+
+    private function normalizeCatalogJsonColumns(): void {
+        // External feeds can leave OpenCart 4.1 JSON fields as NULL. The cart
+        // decodes them on every request, leaking a PHP warning into HTML/JSON.
+        foreach (['variant', 'override'] as $column) {
+            $exists = $this->db->query("SHOW COLUMNS FROM `" . DB_PREFIX . "product` LIKE '" . $column . "'");
+            if ($exists->num_rows) {
+                $this->db->query("UPDATE `" . DB_PREFIX . "product` SET `" . $column . "` = '[]' WHERE `" . $column . "` IS NULL OR TRIM(`" . $column . "`) = '' OR `" . $column . "` = 'null'");
             }
         }
     }
@@ -691,9 +721,28 @@ class Noveraile extends \Opencart\System\Engine\Model {
         $sku = $this->usesProductCodeTable()
             ? "(SELECT `pc`.`value` FROM `" . DB_PREFIX . "product_code` `pc` WHERE `pc`.`product_id` = `p`.`product_id` AND `pc`.`code` = 'sku' LIMIT 1)"
             : "`p`.`sku`";
-        $query = $this->db->query("SELECT `p`.`product_id`, `p`.`model`, `p`.`price`, `p`.`quantity`, `p`.`status`, `p`.`image`, `p`.`weight`, `p`.`sort_order`, `p`.`date_available`, `l`.`code` AS `language_code`, `pd`.`name`, `pd`.`description`, `pd`.`meta_title`, `pd`.`meta_description`, `pd`.`meta_keyword`, `pd`.`tag`, " . $sku . " AS `sku`, (SELECT GROUP_CONCAT(`ptc`.`category_id` ORDER BY `ptc`.`category_id` SEPARATOR '|') FROM `" . DB_PREFIX . "product_to_category` `ptc` WHERE `ptc`.`product_id` = `p`.`product_id`) AS `category_ids` FROM `" . DB_PREFIX . "product` `p` INNER JOIN `" . DB_PREFIX . "product_description` `pd` ON (`pd`.`product_id` = `p`.`product_id`) INNER JOIN `" . DB_PREFIX . "language` `l` ON (`l`.`language_id` = `pd`.`language_id`) ORDER BY `p`.`product_id`, `l`.`sort_order`, `l`.`name`");
+        $query = $this->db->query("SELECT `p`.`product_id`, `p`.`model`, `p`.`price`, `p`.`quantity`, `p`.`status`, `p`.`image`, `p`.`weight`, `p`.`sort_order`, `p`.`date_available`, `l`.`language_id`, `l`.`code` AS `language_code`, `pd`.`name`, `pd`.`description`, `pd`.`meta_title`, `pd`.`meta_description`, `pd`.`meta_keyword`, `pd`.`tag`, " . $sku . " AS `sku`, (SELECT GROUP_CONCAT(`ptc`.`category_id` ORDER BY `ptc`.`category_id` SEPARATOR '|') FROM `" . DB_PREFIX . "product_to_category` `ptc` WHERE `ptc`.`product_id` = `p`.`product_id`) AS `category_ids`, (SELECT GROUP_CONCAT(`pi`.`image` ORDER BY `pi`.`sort_order`, `pi`.`product_image_id` SEPARATOR '|') FROM `" . DB_PREFIX . "product_image` `pi` WHERE `pi`.`product_id` = `p`.`product_id`) AS `additional_images` FROM `" . DB_PREFIX . "product` `p` INNER JOIN `" . DB_PREFIX . "product_description` `pd` ON (`pd`.`product_id` = `p`.`product_id`) INNER JOIN `" . DB_PREFIX . "language` `l` ON (`l`.`language_id` = `pd`.`language_id`) ORDER BY `p`.`product_id`, `l`.`sort_order`, `l`.`name`");
 
-        return $query->rows;
+        $attribute_map = array_filter($this->attributeMap(), static fn($id): bool => (int)$id > 0);
+        $attribute_keys = array_flip(array_map('intval', $attribute_map));
+        $attributes = [];
+        if ($attribute_keys) {
+            $attribute_query = $this->db->query("SELECT `product_id`, `language_id`, `attribute_id`, `text` FROM `" . DB_PREFIX . "product_attribute` WHERE `attribute_id` IN (" . implode(',', array_keys($attribute_keys)) . ")");
+            foreach ($attribute_query->rows as $attribute) {
+                $key = $attribute_keys[(int)$attribute['attribute_id']] ?? '';
+                if ($key !== '') $attributes[(int)$attribute['product_id']][(int)$attribute['language_id']][$key] = $attribute['text'];
+            }
+        }
+        $rows = $query->rows;
+        foreach ($rows as &$row) {
+            foreach (array_keys($attribute_map) as $key) {
+                $row[$key] = $attributes[(int)$row['product_id']][(int)$row['language_id']][$key] ?? '';
+            }
+            unset($row['language_id']);
+        }
+        unset($row);
+
+        return $rows;
     }
 
     public function importProducts(array $rows, bool $update_existing): array {
@@ -770,12 +819,15 @@ class Noveraile extends \Opencart\System\Engine\Model {
                 }
             }
 
-            $image = str_replace('\\', '/', trim((string)($first['image'] ?? '')));
-            if (str_contains($image, '..') || str_starts_with($image, '/') || preg_match('#^[a-z]+://#i', $image)) {
-                throw new \RuntimeException(sprintf('Row %d: image must be a relative OpenCart image path.', $line));
-            }
+            $image = $this->catalogImagePath($first['image'] ?? '', $line, 'image');
+            $additional_images = array_key_exists('additional_images', $first)
+                ? $this->catalogImagePaths($first['additional_images'], $line, 'additional_images')
+                : null;
 
             $descriptions = [];
+            $attribute_map = $this->attributeMap();
+            $attribute_keys = ['metal', 'fineness', 'stone_origin', 'gemstone', 'stone_shape', 'stone_quality', 'carat', 'stone_count', 'style'];
+            $attributes = [];
             foreach ($group['rows'] as $row) {
                 $row_line = (int)$row['_line'];
                 $name = $this->catalogText($row['name'] ?? '', $row_line, 'name', 255, true);
@@ -787,6 +839,10 @@ class Noveraile extends \Opencart\System\Engine\Model {
                     'meta_description' => (string)($row['meta_description'] ?? ''),
                     'meta_keyword' => (string)($row['meta_keyword'] ?? '')
                 ];
+                foreach ($attribute_keys as $attribute_key) {
+                    if (empty($attribute_map[$attribute_key]) || !array_key_exists($attribute_key, $row)) continue;
+                    $attributes[(int)$row['language_id']][(int)$attribute_map[$attribute_key]] = trim((string)$row[$attribute_key]);
+                }
             }
 
             $date_available = trim((string)($first['date_available'] ?? '')) ?: date('Y-m-d');
@@ -803,6 +859,8 @@ class Noveraile extends \Opencart\System\Engine\Model {
                 'status' => $this->catalogStatus($first['status'] ?? '1', $line),
                 'category_ids' => $category_ids,
                 'image' => $image,
+                'additional_images' => $additional_images,
+                'attributes' => $attributes,
                 'weight' => $this->decimalNumber($first['weight'] ?? '0', $line, 'weight'),
                 'sort_order' => $this->nonNegativeInteger($first['sort_order'] ?? '0', $line, 'sort_order'),
                 'date_available' => $date_available,
@@ -841,10 +899,11 @@ class Noveraile extends \Opencart\System\Engine\Model {
                     foreach ($product['category_ids'] as $category_id) {
                         $this->db->query("INSERT INTO `" . DB_PREFIX . "product_to_category` SET `product_id` = '" . $product_id . "', `category_id` = '" . (int)$category_id . "'");
                     }
+                    $this->replaceCatalogMediaAndAttributes($product_id, $product['additional_images'], $product['attributes']);
                     $updated++;
                 } else {
                     $codes = $product['sku'] !== '' ? [['code' => 'sku', 'value' => $product['sku']]] : [];
-                    $this->model_catalog_product->addProduct([
+                    $product_id = (int)$this->model_catalog_product->addProduct([
                         'master_id' => 0,
                         'model' => $product['model'],
                         'sku' => $product['sku'],
@@ -880,6 +939,7 @@ class Noveraile extends \Opencart\System\Engine\Model {
                         'product_category' => $product['category_ids'],
                         'product_store' => [0]
                     ]);
+                    $this->replaceCatalogMediaAndAttributes($product_id, $product['additional_images'], $product['attributes']);
                     $translations += count($product['descriptions']);
                     $created++;
                 }
@@ -893,6 +953,47 @@ class Noveraile extends \Opencart\System\Engine\Model {
         }
 
         return ['created' => $created, 'updated' => $updated, 'translations' => $translations];
+    }
+
+    private function replaceCatalogMediaAndAttributes(int $product_id, ?array $images, array $attributes): void {
+        if ($images !== null) {
+            $this->db->query("DELETE FROM `" . DB_PREFIX . "product_image` WHERE `product_id` = '" . $product_id . "'");
+            foreach ($images as $sort_order => $image) {
+                $this->db->query("INSERT INTO `" . DB_PREFIX . "product_image` SET `product_id` = '" . $product_id . "', `image` = '" . $this->db->escape($image) . "', `sort_order` = '" . (int)$sort_order . "'");
+            }
+        }
+        foreach ($attributes as $language_id => $language_attributes) {
+            foreach ($language_attributes as $attribute_id => $text) {
+                $this->db->query("DELETE FROM `" . DB_PREFIX . "product_attribute` WHERE `product_id` = '" . $product_id . "' AND `attribute_id` = '" . (int)$attribute_id . "' AND `language_id` = '" . (int)$language_id . "'");
+                if ($text !== '') {
+                    $this->db->query("INSERT INTO `" . DB_PREFIX . "product_attribute` SET `product_id` = '" . $product_id . "', `attribute_id` = '" . (int)$attribute_id . "', `language_id` = '" . (int)$language_id . "', `text` = '" . $this->db->escape($text) . "'");
+                }
+            }
+        }
+    }
+
+    private function catalogImagePath(mixed $value, int $line, string $field): string {
+        $image = str_replace('\\', '/', trim((string)$value));
+        if (str_contains($image, '..') || str_starts_with($image, '/') || preg_match('#^[a-z]+://#i', $image)) {
+            throw new \RuntimeException(sprintf('Row %d: %s must contain relative OpenCart image paths only.', $line, $field));
+        }
+        return $image;
+    }
+
+    private function catalogImagePaths(mixed $value, int $line, string $field): array {
+        $paths = [];
+        foreach (explode('|', trim((string)$value)) as $path) {
+            if (trim($path) === '') continue;
+            $paths[] = $this->catalogImagePath($path, $line, $field);
+        }
+        return array_values(array_unique($paths));
+    }
+
+    private function attributeMap(): array {
+        $value = $this->config->get('module_noveraile_attribute_map');
+        if (is_array($value)) return $value;
+        $decoded = json_decode((string)$value, true);
+        return is_array($decoded) ? $decoded : [];
     }
 
     private function catalogText(mixed $value, int $line, string $field, int $maximum, bool $required = false): string {

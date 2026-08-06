@@ -28,6 +28,7 @@ class Theme extends \Opencart\System\Engine\Controller {
             if (str_starts_with($key, 'six_')) $data[$key] = is_string($value) ? str_replace(['NOVERAILE', 'Six Moments'], $brand, $value) : $value;
         }
         $data['six_brand_name'] = $brand;
+        $data['six_asset'] = '/image/catalog/noveraile/';
     }
 
     public function header(string &$route, array &$data, string &$code = '', string &$output = ''): void {
@@ -39,8 +40,8 @@ class Theme extends \Opencart\System\Engine\Controller {
             $data['title'] = $data['six_brand_name'];
         }
 
-        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.3.0.2';
-        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.3.0.2';
+        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.3.0.3';
+        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.3.0.3';
         $data['six_favicon'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/favicon.svg?v=2';
         $data['six_og_image'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/og-store.png';
         $data['six_native_menu_status'] = (bool)$this->config->get('module_noveraile_native_menu_status');
@@ -149,7 +150,7 @@ class Theme extends \Opencart\System\Engine\Controller {
     public function footer(string &$route, array &$data, string &$code = '', string &$output = ''): void {
         if (!$this->enabled() || !$this->claimView($route, ['common/footer'], 'extension/noveraile/common/footer')) return;
         $this->words($data);
-        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.3.0.2';
+        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.3.0.3';
         $lang = 'language=' . $this->config->get('config_language');
         $data['six_home'] = $this->url->link('common/home', $lang);
         $data['six_about_url'] = $this->url->link('extension/noveraile/page/about', $lang);
@@ -163,7 +164,7 @@ class Theme extends \Opencart\System\Engine\Controller {
         $data['six_imprint_url'] = $this->url->link('extension/noveraile/page/imprint', $lang);
         $data['six_terms_url'] = $this->url->link('extension/noveraile/page/terms', $lang);
         $data['six_newsletter_action'] = $this->url->link('extension/noveraile/newsletter.subscribe', $lang);
-        $data['six_instagram'] = $this->config->get('module_noveraile_instagram');
+        $data['six_instagram'] = trim((string)$this->config->get('module_noveraile_instagram')) ?: 'https://www.instagram.com/6moments_jewelry';
         $instagram_path = trim((string)parse_url((string)$data['six_instagram'], PHP_URL_PATH), '/');
         $data['six_instagram_label'] = $instagram_path ? '@' . basename($instagram_path) : '@' . strtolower(preg_replace('/[^a-z0-9]+/i', '', $data['six_brand_name']));
         $data['six_email'] = (string)($this->config->get('module_noveraile_email') ?: '6moments.jewelry@gmail.com');
@@ -186,7 +187,24 @@ class Theme extends \Opencart\System\Engine\Controller {
         $data['six_about'] = $this->url->link('extension/noveraile/page/about', $lang);
         $data['six_diamonds'] = $this->url->link('extension/noveraile/page/diamonds', $lang);
         $data['six_journal_url'] = $this->url->link($this->blogRoute(), $lang);
-        $data['six_instagram'] = $this->config->get('module_noveraile_instagram');
+        $data['six_instagram'] = trim((string)$this->config->get('module_noveraile_instagram')) ?: 'https://www.instagram.com/6moments_jewelry';
+        $instagram_path = trim((string)parse_url($data['six_instagram'], PHP_URL_PATH), '/');
+        $data['six_instagram_label'] = $instagram_path ? '@' . basename($instagram_path) : '@6moments_jewelry';
+
+        // The social block belongs to the home view, so footer event data is
+        // not available here. Keep complete locale-aware copy in this payload
+        // and never allow a blank promotional panel when a translation cache
+        // or an older language pack is incomplete.
+        $social_fallbacks = match ((string)$this->config->get('config_language')) {
+            'ru-ru' => ['six_follow' => 'Следите за нами в Instagram', 'six_follow_copy' => 'Новые украшения, детали мастерской и особенные релизы.'],
+            'uk-ua' => ['six_follow' => 'Стежте за нами в Instagram', 'six_follow_copy' => 'Нові прикраси, деталі майстерні та особливі релізи.'],
+            'de-de' => ['six_follow' => 'Folge uns auf Instagram', 'six_follow_copy' => 'Neue Schmuckstücke, Atelier-Einblicke und besondere Veröffentlichungen.'],
+            'cs-cz' => ['six_follow' => 'Sledujte nás na Instagramu', 'six_follow_copy' => 'Nové šperky, pohledy do ateliéru a speciální novinky.'],
+            default => ['six_follow' => 'Follow us on Instagram', 'six_follow_copy' => 'New jewelry, atelier details and special releases.']
+        };
+        foreach ($social_fallbacks as $key => $fallback) {
+            if (trim((string)($data[$key] ?? '')) === '') $data[$key] = $fallback;
+        }
         $builder = json_decode((string)$this->config->get('module_noveraile_page_builder'), true);
         $default_blocks = ['hero','featured','benefits','categories','collections','specials','story','journal','social'];
         if (!is_array($builder) || !$builder) $builder = array_map(static fn($id) => ['id' => $id, 'enabled' => 1], $default_blocks);
@@ -231,9 +249,12 @@ class Theme extends \Opencart\System\Engine\Controller {
         $category_names = ['rings'=>$data['six_type_rings'],'earrings'=>$data['six_type_earrings'],'necklaces'=>$data['six_type_necklaces'],'bracelets'=>$data['six_type_bracelets'],'wedding'=>$data['six_type_wedding']];
         $data['six_category_tiles'] = [];
         if ($uses_current_catalog) {
-            $category_query = $this->db->query("SELECT `c`.`category_id`, `cd`.`name`, `c`.`image` AS `category_image`, MIN(NULLIF(`p`.`image`, '')) AS `product_image` FROM `" . DB_PREFIX . "category` `c` INNER JOIN `" . DB_PREFIX . "category_description` `cd` ON (`cd`.`category_id` = `c`.`category_id` AND `cd`.`language_id` = '" . (int)$this->config->get('config_language_id') . "') INNER JOIN `" . DB_PREFIX . "product_to_category` `p2c` ON (`p2c`.`category_id` = `c`.`category_id`) INNER JOIN `" . DB_PREFIX . "product` `p` ON (`p`.`product_id` = `p2c`.`product_id` AND `p`.`status` = '1' AND `p`.`model` NOT LIKE 'NVR-%') WHERE `c`.`status` = '1' GROUP BY `c`.`category_id`, `cd`.`name`, `c`.`image`, `c`.`sort_order` ORDER BY `c`.`sort_order`, `c`.`category_id` LIMIT 5");
+            $category_query = $this->db->query("SELECT `c`.`category_id`, `cd`.`name`, `c`.`image` AS `category_image`, (SELECT `p_rep`.`image` FROM `" . DB_PREFIX . "product_to_category` `p2c_rep` INNER JOIN `" . DB_PREFIX . "product` `p_rep` ON (`p_rep`.`product_id` = `p2c_rep`.`product_id`) WHERE `p2c_rep`.`category_id` = `c`.`category_id` AND `p_rep`.`status` = '1' AND `p_rep`.`model` NOT LIKE 'NVR-%' AND NULLIF(`p_rep`.`image`, '') IS NOT NULL ORDER BY `p_rep`.`sort_order`, `p_rep`.`product_id` LIMIT 1) AS `product_image` FROM `" . DB_PREFIX . "category` `c` INNER JOIN `" . DB_PREFIX . "category_description` `cd` ON (`cd`.`category_id` = `c`.`category_id` AND `cd`.`language_id` = '" . (int)$this->config->get('config_language_id') . "') WHERE `c`.`status` = '1' AND EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_to_category` `p2c_exists` INNER JOIN `" . DB_PREFIX . "product` `p_exists` ON (`p_exists`.`product_id` = `p2c_exists`.`product_id`) WHERE `p2c_exists`.`category_id` = `c`.`category_id` AND `p_exists`.`status` = '1' AND `p_exists`.`model` NOT LIKE 'NVR-%') ORDER BY `c`.`sort_order`, `c`.`category_id` LIMIT 5");
             foreach ($category_query->rows as $category) {
-                $image = trim((string)($category['category_image'] ?: $category['product_image']));
+                // A category cover may be a generic campaign photograph. Prefer
+                // a real product from the destination category so the homepage
+                // preview always matches what the customer sees after clicking.
+                $image = trim((string)($category['product_image'] ?: $category['category_image']));
                 if ($image === '') continue;
                 $data['six_category_tiles'][] = [
                     'name' => (string)$category['name'],
@@ -304,9 +325,10 @@ class Theme extends \Opencart\System\Engine\Controller {
         $data['six_shipping_url'] = $this->url->link('extension/noveraile/page/shipping', 'language=' . $this->config->get('config_language'));
         $data['six_cart_add'] = $this->url->link('checkout/cart.add', 'language=' . $this->config->get('config_language'));
         $data['six_bundle_add'] = $this->url->link('extension/noveraile/bundle.add', 'language=' . $this->config->get('config_language'));
-        $metal = $this->tagChoice($data['six_tags'], ['white-gold','yellow-gold','rose-gold','alloy']) ?: 'yellow-gold';
-        $metal_keys = ['white-gold'=>'six_white_gold','yellow-gold'=>'six_yellow_gold','rose-gold'=>'six_rose_gold','alloy'=>'six_alloy'];
-        $data['six_metal_value'] = $this->language->get($metal_keys[$metal] ?? 'six_yellow_gold');
+        $data['six_metal_options'] = $this->metalOptions($data['six_tags']);
+        $data['six_metal_value'] = $data['six_metal_options']
+            ? implode(' · ', array_column($data['six_metal_options'], 'name'))
+            : '—';
         $stone = $this->tagChoice($data['six_tags'], ['natural','lab-grown']);
         $data['six_stone_value'] = in_array('no-stones', $data['six_tags'], true) ? $this->language->get('six_no_stones') : $this->language->get($stone === 'lab-grown' ? 'six_lab_grown' : 'six_natural');
         $tag_carat = $this->tagPrefix($data['six_tags'], 'carat-');
@@ -356,6 +378,8 @@ class Theme extends \Opencart\System\Engine\Controller {
         }
         $tags = array_filter(array_map('trim', explode(',', (string)($data['tag'] ?? ''))));
         $data['six_moment'] = $this->momentFromTags($tags);
+        $data['six_metal_options'] = $this->metalOptions($tags);
+        $data['six_fineness_value'] = $this->tagChoice($tags, ['585','750']);
         $data['six_sku'] = $data['model'] ?? '';
         $data['six_product_weight'] = $this->displayWeight($data);
         $carat = $this->tagPrefix($tags, 'carat-');
@@ -376,14 +400,14 @@ class Theme extends \Opencart\System\Engine\Controller {
         $data['six_catalog_url'] = $this->url->link('extension/noveraile/page/catalog', $lang);
         $data['six_listing_categories'] = [];
 
-        $category_query = $this->db->query("SELECT c.category_id, cd.name, c.sort_order, c.image AS category_image, MIN(NULLIF(p.image, '')) AS product_image FROM `" . DB_PREFIX . "category` c INNER JOIN `" . DB_PREFIX . "category_description` cd ON (cd.category_id = c.category_id) INNER JOIN `" . DB_PREFIX . "product_to_category` p2c ON (p2c.category_id = c.category_id) INNER JOIN `" . DB_PREFIX . "product` p ON (p.product_id = p2c.product_id AND p.status = '1') WHERE c.status = '1' AND cd.language_id = '" . (int)$this->config->get('config_language_id') . "' GROUP BY c.category_id, cd.name, c.sort_order, c.image ORDER BY c.sort_order ASC, cd.name ASC, c.category_id ASC LIMIT 60");
+        $category_query = $this->db->query("SELECT c.category_id, cd.name, c.sort_order, c.image AS category_image, (SELECT p_rep.image FROM `" . DB_PREFIX . "product_to_category` p2c_rep INNER JOIN `" . DB_PREFIX . "product` p_rep ON (p_rep.product_id = p2c_rep.product_id) WHERE p2c_rep.category_id = c.category_id AND p_rep.status = '1' AND NULLIF(p_rep.image, '') IS NOT NULL ORDER BY p_rep.sort_order ASC, p_rep.product_id ASC LIMIT 1) AS product_image FROM `" . DB_PREFIX . "category` c INNER JOIN `" . DB_PREFIX . "category_description` cd ON (cd.category_id = c.category_id) WHERE c.status = '1' AND cd.language_id = '" . (int)$this->config->get('config_language_id') . "' AND EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_to_category` p2c_exists INNER JOIN `" . DB_PREFIX . "product` p_exists ON (p_exists.product_id = p2c_exists.product_id) WHERE p2c_exists.category_id = c.category_id AND p_exists.status = '1') ORDER BY c.sort_order ASC, cd.name ASC, c.category_id ASC LIMIT 60");
         $category_names = [];
         foreach ($category_query->rows as $category) {
             $name = preg_replace('/[\p{Z}\s]+/u', ' ', trim((string)$category['name'])) ?: trim((string)$category['name']);
             $key = function_exists('mb_strtolower') ? mb_strtolower($name, 'UTF-8') : strtolower($name);
             if ($name === '' || isset($category_names[$key])) continue;
             $category_names[$key] = true;
-            $image = trim((string)($category['category_image'] ?: $category['product_image']));
+            $image = trim((string)($category['product_image'] ?: $category['category_image']));
             $data['six_listing_categories'][] = [
                 'name' => $name,
                 'image' => $image !== '' ? '/image/' . ltrim(str_replace('\\', '/', $image), '/') : '',
@@ -641,6 +665,21 @@ class Theme extends \Opencart\System\Engine\Controller {
     private function tagChoice(array $tags, array $choices): string {
         foreach ($choices as $choice) if (in_array($choice, $tags, true)) return $choice;
         return '';
+    }
+
+    private function metalOptions(array $tags): array {
+        $labels = [
+            'white-gold' => 'six_white_gold',
+            'yellow-gold' => 'six_yellow_gold',
+            'rose-gold' => 'six_rose_gold',
+            'alloy' => 'six_alloy'
+        ];
+        $options = [];
+        foreach ($labels as $key => $language_key) {
+            if (!in_array($key, $tags, true)) continue;
+            $options[] = ['key' => $key, 'name' => $this->language->get($language_key)];
+        }
+        return $options;
     }
 
     private function tagPrefix(array $tags, string $prefix): string {

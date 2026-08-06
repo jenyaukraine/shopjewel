@@ -1,5 +1,5 @@
 {{ header }}
-<article class="legal-page"><header><p class="eyebrow">{{ six_footer_care }}</p><h1>{{ six_faq_title }}</h1></header><div class="faq-list">
+<article class="legal-page"><header><p class="eyebrow">{{ six_footer_care }}</p><h1>{{ six_faq_title|trim('.') }}</h1></header><div class="faq-list">
   <details open><summary>{{ six_faq_certificate_q }}</summary><p>{{ six_faq_certificate_a }}</p></details>
   <details><summary>{{ six_faq_materials_q }}</summary><p>{{ six_faq_materials_a }}</p></details>
   <details><summary>{{ six_faq_origin_q }}</summary><p>{{ six_faq_origin_a }}</p></details>
