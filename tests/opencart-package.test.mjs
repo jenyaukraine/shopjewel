@@ -448,6 +448,8 @@ test("storefront uses the 6 Moments wordmark and data-backed stone filters", asy
   assert.match(catalogModel, /getOptionStoneQualityFacets/);
   assert.match(catalogModel, /option_value_description/);
   assert.match(catalogModel, /'круглый'/);
+  assert.match(catalogModel, /'stone_shape' => 900002/);
+  assert.match(catalogModel, /cached module settings still point at the removed IDs/);
 });
 
 test("storefront catalog accepts normal merchant products", async () => {

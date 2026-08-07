@@ -2,6 +2,8 @@
 namespace Opencart\Catalog\Model\Extension\Noveraile;
 
 class Catalog extends \Opencart\System\Engine\Model {
+    private ?array $resolved_attribute_map = null;
+
     public function getProductIds(array $filter): array {
         $sql = $this->baseSql($filter, false);
         $attribute_map = $this->attributeMap();
@@ -420,10 +422,37 @@ class Catalog extends \Opencart\System\Engine\Model {
     }
 
     private function attributeMap(): array {
+        if ($this->resolved_attribute_map !== null) return $this->resolved_attribute_map;
+
         $value = $this->config->get('module_noveraile_attribute_map');
-        if (is_array($value)) return $value;
-        $decoded = json_decode((string)$value, true);
-        return is_array($decoded) ? $decoded : [];
+        $map = is_array($value) ? $value : json_decode((string)$value, true);
+        $map = is_array($map) ? array_map('intval', $map) : [];
+
+        // A supplier import may replace the demo attributes while OpenCart's
+        // cached module settings still point at the removed IDs. Prefer the
+        // imported feed attributes whenever the configured ID has no rows.
+        $feed_attributes = [
+            'fineness' => 900012,
+            'gemstone' => 900015,
+            'stone_origin' => 900014,
+            'carat' => 900006,
+            'stone_shape' => 900002,
+            'stone_quality' => 900013,
+            'style' => 900008
+        ];
+        $candidate_ids = array_values(array_unique(array_filter(array_merge(array_values($map), array_values($feed_attributes)))));
+        $present = [];
+        if ($candidate_ids) {
+            $query = $this->db->query("SELECT DISTINCT `attribute_id` FROM `" . DB_PREFIX . "product_attribute` WHERE `attribute_id` IN (" . implode(',', array_map('intval', $candidate_ids)) . ")");
+            $present = array_fill_keys(array_map('intval', array_column($query->rows, 'attribute_id')), true);
+        }
+        foreach ($feed_attributes as $key => $attribute_id) {
+            if (empty($present[(int)($map[$key] ?? 0)]) && !empty($present[$attribute_id])) {
+                $map[$key] = $attribute_id;
+            }
+        }
+
+        return $this->resolved_attribute_map = $map;
     }
 
     private function stoneShapeAliases(): array {
