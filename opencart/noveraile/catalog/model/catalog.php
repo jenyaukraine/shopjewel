@@ -63,6 +63,20 @@ class Catalog extends \Opencart\System\Engine\Model {
         foreach ($facets as $key => $_) {
             $attribute_id = (int)($attribute_map[$key] ?? 0);
             if (!$attribute_id) continue;
+            if ($key === 'style') {
+                $sql = "SELECT `p`.`product_id`, TRIM(`pa`.`text`) AS `value` FROM `" . DB_PREFIX . "product_attribute` `pa` INNER JOIN `" . DB_PREFIX . "product` `p` ON (`p`.`product_id` = `pa`.`product_id` AND `p`.`status` = '1' AND `p`.`date_available` <= NOW()) INNER JOIN `" . DB_PREFIX . "product_to_store` `p2s` ON (`p2s`.`product_id` = `p`.`product_id` AND `p2s`.`store_id` = '" . $store_id . "') WHERE `pa`.`attribute_id` = '" . $attribute_id . "' AND `pa`.`language_id` = '" . $language_id . "' AND TRIM(`pa`.`text`) <> ''";
+                $totals = [];
+                foreach ($this->db->query($sql)->rows as $row) {
+                    foreach (preg_split('/\s*;\s*/u', (string)$row['value'], -1, PREG_SPLIT_NO_EMPTY) as $value) {
+                        $totals[$value][(int)$row['product_id']] = true;
+                    }
+                }
+                ksort($totals, SORT_NATURAL | SORT_FLAG_CASE);
+                foreach ($totals as $value => $product_ids) {
+                    $facets[$key][] = ['value' => $value, 'total' => count($product_ids)];
+                }
+                continue;
+            }
             $sql = "SELECT TRIM(`pa`.`text`) AS `value`, COUNT(DISTINCT `p`.`product_id`) AS `total` FROM `" . DB_PREFIX . "product_attribute` `pa` INNER JOIN `" . DB_PREFIX . "product` `p` ON (`p`.`product_id` = `pa`.`product_id` AND `p`.`status` = '1' AND `p`.`date_available` <= NOW()) INNER JOIN `" . DB_PREFIX . "product_to_store` `p2s` ON (`p2s`.`product_id` = `p`.`product_id` AND `p2s`.`store_id` = '" . $store_id . "') WHERE `pa`.`attribute_id` = '" . $attribute_id . "' AND `pa`.`language_id` = '" . $language_id . "' AND TRIM(`pa`.`text`) <> ''";
             if (in_array($key, ['stone_shape', 'stone_quality'], true) && !empty($attribute_map['carat'])) {
                 $sql .= " AND EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_attribute` `pa_carat` WHERE `pa_carat`.`product_id` = `p`.`product_id` AND `pa_carat`.`attribute_id` = '" . (int)$attribute_map['carat'] . "' AND `pa_carat`.`language_id` = '" . $language_id . "' AND CAST(REPLACE(`pa_carat`.`text`, ',', '.') AS DECIMAL(10,3)) > 0)";
@@ -150,7 +164,7 @@ class Catalog extends \Opencart\System\Engine\Model {
 
         if (!empty($filter['q'])) {
             $q = $this->db->escape('%' . trim((string)$filter['q']) . '%');
-            $sql .= " AND (`pd`.`name` LIKE '" . $q . "' OR `pd`.`description` LIKE '" . $q . "' OR `pd`.`tag` LIKE '" . $q . "' OR `p`.`model` LIKE '" . $q . "' OR `pc`.`value` LIKE '" . $q . "')";
+            $sql .= " AND (`pd`.`name` LIKE '" . $q . "' OR `pd`.`description` LIKE '" . $q . "' OR `pd`.`tag` LIKE '" . $q . "' OR `p`.`model` LIKE '" . $q . "' OR `pc`.`value` LIKE '" . $q . "' OR EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_attribute` `pa_search` WHERE `pa_search`.`product_id` = `p`.`product_id` AND `pa_search`.`language_id` = '" . (int)$this->config->get('config_language_id') . "' AND `pa_search`.`text` LIKE '" . $q . "') OR EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_option_value` `pov_search` INNER JOIN `" . DB_PREFIX . "option_value_description` `ovd_search` ON (`ovd_search`.`option_value_id` = `pov_search`.`option_value_id` AND `ovd_search`.`language_id` = '" . (int)$this->config->get('config_language_id') . "') WHERE `pov_search`.`product_id` = `p`.`product_id` AND `ovd_search`.`name` LIKE '" . $q . "'))";
         }
         if (!empty($filter['category_id'])) {
             $sql .= " AND `p2c`.`category_id` = '" . (int)$filter['category_id'] . "'";
@@ -179,14 +193,22 @@ class Catalog extends \Opencart\System\Engine\Model {
                 continue;
             }
             $value = $this->db->escape($this->localizedAttributeValue($filter_key, (string)$filter[$filter_key]));
-            $sql .= " AND EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_attribute` `pa_" . $attribute_key . "` WHERE `pa_" . $attribute_key . "`.`product_id` = `p`.`product_id` AND `pa_" . $attribute_key . "`.`attribute_id` = '" . $attribute_id . "' AND `pa_" . $attribute_key . "`.`language_id` = '" . (int)$this->config->get('config_language_id') . "' AND TRIM(`pa_" . $attribute_key . "`.`text`) = '" . $value . "')";
+            if ($attribute_key === 'fineness') {
+                $predicate = "TRIM(`pa_" . $attribute_key . "`.`text`) REGEXP '(^|[^0-9])" . $value . "([^0-9]|$)'";
+            } else {
+                $predicate = "FIND_IN_SET('" . $value . "', REPLACE(TRIM(`pa_" . $attribute_key . "`.`text`), '; ', ','))";
+            }
+            $sql .= " AND EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_attribute` `pa_" . $attribute_key . "` WHERE `pa_" . $attribute_key . "`.`product_id` = `p`.`product_id` AND `pa_" . $attribute_key . "`.`attribute_id` = '" . $attribute_id . "' AND `pa_" . $attribute_key . "`.`language_id` = '" . (int)$this->config->get('config_language_id') . "' AND " . $predicate . ")";
         }
         foreach (['gemstone', 'style'] as $key) {
             $attribute_id = (int)($attribute_map[$key] ?? 0);
             if ($attribute_id && !empty($filter[$key])) {
                 $filter_value = trim((string)$filter[$key]);
                 $value = $this->db->escape($filter_value);
-                $sql .= " AND EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_attribute` `pa_" . $key . "` WHERE `pa_" . $key . "`.`product_id` = `p`.`product_id` AND `pa_" . $key . "`.`attribute_id` = '" . $attribute_id . "' AND `pa_" . $key . "`.`language_id` = '" . (int)$this->config->get('config_language_id') . "' AND TRIM(`pa_" . $key . "`.`text`) = '" . $value . "')";
+                $predicate = $key === 'style'
+                    ? "FIND_IN_SET('" . $value . "', REPLACE(TRIM(`pa_" . $key . "`.`text`), '; ', ','))"
+                    : "TRIM(`pa_" . $key . "`.`text`) = '" . $value . "'";
+                $sql .= " AND EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_attribute` `pa_" . $key . "` WHERE `pa_" . $key . "`.`product_id` = `p`.`product_id` AND `pa_" . $key . "`.`attribute_id` = '" . $attribute_id . "' AND `pa_" . $key . "`.`language_id` = '" . (int)$this->config->get('config_language_id') . "' AND " . $predicate . ")";
             }
         }
         if (!empty($filter['stone_shape']) && isset($this->stoneShapeAliases()[(string)$filter['stone_shape']])) {

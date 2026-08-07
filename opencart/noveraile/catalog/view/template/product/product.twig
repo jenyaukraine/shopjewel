@@ -24,12 +24,13 @@
         </div>
       {% endif %}
       {% if images %}<div class="product-thumbnails">{% for image in images %}<a href="{{ image.popup }}" data-six-zoom-source><img src="{{ image.thumb }}" loading="lazy" decoding="async" alt="{{ heading_title }}"></a>{% endfor %}</div>{% endif %}
+      {% if six_video_url %}<div class="product-video"><video controls playsinline preload="metadata" src="{{ six_video_url }}"></video></div>{% endif %}
     </div>
     <div class="product-copy">
       <p class="eyebrow">{{ six_moment }}</p><h1>{{ heading_title|trim('.') }}</h1>
       <p class="product-price">{% if special %}<del>{{ price }}</del> {{ special }}{% else %}{{ price }}{% endif %}</p>
       <div class="product-status-line"><span>{{ six_product_code }}: <strong>{{ model }}</strong></span><span>{{ six_stock }}: <strong>{{ stock }}</strong></span><span>{{ six_weight }}: <strong>{{ six_product_weight }}</strong></span></div>
-      <dl class="product-key-specs"><div><dt>{{ six_metal }}</dt><dd>{% if six_metal_options %}<span class="product-metal-list">{% for metal in six_metal_options %}<span><i class="metal-swatch metal-swatch--{{ metal.key }}" aria-hidden="true"></i>{{ metal.name }}</span>{% endfor %}</span>{% else %}—{% endif %}</dd></div>{% if six_fineness_value and six_fineness_value != '—' %}<div><dt>{{ six_fineness }}</dt><dd>{{ six_fineness_value }}</dd></div>{% endif %}<div><dt>{{ six_stone }}</dt><dd>{{ six_stone_value }}</dd></div>{% if six_carat_value and six_carat_value != '—' %}<div><dt>{{ six_carat }}</dt><dd>{{ six_carat_value }}</dd></div>{% endif %}{% if six_stones_value and six_stones_value != '—' %}<div><dt>{{ six_stone_count }}</dt><dd>{{ six_stones_value }}</dd></div>{% endif %}<div><dt>{{ six_delivery }}</dt><dd>{{ six_delivery_value }}</dd></div></dl>
+      <dl class="product-key-specs">{% if six_fineness_value and six_fineness_value != '—' %}<div><dt>{{ six_fineness }}</dt><dd>{{ six_fineness_value }}</dd></div>{% endif %}<div><dt>{{ six_stone }}</dt><dd>{{ six_stone_value }}</dd></div>{% if six_carat_value and six_carat_value != '—' %}<div><dt>{{ six_carat }}</dt><dd>{{ six_carat_value }}</dd></div>{% endif %}{% if six_stones_value and six_stones_value != '—' %}<div><dt>{{ six_stone_count }}</dt><dd>{{ six_stones_value }}</dd></div>{% endif %}{% if six_collections_value %}<div><dt>{{ six_collections }}</dt><dd>{{ six_collections_value }}</dd></div>{% endif %}<div><dt>{{ six_delivery }}</dt><dd>{{ six_delivery_value }}</dd></div></dl>
       <div class="product-description">{{ description|raw }}</div>
       <div class="product-purchase">
         <form id="form-product" class="six-product-form">

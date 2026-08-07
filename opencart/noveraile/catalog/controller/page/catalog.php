@@ -12,8 +12,7 @@ class Catalog extends \Opencart\System\Engine\Controller {
         $allowed = [
             'type' => ['rings','earrings','necklaces','bracelets','wedding'],
             'moment' => ['engagement','wedding','motherhood','career','self-purchase','milestone'],
-            'metal' => ['white-gold','yellow-gold','rose-gold'],
-            'fineness' => ['585','750'],
+            'fineness' => ['375','585','750'],
             'stone' => ['natural','lab-grown','no-stones'],
             'availability' => ['ready','preorder'],
             'delivery' => ['delivery-3','delivery-10'],
@@ -61,6 +60,7 @@ class Catalog extends \Opencart\System\Engine\Controller {
         $data['stone_shapes'] = [];
         foreach (['round','princess','marquise','baguette','cushion','heart','oval','pear','emerald','radiant','asscher'] as $shape) {
             $localized = (string)($data['six_shape_' . $shape] ?? ucfirst($shape));
+            if (($shape_facets[$shape] ?? 0) < 1) continue;
             $data['stone_shapes'][] = [
                 'value' => $shape,
                 'name' => $localized,
@@ -104,18 +104,11 @@ class Catalog extends \Opencart\System\Engine\Controller {
         }
         $data['types'] = [
             ['value'=>'rings','name'=>$data['six_type_rings']], ['value'=>'earrings','name'=>$data['six_type_earrings']],
-            ['value'=>'necklaces','name'=>$data['six_type_necklaces']], ['value'=>'bracelets','name'=>$data['six_type_bracelets']],
-            ['value'=>'wedding','name'=>$data['six_type_wedding']]
+            ['value'=>'necklaces','name'=>$data['six_type_necklaces']], ['value'=>'bracelets','name'=>$data['six_type_bracelets']]
         ];
         foreach ($data['types'] as &$type) $type['href'] = $this->filterUrl(['type' => $type['value'], 'category_id' => null, 'page' => null]);
         unset($type);
-        $data['moments'] = [
-            ['value'=>'engagement','name'=>$data['six_moment_yes']], ['value'=>'wedding','name'=>$data['six_moment_forever']],
-            ['value'=>'motherhood','name'=>$data['six_moment_new_life']], ['value'=>'career','name'=>$data['six_moment_victory']],
-            ['value'=>'self-purchase','name'=>$data['six_moment_deserve']], ['value'=>'milestone','name'=>$data['six_moment_with_me']]
-        ];
-        foreach ($data['moments'] as &$moment) $moment['href'] = $this->filterUrl(['moment' => $moment['value'], 'page' => null]);
-        unset($moment);
+        $data['moments'] = [];
 
         $data['sorts'] = [
             ['value'=>'popular','name'=>$data['six_sort_popular']], ['value'=>'price-asc','name'=>$data['six_sort_price_asc']],

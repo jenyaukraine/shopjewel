@@ -232,21 +232,10 @@ class Theme extends \Opencart\System\Engine\Controller {
         if ($custom_kicker !== '') $data['six_hero_slides'][0]['kicker'] = $custom_kicker;
         if ($custom_title !== '') $data['six_hero_slides'][0]['title'] = $custom_title;
         $data['six_hero_primary'] = trim((string)$this->config->get('module_noveraile_hero_cta')) ?: $data['six_hero_primary'];
-        $data['six_moments'] = [
-                ['code' => '01', 'title' => $data['six_moment_yes'], 'category' => $data['six_type_rings'], 'tag' => 'engagement', 'image' => $data['six_asset'] . 'products/promise-solitaire.webp'],
-                ['code' => '02', 'title' => $data['six_moment_forever'], 'category' => $data['six_type_wedding'], 'tag' => 'wedding', 'image' => $data['six_asset'] . 'products/union-band.webp'],
-                ['code' => '03', 'title' => $data['six_moment_new_life'], 'category' => $data['six_type_necklaces'], 'tag' => 'motherhood', 'image' => $data['six_asset'] . 'products/arrival-pendant.webp'],
-                ['code' => '04', 'title' => $data['six_moment_victory'], 'category' => $data['six_type_earrings'], 'tag' => 'career', 'image' => $data['six_asset'] . 'products/becoming-hoops.webp'],
-                ['code' => '05', 'title' => $data['six_moment_deserve'], 'category' => $data['six_type_bracelets'], 'tag' => 'self-purchase', 'image' => $data['six_asset'] . 'products/gratitude-bracelet.webp'],
-                ['code' => '06', 'title' => $data['six_moment_with_me'], 'category' => $data['six_type_rings'], 'tag' => 'milestone', 'image' => $data['six_asset'] . 'products/legacy-signet.webp']
-        ];
-        foreach ($data['six_moments'] as &$moment) {
-            $moment['href'] = $this->url->link('extension/noveraile/page/catalog', $lang . '&moment=' . rawurlencode($moment['tag']));
-        }
-        unset($moment);
+        $data['six_moments'] = [];
 
-        $category_images = ['rings'=>'promise-solitaire.webp','earrings'=>'becoming-hoops.webp','necklaces'=>'arrival-pendant.webp','bracelets'=>'gratitude-bracelet.webp','wedding'=>'union-band.webp'];
-        $category_names = ['rings'=>$data['six_type_rings'],'earrings'=>$data['six_type_earrings'],'necklaces'=>$data['six_type_necklaces'],'bracelets'=>$data['six_type_bracelets'],'wedding'=>$data['six_type_wedding']];
+        $category_images = [];
+        $category_names = [];
         $data['six_category_tiles'] = [];
         if ($uses_current_catalog) {
             $category_query = $this->db->query("SELECT `c`.`category_id`, `cd`.`name`, `c`.`image` AS `category_image`, (SELECT `p_rep`.`image` FROM `" . DB_PREFIX . "product_to_category` `p2c_rep` INNER JOIN `" . DB_PREFIX . "product` `p_rep` ON (`p_rep`.`product_id` = `p2c_rep`.`product_id`) WHERE `p2c_rep`.`category_id` = `c`.`category_id` AND `p_rep`.`status` = '1' AND `p_rep`.`model` NOT LIKE 'NVR-%' AND NULLIF(`p_rep`.`image`, '') IS NOT NULL ORDER BY `p_rep`.`sort_order`, `p_rep`.`product_id` LIMIT 1) AS `product_image` FROM `" . DB_PREFIX . "category` `c` INNER JOIN `" . DB_PREFIX . "category_description` `cd` ON (`cd`.`category_id` = `c`.`category_id` AND `cd`.`language_id` = '" . (int)$this->config->get('config_language_id') . "') WHERE `c`.`status` = '1' AND EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_to_category` `p2c_exists` INNER JOIN `" . DB_PREFIX . "product` `p_exists` ON (`p_exists`.`product_id` = `p2c_exists`.`product_id`) WHERE `p2c_exists`.`category_id` = `c`.`category_id` AND `p_exists`.`status` = '1' AND `p_exists`.`model` NOT LIKE 'NVR-%') ORDER BY `c`.`sort_order`, `c`.`category_id` LIMIT 5");
@@ -329,13 +318,25 @@ class Theme extends \Opencart\System\Engine\Controller {
         $data['six_metal_value'] = $data['six_metal_options']
             ? implode(' · ', array_column($data['six_metal_options'], 'name'))
             : '—';
-        $stone = $this->tagChoice($data['six_tags'], ['natural','lab-grown']);
-        $data['six_stone_value'] = in_array('no-stones', $data['six_tags'], true) ? $this->language->get('six_no_stones') : $this->language->get($stone === 'lab-grown' ? 'six_lab_grown' : 'six_natural');
+        $stone_values = [];
+        if (in_array('natural', $data['six_tags'], true)) $stone_values[] = $this->language->get('six_natural');
+        if (in_array('lab-grown', $data['six_tags'], true)) $stone_values[] = $this->language->get('six_lab_grown');
+        if (in_array('no-stones', $data['six_tags'], true)) $stone_values[] = $this->language->get('six_no_stones');
+        $data['six_stone_value'] = $stone_values ? implode(' · ', $stone_values) : '—';
         $tag_carat = $this->tagPrefix($data['six_tags'], 'carat-');
         $tag_stones = $this->tagPrefix($data['six_tags'], 'stones-');
         $data['six_carat_value'] = $tag_carat !== '' ? $tag_carat . ' ct' : '—';
         $data['six_stones_value'] = $tag_stones !== '' ? $tag_stones : '—';
-        $data['six_fineness_value'] = $this->tagChoice($data['six_tags'], ['585','750']) ?: '—';
+        $fineness_values = [];
+        foreach (['375' => '375 / 9K', '585' => '585 / 14K', '750' => '750 / 18K'] as $tag => $label) {
+            if (in_array($tag, $data['six_tags'], true)) $fineness_values[] = $label;
+        }
+        $data['six_fineness_value'] = $fineness_values ? implode(' · ', $fineness_values) : '—';
+        $product_codes = [];
+        $codes = $this->db->query("SELECT `code`, `value` FROM `" . DB_PREFIX . "product_code` WHERE `product_id` = '" . $product_id . "' AND `code` IN ('video_url','collections')");
+        foreach ($codes->rows as $row) $product_codes[(string)$row['code']] = trim((string)$row['value']);
+        $data['six_video_url'] = $product_codes['video_url'] ?? '';
+        $data['six_collections_value'] = str_replace(';', ' ·', $product_codes['collections'] ?? '');
         $description_text = trim(strip_tags(html_entity_decode((string)($info['description'] ?? ''), ENT_QUOTES, 'UTF-8')));
         $explicit_ten_day_delivery = in_array('delivery-10', $data['six_tags'], true)
             || (bool)preg_match('/(?:10\s*(?:days?|Tage|dn[ií]|дн(?:ей|я)|днів)|(?:days?|Tage|дн(?:ей|я)|днів)\s*10)/ui', $description_text);
@@ -379,7 +380,7 @@ class Theme extends \Opencart\System\Engine\Controller {
         $tags = array_filter(array_map('trim', explode(',', (string)($data['tag'] ?? ''))));
         $data['six_moment'] = $this->momentFromTags($tags);
         $data['six_metal_options'] = $this->metalOptions($tags);
-        $data['six_fineness_value'] = $this->tagChoice($tags, ['585','750']);
+        $data['six_fineness_value'] = $this->tagChoice($tags, ['375','585','750']);
         $data['six_sku'] = $data['model'] ?? '';
         $data['six_product_weight'] = $this->displayWeight($data);
         $carat = $this->tagPrefix($tags, 'carat-');
@@ -416,21 +417,6 @@ class Theme extends \Opencart\System\Engine\Controller {
             if (count($data['six_listing_categories']) >= 6) break;
         }
 
-        if (!$data['six_listing_categories']) {
-            foreach ([
-                'rings' => [$data['six_type_rings'], 'promise-solitaire.webp'],
-                'earrings' => [$data['six_type_earrings'], 'becoming-hoops.webp'],
-                'necklaces' => [$data['six_type_necklaces'], 'arrival-pendant.webp'],
-                'bracelets' => [$data['six_type_bracelets'], 'gratitude-bracelet.webp'],
-                'wedding' => [$data['six_type_wedding'], 'union-band.webp']
-            ] as $type => [$name, $image]) {
-                $data['six_listing_categories'][] = [
-                    'name' => $name,
-                    'image' => '/image/catalog/noveraile/products/' . $image,
-                    'href' => $this->url->link('extension/noveraile/page/catalog', $lang . '&type=' . $type)
-                ];
-            }
-        }
     }
 
     public function information(string &$route, array &$data, string &$code = '', string &$output = ''): void {
