@@ -103,11 +103,22 @@ mkdir -p \
 # assets from the immutable extension overlay on every container start.
 cp -a extension/noveraile/image/. image/
 
-# Generated thumbnails live in the persistent image volume. Remove only this
-# extension's cache so stale or partial files are rebuilt from the originals.
-if [ -d /var/www/html/image/cache/catalog/noveraile ]; then
-    find /var/www/html/image/cache/catalog/noveraile -type f -delete
-    find /var/www/html/image/cache/catalog/noveraile -depth -type d -empty -delete
+# Generated thumbnails live in the persistent image volume. The versioned
+# storefront assets were just replaced by the overlay above, so their
+# thumbnails have to be rebuilt from the new originals.
+#
+# Catalog photography is excluded: those files are named after a hash of their
+# own content and can never go stale, while rebuilding several thousand
+# thumbnails would leave the whole catalog imageless for whoever visits first
+# after a deployment.
+noveraile_cache=/var/www/html/image/cache/catalog/noveraile
+
+if [ -d "$noveraile_cache" ]; then
+    for cached in "$noveraile_cache"/*; do
+        [ -e "$cached" ] || continue
+        [ "$cached" = "$noveraile_cache/feed" ] && continue
+        rm -rf "$cached"
+    done
 fi
 
 # Keep the module registration and its OpenCart events healthy after both a
@@ -116,6 +127,21 @@ if [ "$noveraile_seed_demo" = "1" ]; then
     NOVERAILE_WITH_DEMO_DATA=1 php /usr/local/bin/bootstrap-noveraile.php
 elif ! timeout --kill-after=5s 30s env NOVERAILE_WITH_DEMO_DATA=0 php /usr/local/bin/bootstrap-noveraile.php; then
     echo "NOVERAILE registration refresh timed out; keeping the existing registration" >&2
+fi
+
+# Import the supplier catalog. Writing the products is quick and must surface
+# its errors in the deployment log, so it runs in the foreground; fetching a few
+# thousand photographs is not allowed to hold up the storefront and continues in
+# the background, resuming from whatever the previous container already stored.
+if [ "${NOVERAILE_IMPORT_CATALOG:-1}" = "1" ]; then
+    if timeout --kill-after=30s "${NOVERAILE_IMPORT_TIMEOUT:-600}s" \
+        php /usr/local/bin/noveraile-import-catalog --if-needed --no-images; then
+        php /usr/local/bin/noveraile-import-catalog --images-only \
+            --budget="${NOVERAILE_IMPORT_IMAGE_BUDGET:-3600}" \
+            >> system/storage/logs/noveraile-catalog.log 2>&1 &
+    else
+        echo "Catalog import failed; the storefront keeps its current catalog" >&2
+    fi
 fi
 
 chown -R www-data:www-data config.php admin/config.php image/catalog/noveraile

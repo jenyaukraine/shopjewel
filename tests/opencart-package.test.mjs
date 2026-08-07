@@ -26,12 +26,75 @@ test("container startup refreshes NOVERAILE media without reseeding an existing 
     readFile(path.resolve("docker/bootstrap-noveraile.php"), "utf8"),
   ]);
 
-  assert.match(entrypoint, /find \/var\/www\/html\/image\/cache\/catalog\/noveraile -type f -delete/);
+  // Versioned assets are rebuilt, content addressed catalog photography is not.
+  assert.match(entrypoint, /rm -rf "\$cached"/);
+  assert.match(entrypoint, /\[ "\$cached" = "\$noveraile_cache\/feed" \] && continue/);
   assert.match(entrypoint, /noveraile_seed_demo=0/);
   assert.match(entrypoint, /timeout --kill-after=5s 30s env NOVERAILE_WITH_DEMO_DATA=0/);
   assert.match(entrypoint, /keeping the existing registration/);
   assert.match(bootstrap, /getenv\('NOVERAILE_WITH_DEMO_DATA'\)/);
   assert.match(bootstrap, /bootstrap\(\$withDemoData\)/);
+});
+
+test("supplier catalog feed carries every priced combination the export listed", async () => {
+  const feed = JSON.parse(await readFile(path.join(root, "data/catalog-feed.json"), "utf8"));
+
+  assert.equal(feed.version, 1);
+  assert.equal(feed.products.length, 476);
+  assert.equal(feed.source.rows, 6855);
+  assert.equal(feed.products.reduce((total, product) => total + product.variants.length, 0), feed.source.rows);
+  assert.equal(new Set(feed.products.map((product) => product.slug)).size, feed.products.length);
+  assert.equal(new Set(feed.products.map((product) => product.articul)).size, feed.products.length);
+
+  for (const product of feed.products) {
+    assert.ok(product.images.length > 0, product.articul);
+    assert.ok(feed.categories[product.category], product.category);
+    assert.ok(feed.kinds[product.kind], product.kind);
+    assert.equal(feed.kinds[product.kind].category, product.category);
+    assert.ok(product.shape === "" || feed.shapes[product.shape], product.shape);
+    for (const collection of product.collections) assert.ok(feed.collections[collection], collection);
+
+    // A single option carries the whole grid, so the storefront can only quote
+    // an exact price when the base plus the stored delta is the supplier price.
+    const base = Math.min(...product.variants.map((variant) => variant[2]));
+    for (const [gold, quality, price] of product.variants) {
+      assert.ok(feed.gold[gold], gold);
+      assert.ok(feed.quality[quality], quality);
+      assert.ok(price > 0, product.articul);
+      assert.equal(Math.round((base + Math.round((price - base) * 100) / 100) * 100) / 100, price);
+    }
+  }
+});
+
+test("deployment imports the catalog feed and keeps collecting its photography", async () => {
+  const [entrypoint, dockerfile, cli, importer, release] = await Promise.all([
+    readFile(path.resolve("docker/entrypoint.sh"), "utf8"),
+    readFile(path.resolve("Dockerfile"), "utf8"),
+    readFile(path.resolve("docker/import-catalog.php"), "utf8"),
+    readFile(path.join(root, "admin/model/module/catalog_feed.php"), "utf8"),
+    readFile(path.resolve("tools/build-opencart-release.ps1"), "utf8"),
+  ]);
+
+  assert.match(dockerfile, /COPY docker\/import-catalog\.php \/usr\/local\/bin\/noveraile-import-catalog/);
+  assert.match(dockerfile, /php -l \/usr\/local\/bin\/noveraile-import-catalog/);
+  assert.match(entrypoint, /noveraile-import-catalog --if-needed --no-images/);
+  assert.match(entrypoint, /noveraile-import-catalog --images-only/);
+  assert.match(entrypoint, /keeps its current catalog/);
+  for (const flag of ["--force", "--status", "--if-needed", "--no-images", "--images-only"]) {
+    assert.ok(cli.includes(flag), flag);
+  }
+
+  assert.match(importer, /class CatalogFeed extends/);
+  assert.match(importer, /noveraile_feed_product/);
+  // Each option value is priced as the difference to the product's own price.
+  assert.match(importer, /\$base = min\(\$prices\)/);
+  assert.match(importer, /'price' => round\(\(float\)\$variant\[2\] - \$base, 2\), 'price_prefix' => '\+'/);
+  // An articul the feed owns must not also be sold by an earlier import.
+  assert.match(importer, /private function retireDuplicates\(\): int/);
+  assert.match(importer, /SET `status` = '0', `date_modified` = NOW\(\) WHERE `product_id` IN/);
+  assert.doesNotMatch(importer, /DELETE FROM `" \. DB_PREFIX \. "product`/);
+  // The supplier assortment must never be sold inside the extension package.
+  assert.match(release, /must not contain the private supplier catalog feed/);
 });
 
 test("admin content remains adjacent to the OpenCart sidebar", async () => {
@@ -98,21 +161,25 @@ test("product listing presents unique image-led category cards", async () => {
 });
 
 test("catalog identifies gold colors and uses a compact pagination footer", async () => {
-  const [event, thumb, filters, stylesheet] = await Promise.all([
+  const [event, thumb, product, filters, stylesheet] = await Promise.all([
     readFile(path.join(root, "catalog/controller/event/theme.php"), "utf8"),
     readFile(path.join(root, "catalog/view/template/product/thumb.twig"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/product/product.twig"), "utf8"),
     readFile(path.join(root, "catalog/view/template/page/filters.twig"), "utf8"),
     readFile(path.join(root, "catalog/view/stylesheet/noveraile.css"), "utf8"),
   ]);
 
   assert.match(event, /private function metalOptions\(array \$tags\): array/);
   assert.match(event, /six_metal_options/);
-  // Alloy reads off the card swatches; the rail refines on fineness instead.
   assert.match(thumb, /class="card-metal-line"/);
   assert.match(thumb, /metal-swatch--/);
-  assert.doesNotMatch(filters, /name="metal"/);
-  assert.match(filters, /value="375"/);
-  assert.match(stylesheet, /\.metal-swatch--rose-gold/);
+  assert.match(product, /class="product-metal-list"/);
+  assert.match(filters, /class="filter-metal-option"/);
+  // The colours offered are whatever the catalog actually stocks.
+  assert.match(filters, /metal-swatch--\{\{ item\.value \}\}/);
+  for (const metal of ["white-gold", "yellow-gold", "rose-gold"]) {
+    assert.match(stylesheet, new RegExp(`\\.metal-swatch--${metal}`));
+  }
   assert.match(stylesheet, /\.pagination-shell\s*\{[^}]*display:\s*flex;[^}]*border-top:/);
 });
 

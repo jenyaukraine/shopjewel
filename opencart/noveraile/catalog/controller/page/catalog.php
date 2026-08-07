@@ -107,6 +107,7 @@ class Catalog extends \Opencart\System\Engine\Controller {
         $allowed = [
             'type' => ['rings','earrings','necklaces','bracelets','wedding'],
             'moment' => ['engagement','wedding','motherhood','career','self-purchase','milestone'],
+            'metal' => ['white-gold','yellow-gold','rose-gold'],
             'fineness' => ['375','585','750'],
             'stone' => ['natural','lab-grown','no-stones'],
             'availability' => ['ready','preorder'],
@@ -136,9 +137,6 @@ class Catalog extends \Opencart\System\Engine\Controller {
         }
 
         $this->load->model('extension/noveraile/catalog');
-        $data['metal_options'] = $this->model_extension_noveraile_catalog->getMetalOptions();
-        $metal = trim((string)($this->request->get['metal'] ?? ''));
-        $filter['metal'] = in_array($metal, $data['metal_options'], true) ? $metal : '';
         $price_bounds = $this->model_extension_noveraile_catalog->getPriceBounds();
         $data['price_floor'] = max(0, (int)floor($this->currency->convert($price_bounds['min'], $this->config->get('config_currency'), $selected_currency)));
         $data['price_ceiling'] = max($data['price_floor'] + 1, (int)ceil($this->currency->convert($price_bounds['max'], $this->config->get('config_currency'), $selected_currency)));
@@ -167,6 +165,23 @@ class Catalog extends \Opencart\System\Engine\Controller {
         }
         $shape = trim((string)($this->request->get['stone_shape'] ?? ''));
         $filter['stone_shape'] = in_array($shape, array_column($data['stone_shapes'], 'value'), true) ? $shape : '';
+        // Metal colour, fineness and stone origin are fixed vocabularies rather
+        // than attribute facets, so drop the values no product can satisfy
+        // instead of offering a filter that always returns nothing.
+        $specifications = [
+            'metals' => ['metal', $allowed['metal'], ['white-gold' => $data['six_white_gold'], 'yellow-gold' => $data['six_yellow_gold'], 'rose-gold' => $data['six_rose_gold']]],
+            'finenesses' => ['fineness', $allowed['fineness'], ['375' => '375 / 9K', '585' => '585 / 14K', '750' => '750 / 18K']],
+            'stone_origins' => ['stone', $allowed['stone'], ['natural' => $data['six_natural'], 'lab-grown' => $data['six_lab_grown'], 'no-stones' => $data['six_no_stones']]]
+        ];
+        foreach ($specifications as $data_key => [$filter_key, $values, $names]) {
+            $totals = $this->model_extension_noveraile_catalog->getSpecificationFacets($filter_key, $values);
+            $data[$data_key] = [];
+            foreach ($values as $value) {
+                if (empty($totals[$value])) continue;
+                $data[$data_key][] = ['value' => $value, 'name' => (string)($names[$value] ?? $value), 'total' => (int)$totals[$value]];
+            }
+        }
+
         $data['ring_sizes'] = $this->model_extension_noveraile_catalog->getRingSizes();
         $ring_size = trim((string)($this->request->get['ring_size'] ?? ''));
         $filter['ring_size'] = in_array($ring_size, array_column($data['ring_sizes'], 'value'), true) ? $ring_size : '';

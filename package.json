@@ -24,8 +24,8 @@
   "devDependencies": {
     "@cloudflare/vite-plugin": "1.48.0",
     "@cloudflare/workers-types": "5.20260730.1",
-    "@tailwindcss/postcss": "4.2.1",
-    "@types/node": "22.19.19",
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "26.1.2",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "6.0.2",
@@ -34,9 +34,9 @@
     "eslint": "9.39.5",
     "eslint-config-next": "16.2.12",
     "react-server-dom-webpack": "19.2.8",
-    "tailwindcss": "4.2.1",
+    "tailwindcss": "4.3.3",
     "typescript": "5.9.3",
-    "vinext": "0.0.50",
+    "vinext": "0.2.1",
     "vite": "8.2.0",
     "wrangler": "4.115.0"
   },
