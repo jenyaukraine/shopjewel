@@ -69,7 +69,7 @@ class Catalog extends \Opencart\System\Engine\Model {
     public function getAttributeFacets(): array {
         $cache_key = $this->facetCacheKey('attributes');
         $cached = $this->cache->get($cache_key);
-        if (is_array($cached)) return $cached;
+        if (is_array($cached) && $cached) return $cached;
 
         $facets = ['gemstone' => [], 'stone_shape' => [], 'stone_quality' => [], 'style' => []];
         $attribute_map = $this->attributeMap();
@@ -131,7 +131,7 @@ class Catalog extends \Opencart\System\Engine\Model {
     public function getStoneShapeFacets(): array {
         $cache_key = $this->facetCacheKey('shapes');
         $cached = $this->cache->get($cache_key);
-        if (is_array($cached)) return $cached;
+        if (is_array($cached) && $cached) return $cached;
 
         $language_id = (int)$this->config->get('config_language_id');
         $store_id = (int)$this->config->get('config_store_id');

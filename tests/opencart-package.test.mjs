@@ -450,6 +450,7 @@ test("storefront uses the 6 Moments wordmark and data-backed stone filters", asy
   assert.match(catalogModel, /'круглый'/);
   assert.match(catalogModel, /'stone_shape' => 900002/);
   assert.match(catalogModel, /cached module settings still point at the removed IDs/);
+  assert.equal((catalogModel.match(/is_array\(\$cached\) && \$cached/g) ?? []).length, 2);
 });
 
 test("storefront catalog accepts normal merchant products", async () => {
