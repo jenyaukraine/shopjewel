@@ -118,6 +118,21 @@ elif ! timeout --kill-after=5s 30s env NOVERAILE_WITH_DEMO_DATA=0 php /usr/local
     echo "NOVERAILE registration refresh timed out; keeping the existing registration" >&2
 fi
 
+# Import the supplier catalog. Writing the products is quick and must surface
+# its errors in the deployment log, so it runs in the foreground; fetching a few
+# thousand photographs is not allowed to hold up the storefront and continues in
+# the background, resuming from whatever the previous container already stored.
+if [ "${NOVERAILE_IMPORT_CATALOG:-1}" = "1" ]; then
+    if timeout --kill-after=30s "${NOVERAILE_IMPORT_TIMEOUT:-600}s" \
+        php /usr/local/bin/noveraile-import-catalog --if-needed --no-images; then
+        php /usr/local/bin/noveraile-import-catalog --images-only \
+            --budget="${NOVERAILE_IMPORT_IMAGE_BUDGET:-3600}" \
+            >> system/storage/logs/noveraile-catalog.log 2>&1 &
+    else
+        echo "Catalog import failed; the storefront keeps its current catalog" >&2
+    fi
+fi
+
 chown -R www-data:www-data config.php admin/config.php image/catalog/noveraile
 chown www-data:www-data \
     image image/catalog \
