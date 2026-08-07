@@ -1,0 +1,20 @@
+{{ header }}
+<section class="not-found-page" aria-labelledby="not-found-title">
+  <div class="not-found-page__content">
+    <p class="eyebrow"><span aria-hidden="true"></span>{{ six_brand_name }} · 404</p>
+    <h1 id="not-found-title">{{ heading_title|trim('.') }}</h1>
+    <p class="not-found-page__copy">{{ text_error }}</p>
+    <div class="not-found-page__actions">
+      <a class="not-found-page__action" href="{{ continue }}">
+        <span>{{ six_home_label }}</span><span aria-hidden="true">→</span>
+      </a>
+      <a class="not-found-page__action not-found-page__action--secondary" href="{{ six_catalog_url }}">{{ six_catalog }}</a>
+    </div>
+  </div>
+  <div class="not-found-page__visual" aria-hidden="true">
+    <span class="not-found-page__number">404</span>
+    <span class="not-found-page__orbit"><i></i></span>
+    <p><span>06</span> MOMENTS<br>ARE NEVER LOST</p>
+  </div>
+</section>
+{{ footer }}

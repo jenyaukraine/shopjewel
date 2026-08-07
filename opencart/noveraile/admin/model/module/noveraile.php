@@ -66,6 +66,7 @@ class Noveraile extends \Opencart\System\Engine\Model {
             ['noveraile_checkout', 'catalog/view/checkout/checkout/before', 'extension/noveraile/event/theme.checkout'],
             ['noveraile_success_capture', 'catalog/controller/checkout/success/before', 'extension/noveraile/event/theme.captureSuccess'],
             ['noveraile_success', 'catalog/view/common/success/before', 'extension/noveraile/event/theme.success'],
+            ['noveraile_not_found', 'catalog/view/error/not_found/before', 'extension/noveraile/event/theme.notFound'],
             ['noveraile_account_login', 'catalog/view/account/login/before', 'extension/noveraile/event/theme.accountLogin'],
             ['noveraile_blog', 'catalog/view/cms/blog/before', 'extension/noveraile/event/theme.blog'],
             ['noveraile_blog_info', 'catalog/view/cms/blog_info/before', 'extension/noveraile/event/theme.blogInfo'],
