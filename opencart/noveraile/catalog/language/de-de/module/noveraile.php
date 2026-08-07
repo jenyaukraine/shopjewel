@@ -142,3 +142,4 @@ $_['six_faq_tarnish_q']='Läuft Ihr Schmuck an?'; $_['six_faq_tarnish_a']='Massi
 $_['six_faq_payment_q']='Ist die Zahlung auf Ihrer Website sicher?'; $_['six_faq_payment_a']='Ja. Zahlungen werden sicher über vertrauenswürdige verschlüsselte Zahlungsanbieter einschließlich Stripe verarbeitet.';
 $_['six_faq_gift_q']='Kann ich Schmuck als Geschenk kaufen?'; $_['six_faq_gift_a']='Natürlich. Jede Bestellung wird schön verpackt und ist bereit zum Verschenken.';
 $_['six_faq_support_q']='Wie erreiche ich den Kundenservice?'; $_['six_faq_support_a']='Kontaktieren Sie uns über WhatsApp, die Kontaktseite oder per E-Mail. Wir helfen Ihnen gerne.';
+$_['six_video']='Video'; $_['six_play_video']='Video abspielen';

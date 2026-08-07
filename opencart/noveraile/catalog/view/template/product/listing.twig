@@ -45,6 +45,8 @@
       </section>
     {% endif %}
 
+    <div class="listing-shell">
+    {{ six_filter_panel }}
     <section class="listing-results" aria-labelledby="listing-results-title">
       <div class="listing-toolbar">
         <div class="listing-count" id="listing-results-title">
@@ -52,6 +54,7 @@
           <span>{{ six_pieces }}</span>
         </div>
         <div class="listing-controls">
+          <button class="filter-toggle" type="button" data-six-filter-toggle>{{ six_filters }}</button>
           <label>
             <span>{{ six_sort }}</span>
             <select aria-label="{{ six_sort }}" onchange="location=this.value">
@@ -83,6 +86,7 @@
         </div>
       {% endif %}
     </section>
+    </div>
 
     {{ content_bottom }}
   </div>

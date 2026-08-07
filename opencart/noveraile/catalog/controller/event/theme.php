@@ -40,8 +40,8 @@ class Theme extends \Opencart\System\Engine\Controller {
             $data['title'] = $data['six_brand_name'];
         }
 
-        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.3.0.3';
-        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.3.0.3';
+        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.4.0.0';
+        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.4.0.0';
         $data['six_favicon'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/favicon.svg?v=2';
         $data['six_og_image'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/og-store.png';
         $data['six_native_menu_status'] = (bool)$this->config->get('module_noveraile_native_menu_status');
@@ -150,7 +150,7 @@ class Theme extends \Opencart\System\Engine\Controller {
     public function footer(string &$route, array &$data, string &$code = '', string &$output = ''): void {
         if (!$this->enabled() || !$this->claimView($route, ['common/footer'], 'extension/noveraile/common/footer')) return;
         $this->words($data);
-        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.3.0.3';
+        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.4.0.0';
         $lang = 'language=' . $this->config->get('config_language');
         $data['six_home'] = $this->url->link('common/home', $lang);
         $data['six_about_url'] = $this->url->link('extension/noveraile/page/about', $lang);
@@ -318,6 +318,14 @@ class Theme extends \Opencart\System\Engine\Controller {
             $data['popup'] = $original_image;
         }
 
+        $this->addCategoryTrail($data, $product_id);
+
+        // Imported descriptions carry the studio footage inline, where a full
+        // resolution <video> overflows the two column layout. Lift it out so
+        // the gallery can present it as a proper media slide.
+        $data['six_videos'] = [];
+        $data['description'] = $this->liftVideos((string)($data['description'] ?? ''), $data['six_videos'], (string)($data['thumb'] ?? ''));
+
         $data['six_product_weight'] = $this->displayWeight($info);
         $data['six_tags'] = array_filter(array_map('trim', explode(',', (string)($info['tag'] ?? ''))));
         $data['six_moment'] = $this->momentFromTags($data['six_tags']);
@@ -366,6 +374,84 @@ class Theme extends \Opencart\System\Engine\Controller {
         }
     }
 
+    /**
+     * OpenCart only builds a category trail when the visitor arrived through a
+     * `path` link, so a product opened from search, the homepage or a shared
+     * URL ends up with a breadcrumb that leads nowhere. Rebuild the trail from
+     * the product's own category so every product page offers a way back to
+     * the full listing it belongs to.
+     */
+    private function addCategoryTrail(array &$data, int $product_id): void {
+        $breadcrumbs = (array)($data['breadcrumbs'] ?? []);
+        // `path` is the exact condition under which the core already built one.
+        if (!$product_id || !$breadcrumbs || isset($this->request->get['path'])) return;
+
+        $language_id = (int)$this->config->get('config_language_id');
+        // Several categories can hold one product; prefer the most specific.
+        $category = $this->db->query("SELECT `p2c`.`category_id`, COUNT(`cp`.`path_id`) AS `depth` FROM `" . DB_PREFIX . "product_to_category` `p2c` INNER JOIN `" . DB_PREFIX . "category` `c` ON (`c`.`category_id` = `p2c`.`category_id` AND `c`.`status` = '1') INNER JOIN `" . DB_PREFIX . "category_path` `cp` ON (`cp`.`category_id` = `p2c`.`category_id`) WHERE `p2c`.`product_id` = '" . $product_id . "' GROUP BY `p2c`.`category_id` ORDER BY `depth` DESC, `p2c`.`category_id` ASC LIMIT 1");
+        if (!$category->num_rows) return;
+
+        $trail = $this->db->query("SELECT `cp`.`path_id`, `cd`.`name` FROM `" . DB_PREFIX . "category_path` `cp` INNER JOIN `" . DB_PREFIX . "category_description` `cd` ON (`cd`.`category_id` = `cp`.`path_id` AND `cd`.`language_id` = '" . $language_id . "') WHERE `cp`.`category_id` = '" . (int)$category->row['category_id'] . "' ORDER BY `cp`.`level` ASC");
+        $path = [];
+        $crumbs = [];
+        foreach ($trail->rows as $step) {
+            $path[] = (int)$step['path_id'];
+            $crumbs[] = [
+                'text' => $step['name'],
+                'href' => $this->url->link('product/category', 'language=' . $this->config->get('config_language') . '&path=' . implode('_', $path))
+            ];
+        }
+        if (!$crumbs) return;
+
+        array_splice($breadcrumbs, count($breadcrumbs) - 1, 0, $crumbs);
+        $data['breadcrumbs'] = $breadcrumbs;
+    }
+
+    /**
+     * Pull every embedded clip out of a description and describe it for the
+     * gallery. Returns the description with the media removed.
+     */
+    private function liftVideos(string $description, array &$videos, string $poster): string {
+        if (!preg_match('#<video|<iframe|\.(?:mp4|webm|ogv|mov)#i', $description)) return $description;
+
+        $push = function (string $src, string $frame, string $kind) use (&$videos, $poster): void {
+            $src = trim(html_entity_decode($src, ENT_QUOTES, 'UTF-8'));
+            if ($src === '' || preg_match('#^\s*(?:javascript|data|vbscript):#i', $src)) return;
+            foreach ($videos as $existing) if ($existing['src'] === $src) return;
+            $extension = strtolower((string)pathinfo((string)parse_url($src, PHP_URL_PATH), PATHINFO_EXTENSION));
+            $videos[] = [
+                'src' => $src,
+                'kind' => $kind,
+                'type' => ['webm' => 'video/webm', 'ogv' => 'video/ogg', 'mov' => 'video/quicktime'][$extension] ?? 'video/mp4',
+                'poster' => trim($frame) !== '' ? trim($frame) : $poster
+            ];
+        };
+
+        $description = (string)preg_replace_callback('#<video\b[^>]*>.*?</video>|<video\b[^>]*/?>#is', function (array $match) use ($push): string {
+            if (!preg_match('#<source\b[^>]*\bsrc\s*=\s*("|\')(.*?)\1#is', $match[0], $source)) {
+                preg_match('#<video\b[^>]*\bsrc\s*=\s*("|\')(.*?)\1#is', $match[0], $source);
+            }
+            preg_match('#\bposter\s*=\s*("|\')(.*?)\1#is', $match[0], $frame);
+            $push($source[2] ?? '', $frame[2] ?? '', 'file');
+            return '';
+        }, $description);
+
+        // Hosted players (YouTube, Vimeo) keep their own chrome inside a frame.
+        $description = (string)preg_replace_callback('#<iframe\b[^>]*\bsrc\s*=\s*("|\')(.*?)\1[^>]*>\s*</iframe>#is', function (array $match) use ($push): string {
+            if (!preg_match('#(?:youtube(?:-nocookie)?\.com|youtu\.be|vimeo\.com)#i', $match[2])) return $match[0];
+            $push($match[2], '', 'embed');
+            return '';
+        }, $description);
+
+        // A plain link to a clip is a download prompt, not a player.
+        $description = (string)preg_replace_callback('#<a\b[^>]*\bhref\s*=\s*("|\')([^"\']+?\.(?:mp4|webm|ogv|mov))\1[^>]*>.*?</a>#is', function (array $match) use ($push): string {
+            $push($match[2], '', 'file');
+            return '';
+        }, $description);
+
+        return trim((string)preg_replace('#<p>(?:\s|&nbsp;|<br\s*/?>)*</p>#i', '', $description));
+    }
+
     public function thumb(string &$route, array &$data, string &$code = '', string &$output = ''): void {
         if (!$this->enabled() || !$this->claimView($route, ['product/thumb'], 'extension/noveraile/product/thumb')) return;
         $this->words($data);
@@ -399,6 +485,18 @@ class Theme extends \Opencart\System\Engine\Controller {
         $lang = 'language=' . $this->config->get('config_language');
         $data['six_catalog_url'] = $this->url->link('extension/noveraile/page/catalog', $lang);
         $data['six_listing_categories'] = [];
+
+        // OpenCart's own category, search and special listings ship without any
+        // refinement. Lend them the catalog rail so a shopper who lands on a
+        // category can narrow it down instead of scrolling the whole shelf.
+        $path = preg_replace('/[^0-9_]/', '', (string)($this->request->get['path'] ?? ''));
+        $path_parts = array_filter(explode('_', (string)$path), 'strlen');
+        $category_id = $path_parts ? (int)end($path_parts) : 0;
+        $data['six_filter_panel'] = $this->load->controller(
+            'extension/noveraile/page/catalog.panel',
+            $category_id,
+            $category_id ? $this->url->link('product/category', $lang . '&path=' . $path) : ''
+        );
 
         $category_query = $this->db->query("SELECT c.category_id, cd.name, c.sort_order, c.image AS category_image, (SELECT p_rep.image FROM `" . DB_PREFIX . "product_to_category` p2c_rep INNER JOIN `" . DB_PREFIX . "product` p_rep ON (p_rep.product_id = p2c_rep.product_id) WHERE p2c_rep.category_id = c.category_id AND p_rep.status = '1' AND NULLIF(p_rep.image, '') IS NOT NULL ORDER BY p_rep.sort_order ASC, p_rep.product_id ASC LIMIT 1) AS product_image FROM `" . DB_PREFIX . "category` c INNER JOIN `" . DB_PREFIX . "category_description` cd ON (cd.category_id = c.category_id) WHERE c.status = '1' AND cd.language_id = '" . (int)$this->config->get('config_language_id') . "' AND EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_to_category` p2c_exists INNER JOIN `" . DB_PREFIX . "product` p_exists ON (p_exists.product_id = p2c_exists.product_id) WHERE p2c_exists.category_id = c.category_id AND p_exists.status = '1') ORDER BY c.sort_order ASC, cd.name ASC, c.category_id ASC LIMIT 60");
         $category_names = [];

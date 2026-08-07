@@ -62,8 +62,8 @@ test("mobile categories are deduplicated and use semantic jewellery icons", asyn
   assert.match(event, /\$category_names\s*=\s*\[\]/);
   assert.match(event, /mb_strtolower/);
   assert.match(event, /'icon'\s*=>\s*\$this->categoryIcon\(\$name\)/);
-  assert.match(event, /noveraile\.css\?v=2\.3\.0\.3/);
-  assert.match(event, /noveraile\.js\?v=2\.3\.0\.3/);
+  assert.match(event, /noveraile\.css\?v=2\.4\.0\.0/);
+  assert.match(event, /noveraile\.js\?v=2\.4\.0\.0/);
   assert.match(header, /class="mobile-category-icon"/);
   assert.match(header, /category\.icon == 'earring'/);
   assert.match(header, /class="mobile-main-icon"/);
@@ -102,7 +102,7 @@ test("catalog identifies gold colors and uses a compact pagination footer", asyn
     readFile(path.join(root, "catalog/controller/event/theme.php"), "utf8"),
     readFile(path.join(root, "catalog/view/template/product/thumb.twig"), "utf8"),
     readFile(path.join(root, "catalog/view/template/product/product.twig"), "utf8"),
-    readFile(path.join(root, "catalog/view/template/page/catalog.twig"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/page/filters.twig"), "utf8"),
     readFile(path.join(root, "catalog/view/stylesheet/noveraile.css"), "utf8"),
   ]);
 
@@ -124,7 +124,7 @@ test("homepage Instagram callout can never render as an empty shell", async () =
 
   assert.match(event, /public function home[\s\S]*?six_instagram_label/);
   assert.match(event, /public function home[\s\S]*?social_fallbacks/);
-  assert.match(event, /noveraile\.css\?v=2\.3\.0\.3/);
+  assert.match(event, /noveraile\.css\?v=2\.4\.0\.0/);
   assert.match(home, /six_follow\|default/);
   assert.match(home, /six_follow_copy\|default/);
   assert.match(home, /six_instagram_label\|default/);
@@ -219,7 +219,7 @@ test("premium suite ships working builder, mega menu, AJAX filters, one-page che
     readFile(path.join(root, "catalog/controller/event/theme.php"), "utf8"),
     readFile(path.join(root, "catalog/view/template/common/header.twig"), "utf8"),
     readFile(path.join(root, "catalog/controller/page/catalog.php"), "utf8"),
-    readFile(path.join(root, "catalog/view/template/page/catalog.twig"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/page/filters.twig"), "utf8"),
     readFile(path.join(root, "catalog/view/javascript/noveraile.js"), "utf8"),
     readFile(path.join(root, "catalog/view/template/checkout/checkout.twig"), "utf8"),
   ]);
@@ -429,7 +429,7 @@ test("6 Moments storefront requirements remain wired into the package", async ()
     readFile(path.join(root, "catalog/model/total/bundle.php"), "utf8"),
     readFile(path.join(root, "catalog/view/template/checkout/success.twig"), "utf8"),
     readFile(path.join(root, "catalog/controller/page/catalog.php"), "utf8"),
-    readFile(path.join(root, "catalog/view/template/page/catalog.twig"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/page/filters.twig"), "utf8"),
     readFile(path.join(root, "catalog/language/en-gb/module/noveraile.php"), "utf8"),
     readFile(path.join(root, "catalog/view/template/common/footer.twig"), "utf8"),
     readFile(path.join(root, "catalog/view/template/information/contact.twig"), "utf8"),
@@ -465,4 +465,73 @@ test("6 Moments storefront requirements remain wired into the package", async ()
   assert.match(contact, /six_whatsapp/);
   assert.equal((faq.match(/<details/g) ?? []).length, 15);
   assert.match(language, /six_faq_worldwide_q'\]\s*=\s*'Do you ship worldwide\?'/);
+});
+
+test("every product page leads back to its category listing", async () => {
+  const [event, product, stylesheet] = await Promise.all([
+    readFile(path.join(root, "catalog/controller/event/theme.php"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/product/product.twig"), "utf8"),
+    readFile(path.join(root, "catalog/view/stylesheet/noveraile.css"), "utf8"),
+  ]);
+
+  assert.match(event, /private function addCategoryTrail\(array &\$data, int \$product_id\): void/);
+  assert.match(event, /public function product[\s\S]*?\$this->addCategoryTrail\(\$data, \$product_id\);/);
+  // The trail is only rebuilt when the core did not already supply one.
+  assert.match(event, /addCategoryTrail[\s\S]*?isset\(\$this->request->get\['path'\]\)/);
+  assert.match(event, /addCategoryTrail[\s\S]*?category_path[\s\S]*?ORDER BY `cp`\.`level` ASC/);
+  assert.match(event, /addCategoryTrail[\s\S]*?array_splice\(\$breadcrumbs, count\(\$breadcrumbs\) - 1, 0, \$crumbs\)/);
+  assert.match(product, /breadcrumbs__current/);
+  assert.match(stylesheet, /\.breadcrumbs__current\s*\{/);
+});
+
+test("category, search and special listings borrow the catalog refinement rail", async () => {
+  const [event, controller, filters, listing, stylesheet] = await Promise.all([
+    readFile(path.join(root, "catalog/controller/event/theme.php"), "utf8"),
+    readFile(path.join(root, "catalog/controller/page/catalog.php"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/page/filters.twig"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/product/listing.twig"), "utf8"),
+    readFile(path.join(root, "catalog/view/stylesheet/noveraile.css"), "utf8"),
+  ]);
+
+  assert.match(controller, /public function panel\(int \$category_id = 0, string \$clear_url = ''\): string/);
+  assert.match(controller, /private function resolveFilter\(array &\$data\): array/);
+  assert.match(controller, /\$data\['filter_panel'\] = \$this->load->view\('extension\/noveraile\/page\/filters', \$data\)/);
+  assert.match(event, /public function listing[\s\S]*?extension\/noveraile\/page\/catalog\.panel/);
+  // The rail keeps the visitor inside the category they came from.
+  assert.match(event, /public function listing[\s\S]*?\$category_id = \$path_parts \? \(int\)end\(\$path_parts\) : 0;/);
+  assert.match(filters, /name="category_id"/);
+  assert.match(listing, /\{\{ six_filter_panel \}\}/);
+  assert.match(listing, /data-six-filter-toggle/);
+  assert.match(stylesheet, /\.listing-shell\s*\{/);
+});
+
+test("product galleries present embedded video instead of overflowing on it", async () => {
+  const [event, product, script, stylesheet, language] = await Promise.all([
+    readFile(path.join(root, "catalog/controller/event/theme.php"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/product/product.twig"), "utf8"),
+    readFile(path.join(root, "catalog/view/javascript/noveraile.js"), "utf8"),
+    readFile(path.join(root, "catalog/view/stylesheet/noveraile.css"), "utf8"),
+    readFile(path.join(root, "catalog/language/en-gb/module/noveraile.php"), "utf8"),
+  ]);
+
+  assert.match(event, /private function liftVideos\(string \$description, array &\$videos, string \$poster\): string/);
+  assert.match(event, /public function product[\s\S]*?\$data\['description'\] = \$this->liftVideos\(/);
+  assert.match(event, /liftVideos[\s\S]*?preg_replace_callback\('#<video/);
+  assert.match(event, /liftVideos[\s\S]*?preg_replace_callback\('#<iframe/);
+  assert.match(event, /liftVideos[\s\S]*?javascript\|data\|vbscript/);
+  assert.match(product, /data-six-video="\{\{ loop\.index0 \}\}"/);
+  assert.match(product, /data-six-video-source="\{\{ loop\.index0 \}\}"/);
+  assert.match(product, /data-six-video-player/);
+  assert.match(script, /function setupProductMedia\(gallery\)/);
+  assert.match(script, /player\.pause\(\)/);
+  assert.match(stylesheet, /\.product-visual\[hidden\], \.product-video\[hidden\]\s*\{\s*display: none;/);
+  assert.match(stylesheet, /\.product-description video[\s\S]*?max-width: 100%/);
+  assert.match(language, /six_play_video'\]\s*=\s*'Play the video'/);
+});
+
+test("the review panel is a wide, compact card", async () => {
+  const stylesheet = await readFile(path.join(root, "catalog/view/stylesheet/noveraile.css"), "utf8");
+
+  assert.match(stylesheet, /\.product-reviews #form-review \{ width: min\(980px,100%\)/);
+  assert.match(stylesheet, /\.product-reviews textarea\.form-control \{ min-height: 116px; \}/);
 });
