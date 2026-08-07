@@ -34,6 +34,63 @@ test("container startup refreshes NOVERAILE media without reseeding an existing 
   assert.match(bootstrap, /bootstrap\(\$withDemoData\)/);
 });
 
+test("supplier catalog feed carries every priced combination the export listed", async () => {
+  const feed = JSON.parse(await readFile(path.join(root, "data/catalog-feed.json"), "utf8"));
+
+  assert.equal(feed.version, 1);
+  assert.equal(feed.products.length, 476);
+  assert.equal(feed.source.rows, 6855);
+  assert.equal(feed.products.reduce((total, product) => total + product.variants.length, 0), feed.source.rows);
+  assert.equal(new Set(feed.products.map((product) => product.slug)).size, feed.products.length);
+  assert.equal(new Set(feed.products.map((product) => product.articul)).size, feed.products.length);
+
+  for (const product of feed.products) {
+    assert.ok(product.images.length > 0, product.articul);
+    assert.ok(feed.categories[product.category], product.category);
+    assert.ok(feed.kinds[product.kind], product.kind);
+    assert.equal(feed.kinds[product.kind].category, product.category);
+    assert.ok(product.shape === "" || feed.shapes[product.shape], product.shape);
+    for (const collection of product.collections) assert.ok(feed.collections[collection], collection);
+
+    // A single option carries the whole grid, so the storefront can only quote
+    // an exact price when the base plus the stored delta is the supplier price.
+    const base = Math.min(...product.variants.map((variant) => variant[2]));
+    for (const [gold, quality, price] of product.variants) {
+      assert.ok(feed.gold[gold], gold);
+      assert.ok(feed.quality[quality], quality);
+      assert.ok(price > 0, product.articul);
+      assert.equal(Math.round((base + Math.round((price - base) * 100) / 100) * 100) / 100, price);
+    }
+  }
+});
+
+test("deployment imports the catalog feed and keeps collecting its photography", async () => {
+  const [entrypoint, dockerfile, cli, importer, release] = await Promise.all([
+    readFile(path.resolve("docker/entrypoint.sh"), "utf8"),
+    readFile(path.resolve("Dockerfile"), "utf8"),
+    readFile(path.resolve("docker/import-catalog.php"), "utf8"),
+    readFile(path.join(root, "admin/model/module/catalog_feed.php"), "utf8"),
+    readFile(path.resolve("tools/build-opencart-release.ps1"), "utf8"),
+  ]);
+
+  assert.match(dockerfile, /COPY docker\/import-catalog\.php \/usr\/local\/bin\/noveraile-import-catalog/);
+  assert.match(dockerfile, /php -l \/usr\/local\/bin\/noveraile-import-catalog/);
+  assert.match(entrypoint, /noveraile-import-catalog --if-needed --no-images/);
+  assert.match(entrypoint, /noveraile-import-catalog --images-only/);
+  assert.match(entrypoint, /keeps its current catalog/);
+  for (const flag of ["--force", "--status", "--if-needed", "--no-images", "--images-only"]) {
+    assert.ok(cli.includes(flag), flag);
+  }
+
+  assert.match(importer, /class CatalogFeed extends/);
+  assert.match(importer, /noveraile_feed_product/);
+  // Each option value is priced as the difference to the product's own price.
+  assert.match(importer, /\$base = min\(\$prices\)/);
+  assert.match(importer, /'price' => round\(\(float\)\$variant\[2\] - \$base, 2\), 'price_prefix' => '\+'/);
+  // The supplier assortment must never be sold inside the extension package.
+  assert.match(release, /must not contain the private supplier catalog feed/);
+});
+
 test("admin content remains adjacent to the OpenCart sidebar", async () => {
   const template = await readFile(path.join(root, "admin/view/template/module/noveraile.twig"), "utf8");
   assert.match(template, /\{\{ header \}\}\{\{ column_left \}\}\s*<div id="content">/);
@@ -111,8 +168,11 @@ test("catalog identifies gold colors and uses a compact pagination footer", asyn
   assert.match(thumb, /class="card-metal-line"/);
   assert.match(product, /class="product-metal-list"/);
   assert.match(catalog, /class="filter-metal-option"/);
-  assert.match(catalog, /metal-swatch--white-gold/);
-  assert.match(stylesheet, /\.metal-swatch--rose-gold/);
+  // The colours offered are whatever the catalog actually stocks.
+  assert.match(catalog, /metal-swatch--\{\{ item\.value \}\}/);
+  for (const metal of ["white-gold", "yellow-gold", "rose-gold"]) {
+    assert.match(stylesheet, new RegExp(`\\.metal-swatch--${metal}`));
+  }
   assert.match(stylesheet, /\.pagination-shell\s*\{[^}]*display:\s*flex;[^}]*border-top:/);
 });
 

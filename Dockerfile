@@ -64,11 +64,13 @@ COPY docker/opencart.ini /usr/local/etc/php/conf.d/opencart.ini
 COPY docker/apache-vhost.conf /etc/apache2/sites-available/000-default.conf
 COPY docker/render-config.php /usr/local/bin/render-opencart-config
 COPY docker/bootstrap-noveraile.php /usr/local/bin/bootstrap-noveraile.php
+COPY docker/import-catalog.php /usr/local/bin/noveraile-import-catalog
 COPY docker/entrypoint.sh /usr/local/bin/noveraile-entrypoint
 
 RUN find /var/www/html/extension/noveraile -type f -name '*.php' \
         -exec php -l '{}' ';' \
     && php -l /usr/local/bin/bootstrap-noveraile.php \
+    && php -l /usr/local/bin/noveraile-import-catalog \
     && sed -i 's/\r$//' /usr/local/bin/noveraile-entrypoint \
     && chmod +x /usr/local/bin/noveraile-entrypoint \
     && chown -R www-data:www-data \
@@ -79,7 +81,9 @@ RUN find /var/www/html/extension/noveraile -type f -name '*.php' \
 
 EXPOSE 3000
 
-HEALTHCHECK --interval=15s --timeout=5s --start-period=90s --retries=5 \
+# The first container to see a new catalog feed imports it before Apache
+# starts, so the grace period has to cover a full catalog rewrite.
+HEALTHCHECK --interval=15s --timeout=5s --start-period=420s --retries=5 \
     CMD curl --fail --silent --show-error http://127.0.0.1:3000/ > /dev/null || exit 1
 
 ENTRYPOINT ["noveraile-entrypoint"]

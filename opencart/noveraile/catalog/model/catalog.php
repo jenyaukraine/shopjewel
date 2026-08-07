@@ -55,6 +55,10 @@ class Catalog extends \Opencart\System\Engine\Model {
      * a new cut, gemstone or style in admin without changing this template.
      */
     public function getAttributeFacets(): array {
+        $cache_key = $this->facetCacheKey('attributes');
+        $cached = $this->cache->get($cache_key);
+        if (is_array($cached)) return $cached;
+
         $facets = ['gemstone' => [], 'stone_shape' => [], 'stone_quality' => [], 'style' => []];
         $attribute_map = $this->attributeMap();
         $language_id = (int)$this->config->get('config_language_id');
@@ -88,10 +92,21 @@ class Catalog extends \Opencart\System\Engine\Model {
             $facets['stone_quality'][] = ['value' => $value, 'total' => $total];
         }
 
+        $this->cache->set($cache_key, $facets);
+
         return $facets;
     }
 
+    /**
+     * Shapes are recognised from free text, which means one pass over every
+     * published product. That is cheap for a hand-built catalog and expensive
+     * for an imported one, so the answer is cached until the catalog changes.
+     */
     public function getStoneShapeFacets(): array {
+        $cache_key = $this->facetCacheKey('shapes');
+        $cached = $this->cache->get($cache_key);
+        if (is_array($cached)) return $cached;
+
         $language_id = (int)$this->config->get('config_language_id');
         $store_id = (int)$this->config->get('config_store_id');
         $attribute_id = (int)($this->attributeMap()['stone_shape'] ?? 0);
@@ -113,6 +128,9 @@ class Catalog extends \Opencart\System\Engine\Model {
                 }
             }
         }
+
+        $this->cache->set($cache_key, $totals);
+
         return $totals;
     }
 
@@ -172,14 +190,8 @@ class Catalog extends \Opencart\System\Engine\Model {
         $attribute_map = $this->attributeMap();
         foreach (['metal' => 'metal', 'fineness' => 'fineness', 'stone' => 'stone_origin'] as $filter_key => $attribute_key) {
             if (empty($filter[$filter_key])) continue;
-            $tag = $this->db->escape(strtolower(preg_replace('/[^a-z0-9-]/i', '', (string)$filter[$filter_key])));
-            $attribute_id = (int)($attribute_map[$attribute_key] ?? 0);
-            if (!$attribute_id) {
-                $sql .= " AND FIND_IN_SET('" . $tag . "', REPLACE(LOWER(`pd`.`tag`), ' ', ''))";
-                continue;
-            }
-            $value = $this->db->escape($this->localizedAttributeValue($filter_key, (string)$filter[$filter_key]));
-            $sql .= " AND EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_attribute` `pa_" . $attribute_key . "` WHERE `pa_" . $attribute_key . "`.`product_id` = `p`.`product_id` AND `pa_" . $attribute_key . "`.`attribute_id` = '" . $attribute_id . "' AND `pa_" . $attribute_key . "`.`language_id` = '" . (int)$this->config->get('config_language_id') . "' AND TRIM(`pa_" . $attribute_key . "`.`text`) = '" . $value . "')";
+            $predicate = $this->specificationPredicate($filter_key, (string)$filter[$filter_key]);
+            if ($predicate !== '') $sql .= ' AND ' . $predicate;
         }
         foreach (['gemstone', 'style'] as $key) {
             $attribute_id = (int)($attribute_map[$key] ?? 0);
@@ -242,6 +254,85 @@ class Catalog extends \Opencart\System\Engine\Model {
         }
 
         return $sql;
+    }
+
+    /**
+     * Metal, fineness and stone origin are single attribute fields, but a
+     * supplier feed can offer several of each on one product and express the
+     * choice as a selectable option instead ("14K · D/VVS2"). Match both, so a
+     * merchant maintained product and an imported one answer the same filter.
+     */
+    private function specificationPredicate(string $key, string $value): string {
+        $attribute_key = ['metal' => 'metal', 'fineness' => 'fineness', 'stone' => 'stone_origin'][$key] ?? $key;
+        $attribute_id = (int)($this->attributeMap()[$attribute_key] ?? 0);
+        $language_id = (int)$this->config->get('config_language_id');
+        $predicates = [];
+
+        if ($attribute_id) {
+            $text = $this->db->escape($this->localizedAttributeValue($key, $value));
+            $predicates[] = "EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_attribute` `pa_spec` WHERE `pa_spec`.`product_id` = `p`.`product_id` AND `pa_spec`.`attribute_id` = '" . $attribute_id . "' AND `pa_spec`.`language_id` = '" . $language_id . "' AND (TRIM(`pa_spec`.`text`) = '" . $text . "' OR `pa_spec`.`text` LIKE '%" . $this->db->escape($this->likeWildcards($this->localizedAttributeValue($key, $value))) . "%'))";
+        } else {
+            $tag = $this->db->escape(strtolower(preg_replace('/[^a-z0-9-]/i', '', $value)));
+            $predicates[] = "FIND_IN_SET('" . $tag . "', REPLACE(LOWER(`pd`.`tag`), ' ', ''))";
+        }
+
+        $option = $this->optionNamePattern($key, $value);
+        if ($option !== '') {
+            $predicates[] = "EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_option_value` `pov_spec` INNER JOIN `" . DB_PREFIX . "option_value_description` `ovd_spec` ON (`ovd_spec`.`option_value_id` = `pov_spec`.`option_value_id` AND `ovd_spec`.`language_id` = '" . $language_id . "') WHERE `pov_spec`.`product_id` = `p`.`product_id` AND UPPER(`ovd_spec`.`name`) " . $option . ")";
+        }
+
+        return $predicates ? '(' . implode(' OR ', $predicates) . ')' : '';
+    }
+
+    private function optionNamePattern(string $key, string $value): string {
+        if ($key === 'fineness') {
+            $karat = ['375' => '9K', '585' => '14K', '750' => '18K'][$value] ?? '';
+            return $karat === '' ? '' : "LIKE '" . $this->db->escape($karat) . " %'";
+        }
+
+        if ($key === 'stone') {
+            if ($value === 'lab-grown') return "LIKE '%LAB%'";
+            if ($value === 'natural') return "REGEXP '[D-J]/(FL|IF|VVS|VS|SI|I)'";
+        }
+
+        return '';
+    }
+
+    private function likeWildcards(string $value): string {
+        return str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value);
+    }
+
+    /**
+     * Counts for the specification filters so the storefront can hide a choice
+     * no product in the catalog can satisfy.
+     */
+    public function getSpecificationFacets(string $key, array $values): array {
+        $cache_key = $this->facetCacheKey($key);
+        $cached = $this->cache->get($cache_key);
+        if (is_array($cached) && !array_diff_key(array_flip($values), $cached)) return $cached;
+
+        $totals = [];
+        foreach ($values as $value) {
+            $predicate = $this->specificationPredicate($key, $value);
+            if ($predicate === '') {
+                $totals[$value] = 0;
+                continue;
+            }
+            $sql = "SELECT COUNT(DISTINCT `p`.`product_id`) AS `total` FROM `" . DB_PREFIX . "product` `p` INNER JOIN `" . DB_PREFIX . "product_description` `pd` ON (`pd`.`product_id` = `p`.`product_id` AND `pd`.`language_id` = '" . (int)$this->config->get('config_language_id') . "') INNER JOIN `" . DB_PREFIX . "product_to_store` `p2s` ON (`p2s`.`product_id` = `p`.`product_id` AND `p2s`.`store_id` = '" . (int)$this->config->get('config_store_id') . "') WHERE `p`.`status` = '1' AND `p`.`date_available` <= NOW() AND " . $predicate;
+            $totals[$value] = (int)($this->db->query($sql)->row['total'] ?? 0);
+        }
+
+        $this->cache->set($cache_key, $totals);
+
+        return $totals;
+    }
+
+    /**
+     * The catalog importer clears every entry under this prefix, so the facets
+     * follow the assortment without waiting for the cache to expire.
+     */
+    private function facetCacheKey(string $name): string {
+        return 'noveraile.facet.' . $name . '.' . (int)$this->config->get('config_language_id') . '.' . (int)$this->config->get('config_store_id');
     }
 
     private function attributeMap(): array {

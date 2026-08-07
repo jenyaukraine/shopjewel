@@ -136,11 +136,13 @@ jobs:
           docker compose --env-file .env.runtime -p noveraile up -d db
           docker compose --env-file .env.runtime -p noveraile up -d --remove-orphans
 
-          for attempt in $(seq 1 36); do
+          # A release that changes the catalog feed imports it before Apache
+          # starts, so allow for a full catalog rewrite here.
+          for attempt in $(seq 1 120); do
             if [ "$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' noveraile-store)" = "healthy" ]; then
               break
             fi
-            if [ "$attempt" -eq 36 ]; then
+            if [ "$attempt" -eq 120 ]; then
               docker logs --tail 200 noveraile-store
               echo "OpenCart container did not become healthy"
               exit 1

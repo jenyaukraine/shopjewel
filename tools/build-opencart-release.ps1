@@ -37,17 +37,28 @@ New-Item -ItemType Directory -Force -Path $OutputDirectory | Out-Null
 $installerArchive = Join-Path $OutputDirectory 'noveraile.ocmod.zip'
 $marketplaceArchive = Join-Path $OutputDirectory ("noveraile-theme-{0}-marketplace.zip" -f $manifest.version)
 $stageDirectory = Join-Path $OutputDirectory '.noveraile-marketplace-stage'
+$installerStage = Join-Path $OutputDirectory '.noveraile-installer-stage'
 
 foreach ($target in @($installerArchive, $marketplaceArchive)) {
     if (Test-Path -LiteralPath $target) { Remove-Item -LiteralPath $target -Force }
 }
-if (Test-Path -LiteralPath $stageDirectory) {
-    $resolvedStage = [System.IO.Path]::GetFullPath($stageDirectory)
-    if (-not $resolvedStage.StartsWith($OutputDirectory, [System.StringComparison]::OrdinalIgnoreCase)) { throw 'Refusing to clean a staging directory outside the release directory.' }
-    Remove-Item -LiteralPath $resolvedStage -Recurse -Force
+foreach ($stage in @($stageDirectory, $installerStage)) {
+    if (Test-Path -LiteralPath $stage) {
+        $resolvedStage = [System.IO.Path]::GetFullPath($stage)
+        if (-not $resolvedStage.StartsWith($OutputDirectory, [System.StringComparison]::OrdinalIgnoreCase)) { throw 'Refusing to clean a staging directory outside the release directory.' }
+        Remove-Item -LiteralPath $resolvedStage -Recurse -Force
+    }
 }
 
-Compress-Archive -Path (Join-Path $extensionRoot '*') -DestinationPath $installerArchive -CompressionLevel Optimal
+# The supplier catalog feed is this store's own assortment and pricing. It is
+# deployed with the container, never sold with the extension.
+New-Item -ItemType Directory -Force -Path $installerStage | Out-Null
+Copy-Item -LiteralPath (Join-Path $extensionRoot '*') -Destination $installerStage -Recurse -Force
+$privateData = Join-Path $installerStage 'data'
+if (Test-Path -LiteralPath $privateData) { Remove-Item -LiteralPath $privateData -Recurse -Force }
+
+Compress-Archive -Path (Join-Path $installerStage '*') -DestinationPath $installerArchive -CompressionLevel Optimal
+Remove-Item -LiteralPath $installerStage -Recurse -Force
 
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $zip = [System.IO.Compression.ZipFile]::OpenRead($installerArchive)
@@ -57,6 +68,7 @@ try {
         if ($entries -notcontains $relativePath) { throw "Installer archive validation failed; missing entry: $relativePath" }
     }
     if ($entries | Where-Object { $_ -like 'upload\*' }) { throw 'OpenCart 4 packages must not wrap extension files in an upload directory.' }
+    if ($entries | Where-Object { $_ -like 'data\*' }) { throw 'The installer archive must not contain the private supplier catalog feed.' }
 } finally {
     $zip.Dispose()
 }
