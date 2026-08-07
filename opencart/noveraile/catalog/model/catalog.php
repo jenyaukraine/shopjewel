@@ -156,6 +156,16 @@ class Catalog extends \Opencart\System\Engine\Model {
         return $this->db->query($sql)->rows;
     }
 
+    /** Only offer metal filters that can return at least one live product. */
+    public function getMetalOptions(): array {
+        $options = [];
+        foreach (['white-gold', 'yellow-gold', 'rose-gold'] as $value) {
+            $query = $this->db->query($this->baseSql(['metal' => $value], true));
+            if ((int)($query->row['total'] ?? 0) > 0) $options[] = $value;
+        }
+        return $options;
+    }
+
     private function baseSql(array $filter, bool $count): string {
         $customer_group_id = (int)$this->config->get('config_customer_group_id');
         $special = "(SELECT `product_id`, MIN(`price`) AS `price` FROM `" . DB_PREFIX . "product_discount` WHERE `customer_group_id` = '" . $customer_group_id . "' AND `special` = '1' AND (`date_start` = '0000-00-00' OR `date_start` <= NOW()) AND (`date_end` = '0000-00-00' OR `date_end` >= NOW()) GROUP BY `product_id`)";

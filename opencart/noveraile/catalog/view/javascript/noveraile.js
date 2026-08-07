@@ -310,7 +310,36 @@
 
   // Product imagery: keep the preview edge-to-edge and open a real, controllable lightbox.
   const productGallery = document.querySelector('[data-six-product-gallery]');
-  if (productGallery) setupProductZoom(productGallery);
+  if (productGallery) {
+    setupProductZoom(productGallery);
+    setupProductMedia(productGallery);
+  }
+
+  // Studio footage shares the gallery with the stills: picking a clip takes
+  // over the stage, picking a photo hands it back.
+  function setupProductMedia(gallery) {
+    const frames = Array.from(gallery.querySelectorAll('[data-six-video]'));
+    if (!frames.length) return;
+    const still = gallery.querySelector('[data-six-zoom-open]');
+    const thumbs = Array.from(gallery.querySelectorAll('[data-six-zoom-source], [data-six-video-source]'));
+
+    thumbs.forEach((thumb) => thumb.addEventListener('click', () => {
+      const index = thumb.getAttribute('data-six-video-source');
+      frames.forEach((frame) => {
+        const active = index !== null && frame.getAttribute('data-six-video') === index;
+        frame.hidden = !active;
+        const player = frame.querySelector('video');
+        if (player && !active) player.pause();
+      });
+      if (still) still.hidden = index !== null;
+      thumbs.forEach((item) => item.removeAttribute('aria-current'));
+      thumb.setAttribute('aria-current', 'true');
+      if (index === null) return;
+      const player = frames[Number(index)] && frames[Number(index)].querySelector('video');
+      // A click is a user gesture, so playback is allowed; ignore a refusal.
+      if (player) Promise.resolve(player.play()).catch(() => {});
+    }));
+  }
   function setupProductZoom(gallery) {
     const trigger = gallery.querySelector('[data-six-zoom-open]');
     const dialog = gallery.querySelector('[data-six-zoom]');

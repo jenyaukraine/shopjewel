@@ -141,3 +141,4 @@ $_['six_faq_tarnish_q']='Ztrácejí vaše šperky lesk?'; $_['six_faq_tarnish_a'
 $_['six_faq_payment_q']='Je platba na webu bezpečná?'; $_['six_faq_payment_a']='Ano. Platby bezpečně zpracovávají důvěryhodní šifrovaní poskytovatelé včetně Stripe.';
 $_['six_faq_gift_q']='Mohu koupit šperk jako dárek?'; $_['six_faq_gift_a']='Samozřejmě. Každá objednávka je krásně zabalená a připravená k darování.';
 $_['six_faq_support_q']='Jak mohu kontaktovat podporu?'; $_['six_faq_support_a']='Napište nám přes WhatsApp, kontaktní stránku nebo e-mail. Rádi vám pomůžeme.';
+$_['six_video']='Video'; $_['six_play_video']='Přehrát video';

@@ -9,69 +9,8 @@ class Catalog extends \Opencart\System\Engine\Controller {
         $data = $this->language->all();
         $data['six_brand_name'] = $brand;
 
-        $allowed = [
-            'type' => ['rings','earrings','necklaces','bracelets','wedding'],
-            'moment' => ['engagement','wedding','motherhood','career','self-purchase','milestone'],
-            'fineness' => ['375','585','750'],
-            'stone' => ['natural','lab-grown','no-stones'],
-            'availability' => ['ready','preorder'],
-            'delivery' => ['delivery-3','delivery-10'],
-            'sort' => ['popular','price-asc','price-desc','newest','carat-asc','carat-desc','weight-asc','weight-desc','name-asc']
-        ];
-        $filter = ['q' => trim((string)($this->request->get['q'] ?? ''))];
-        foreach ($allowed as $key => $values) {
-            $value = (string)($this->request->get[$key] ?? '');
-            $filter[$key] = in_array($value, $values, true) ? $value : '';
-        }
-        $filter['category_id'] = max(0, (int)($this->request->get['category_id'] ?? 0));
-        $filter['sale'] = !empty($this->request->get['sale']);
         $selected_currency = $this->session->data['currency'] ?? $this->config->get('config_currency');
-        foreach (['price_min', 'price_max'] as $key) {
-            $display_value = isset($this->request->get[$key]) && is_numeric($this->request->get[$key]) ? max(0, (float)$this->request->get[$key]) : '';
-            $filter[$key] = $display_value === '' ? '' : $this->currency->convert($display_value, $selected_currency, $this->config->get('config_currency'));
-            $data[$key] = $display_value;
-        }
-
-        foreach (['carat_min', 'carat_max'] as $key) {
-            $value = isset($this->request->get[$key]) && is_numeric($this->request->get[$key])
-                ? min(20, max(0, (float)$this->request->get[$key]))
-                : '';
-            $filter[$key] = $value;
-            $data[$key] = $value;
-        }
-
-        $this->load->model('extension/noveraile/catalog');
-        $price_bounds = $this->model_extension_noveraile_catalog->getPriceBounds();
-        $data['price_floor'] = max(0, (int)floor($this->currency->convert($price_bounds['min'], $this->config->get('config_currency'), $selected_currency)));
-        $data['price_ceiling'] = max($data['price_floor'] + 1, (int)ceil($this->currency->convert($price_bounds['max'], $this->config->get('config_currency'), $selected_currency)));
-        $data['price_slider_min'] = $data['price_min'] === '' ? $data['price_floor'] : min($data['price_ceiling'], max($data['price_floor'], (float)$data['price_min']));
-        $data['price_slider_max'] = $data['price_max'] === '' ? $data['price_ceiling'] : min($data['price_ceiling'], max($data['price_floor'], (float)$data['price_max']));
-        if ($data['price_slider_min'] > $data['price_slider_max']) {
-            $data['price_slider_min'] = $data['price_slider_max'];
-        }
-        $facets = $this->model_extension_noveraile_catalog->getAttributeFacets();
-        foreach (['gemstone' => 'gemstones', 'stone_quality' => 'stone_qualities', 'style' => 'styles'] as $key => $data_key) {
-            $data[$data_key] = $facets[$key] ?? [];
-            $values = array_column($data[$data_key], 'value');
-            $value = trim((string)($this->request->get[$key] ?? ''));
-            $filter[$key] = in_array($value, $values, true) ? $value : '';
-        }
-        $shape_facets = $this->model_extension_noveraile_catalog->getStoneShapeFacets();
-        $data['stone_shapes'] = [];
-        foreach (['round','princess','marquise','baguette','cushion','heart','oval','pear','emerald','radiant','asscher'] as $shape) {
-            $localized = (string)($data['six_shape_' . $shape] ?? ucfirst($shape));
-            if (($shape_facets[$shape] ?? 0) < 1) continue;
-            $data['stone_shapes'][] = [
-                'value' => $shape,
-                'name' => $localized,
-                'total' => $shape_facets[$shape] ?? 0
-            ];
-        }
-        $shape = trim((string)($this->request->get['stone_shape'] ?? ''));
-        $filter['stone_shape'] = in_array($shape, array_column($data['stone_shapes'], 'value'), true) ? $shape : '';
-        $data['ring_sizes'] = $this->model_extension_noveraile_catalog->getRingSizes();
-        $ring_size = trim((string)($this->request->get['ring_size'] ?? ''));
-        $filter['ring_size'] = in_array($ring_size, array_column($data['ring_sizes'], 'value'), true) ? $ring_size : '';
+        $filter = $this->resolveFilter($data);
 
         $page = max(1, (int)($this->request->get['page'] ?? 1));
         $limit = 12;
@@ -93,6 +32,7 @@ class Catalog extends \Opencart\System\Engine\Controller {
         $data['catalog_action'] = $this->url->link('extension/noveraile/page/catalog', 'language=' . $this->config->get('config_language'));
         $data['clear_url'] = $data['catalog_action'];
         $data['ajax_filter_status'] = (bool)$this->config->get('module_noveraile_ajax_filter_status');
+        $data['filter_panel'] = $this->load->view('extension/noveraile/page/filters', $data);
 
         $data['categories'] = [];
         foreach ($this->model_extension_noveraile_catalog->getCategories() as $category) {
@@ -133,6 +73,105 @@ class Catalog extends \Opencart\System\Engine\Controller {
         $data['header'] = $this->load->controller('common/header');
         $data['footer'] = $this->load->controller('common/footer');
         $this->response->setOutput($this->load->view('extension/noveraile/page/catalog', $data));
+    }
+
+    /**
+     * Render the refinement rail on its own. OpenCart's own category, search
+     * and special listings have no filtering of their own, so they borrow the
+     * catalog rail and submit it back to this controller.
+     */
+    public function panel(int $category_id = 0, string $clear_url = ''): string {
+        $this->load->language('extension/noveraile/module/noveraile');
+        $data = $this->language->all();
+        $filter = $this->resolveFilter($data);
+        if ($category_id > 0) $filter['category_id'] = $category_id;
+        // OpenCart's own search page names the term differently.
+        if ($filter['q'] === '') $filter['q'] = trim((string)($this->request->get['search'] ?? ''));
+        $data['filters'] = $filter;
+        $data['language'] = $this->config->get('config_language');
+        $data['currency_code'] = $this->session->data['currency'] ?? $this->config->get('config_currency');
+        $data['catalog_action'] = $this->url->link('extension/noveraile/page/catalog', 'language=' . $data['language']);
+        $data['clear_url'] = $clear_url ?: $data['catalog_action'];
+        // Results live in the host listing, so there is no container to swap.
+        $data['ajax_filter_status'] = false;
+
+        return $this->load->view('extension/noveraile/page/filters', $data);
+    }
+
+    /**
+     * Read every supported refinement out of the query string and collect the
+     * facet lists the rail needs to render. Values that are not offered by the
+     * catalog are discarded rather than passed to the model.
+     */
+    private function resolveFilter(array &$data): array {
+        $allowed = [
+            'type' => ['rings','earrings','necklaces','bracelets','wedding'],
+            'moment' => ['engagement','wedding','motherhood','career','self-purchase','milestone'],
+            'fineness' => ['375','585','750'],
+            'stone' => ['natural','lab-grown','no-stones'],
+            'availability' => ['ready','preorder'],
+            'delivery' => ['delivery-3','delivery-10'],
+            'sort' => ['popular','price-asc','price-desc','newest','carat-asc','carat-desc','weight-asc','weight-desc','name-asc']
+        ];
+        $filter = ['q' => trim((string)($this->request->get['q'] ?? ''))];
+        foreach ($allowed as $key => $values) {
+            $value = (string)($this->request->get[$key] ?? '');
+            $filter[$key] = in_array($value, $values, true) ? $value : '';
+        }
+        $filter['category_id'] = max(0, (int)($this->request->get['category_id'] ?? 0));
+        $filter['sale'] = !empty($this->request->get['sale']);
+        $selected_currency = $this->session->data['currency'] ?? $this->config->get('config_currency');
+        foreach (['price_min', 'price_max'] as $key) {
+            $display_value = isset($this->request->get[$key]) && is_numeric($this->request->get[$key]) ? max(0, (float)$this->request->get[$key]) : '';
+            $filter[$key] = $display_value === '' ? '' : $this->currency->convert($display_value, $selected_currency, $this->config->get('config_currency'));
+            $data[$key] = $display_value;
+        }
+
+        foreach (['carat_min', 'carat_max'] as $key) {
+            $value = isset($this->request->get[$key]) && is_numeric($this->request->get[$key])
+                ? min(20, max(0, (float)$this->request->get[$key]))
+                : '';
+            $filter[$key] = $value;
+            $data[$key] = $value;
+        }
+
+        $this->load->model('extension/noveraile/catalog');
+        $data['metal_options'] = $this->model_extension_noveraile_catalog->getMetalOptions();
+        $metal = trim((string)($this->request->get['metal'] ?? ''));
+        $filter['metal'] = in_array($metal, $data['metal_options'], true) ? $metal : '';
+        $price_bounds = $this->model_extension_noveraile_catalog->getPriceBounds();
+        $data['price_floor'] = max(0, (int)floor($this->currency->convert($price_bounds['min'], $this->config->get('config_currency'), $selected_currency)));
+        $data['price_ceiling'] = max($data['price_floor'] + 1, (int)ceil($this->currency->convert($price_bounds['max'], $this->config->get('config_currency'), $selected_currency)));
+        $data['price_slider_min'] = $data['price_min'] === '' ? $data['price_floor'] : min($data['price_ceiling'], max($data['price_floor'], (float)$data['price_min']));
+        $data['price_slider_max'] = $data['price_max'] === '' ? $data['price_ceiling'] : min($data['price_ceiling'], max($data['price_floor'], (float)$data['price_max']));
+        if ($data['price_slider_min'] > $data['price_slider_max']) {
+            $data['price_slider_min'] = $data['price_slider_max'];
+        }
+        $facets = $this->model_extension_noveraile_catalog->getAttributeFacets();
+        foreach (['gemstone' => 'gemstones', 'stone_quality' => 'stone_qualities', 'style' => 'styles'] as $key => $data_key) {
+            $data[$data_key] = $facets[$key] ?? [];
+            $values = array_column($data[$data_key], 'value');
+            $value = trim((string)($this->request->get[$key] ?? ''));
+            $filter[$key] = in_array($value, $values, true) ? $value : '';
+        }
+        $shape_facets = $this->model_extension_noveraile_catalog->getStoneShapeFacets();
+        $data['stone_shapes'] = [];
+        foreach (['round','princess','marquise','baguette','cushion','heart','oval','pear','emerald','radiant','asscher'] as $shape) {
+            $localized = (string)($data['six_shape_' . $shape] ?? ucfirst($shape));
+            if (($shape_facets[$shape] ?? 0) < 1) continue;
+            $data['stone_shapes'][] = [
+                'value' => $shape,
+                'name' => $localized,
+                'total' => $shape_facets[$shape] ?? 0
+            ];
+        }
+        $shape = trim((string)($this->request->get['stone_shape'] ?? ''));
+        $filter['stone_shape'] = in_array($shape, array_column($data['stone_shapes'], 'value'), true) ? $shape : '';
+        $data['ring_sizes'] = $this->model_extension_noveraile_catalog->getRingSizes();
+        $ring_size = trim((string)($this->request->get['ring_size'] ?? ''));
+        $filter['ring_size'] = in_array($ring_size, array_column($data['ring_sizes'], 'value'), true) ? $ring_size : '';
+
+        return $filter;
     }
 
     private function productThumb(array $result): string {

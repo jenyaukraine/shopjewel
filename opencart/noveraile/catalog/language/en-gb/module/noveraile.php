@@ -321,3 +321,4 @@ $_['six_faq_tarnish_q']='Do your pieces tarnish?'; $_['six_faq_tarnish_a']='Our 
 $_['six_faq_payment_q']='Is payment on your website secure?'; $_['six_faq_payment_a']='Yes. Payments are securely processed through trusted encrypted providers, including Stripe.';
 $_['six_faq_gift_q']='Can I buy jewelry as a gift?'; $_['six_faq_gift_a']='Absolutely. Every order is beautifully packaged and ready for gifting.';
 $_['six_faq_support_q']='How can I contact customer support?'; $_['six_faq_support_a']='Contact us through WhatsApp, the contact page, or email. We will be happy to help.';
+$_['six_video']='Video'; $_['six_play_video']='Play the video';

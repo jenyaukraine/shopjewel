@@ -1,6 +1,6 @@
 {{ header }}
 <div id="product-info" class="six-product-page">
-  <nav class="breadcrumbs">{% for breadcrumb in breadcrumbs %}<a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a>{% if not loop.last %}<span>/</span>{% endif %}{% endfor %}</nav>
+  <nav class="breadcrumbs">{% for breadcrumb in breadcrumbs %}{% if loop.last %}<span class="breadcrumbs__current" aria-current="page">{{ breadcrumb.text }}</span>{% else %}<a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a><span aria-hidden="true">/</span>{% endif %}{% endfor %}</nav>
   {{ content_top }}
   <section class="product-detail">
     <div class="product-gallery" data-six-product-gallery>
@@ -23,13 +23,36 @@
           <p class="product-zoom-help">Scroll or use ＋/− to zoom · drag to move · Esc to close</p>
         </div>
       {% endif %}
-      {% if images %}<div class="product-thumbnails">{% for image in images %}<a href="{{ image.popup }}" data-six-zoom-source><img src="{{ image.thumb }}" loading="lazy" decoding="async" alt="{{ heading_title }}"></a>{% endfor %}</div>{% endif %}
-      {% if six_video_url %}<div class="product-video"><video controls playsinline preload="metadata" src="{{ six_video_url }}"></video></div>{% endif %}
+      {% for video in six_videos %}
+        <figure class="product-video" data-six-video="{{ loop.index0 }}" hidden>
+          <div class="product-video__frame">
+            {% if video.kind == 'embed' %}
+              <iframe src="{{ video.src }}" title="{{ heading_title }} — {{ six_video }}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe>
+            {% else %}
+              <video data-six-video-player controls playsinline preload="metadata"{% if video.poster %} poster="{{ video.poster }}"{% endif %}><source src="{{ video.src }}" type="{{ video.type }}"></video>
+            {% endif %}
+          </div>
+          <figcaption><span aria-hidden="true">▶</span>{{ six_video }}</figcaption>
+        </figure>
+      {% endfor %}
+      {% if thumb and (images or six_videos) %}
+        <div class="product-thumbnails">
+          <a href="{{ popup }}" data-six-zoom-source aria-current="true" aria-label="{{ heading_title }}"><img src="{{ thumb }}" loading="lazy" decoding="async" alt="{{ heading_title }}"></a>
+          {% for image in images %}<a href="{{ image.popup }}" data-six-zoom-source aria-label="{{ heading_title }}"><img src="{{ image.thumb }}" loading="lazy" decoding="async" alt="{{ heading_title }}"></a>{% endfor %}
+          {% for video in six_videos %}
+            <button class="product-thumbnails__video" type="button" data-six-video-source="{{ loop.index0 }}" aria-label="{{ six_play_video }}">
+              {% if video.poster %}<img src="{{ video.poster }}" loading="lazy" decoding="async" alt="">{% endif %}
+              <span aria-hidden="true">▶</span>
+            </button>
+          {% endfor %}
+        </div>
+      {% endif %}
     </div>
     <div class="product-copy">
       <p class="eyebrow">{{ six_moment }}</p><h1>{{ heading_title|trim('.') }}</h1>
       <p class="product-price">{% if special %}<del>{{ price }}</del> {{ special }}{% else %}{{ price }}{% endif %}</p>
       <div class="product-status-line"><span>{{ six_product_code }}: <strong>{{ model }}</strong></span><span>{{ six_stock }}: <strong>{{ stock }}</strong></span><span>{{ six_weight }}: <strong>{{ six_product_weight }}</strong></span></div>
+      {% if six_metal_options %}<div class="product-metal-list" aria-label="{{ six_metal }}">{% for metal in six_metal_options %}<span><i class="metal-swatch metal-swatch--{{ metal.key }}" aria-hidden="true"></i>{{ metal.name }}</span>{% endfor %}</div>{% endif %}
       <dl class="product-key-specs">{% if six_fineness_value and six_fineness_value != '—' %}<div><dt>{{ six_fineness }}</dt><dd>{{ six_fineness_value }}</dd></div>{% endif %}<div><dt>{{ six_stone }}</dt><dd>{{ six_stone_value }}</dd></div>{% if six_carat_value and six_carat_value != '—' %}<div><dt>{{ six_carat }}</dt><dd>{{ six_carat_value }}</dd></div>{% endif %}{% if six_stones_value and six_stones_value != '—' %}<div><dt>{{ six_stone_count }}</dt><dd>{{ six_stones_value }}</dd></div>{% endif %}{% if six_collections_value %}<div><dt>{{ six_collections }}</dt><dd>{{ six_collections_value }}</dd></div>{% endif %}<div><dt>{{ six_delivery }}</dt><dd>{{ six_delivery_value }}</dd></div></dl>
       <div class="product-description">{{ description|raw }}</div>
       <div class="product-purchase">
