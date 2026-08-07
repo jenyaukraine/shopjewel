@@ -416,7 +416,7 @@ class Catalog extends \Opencart\System\Engine\Model {
      * follow the assortment without waiting for the cache to expire.
      */
     private function facetCacheKey(string $name): string {
-        return 'noveraile.facet.v2.' . $name . '.' . (int)$this->config->get('config_language_id') . '.' . (int)$this->config->get('config_store_id');
+        return 'noveraile.facet.v3.' . $name . '.' . (int)$this->config->get('config_language_id') . '.' . (int)$this->config->get('config_store_id');
     }
 
     private function attributeMap(): array {
