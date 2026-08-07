@@ -103,11 +103,22 @@ mkdir -p \
 # assets from the immutable extension overlay on every container start.
 cp -a extension/noveraile/image/. image/
 
-# Generated thumbnails live in the persistent image volume. Remove only this
-# extension's cache so stale or partial files are rebuilt from the originals.
-if [ -d /var/www/html/image/cache/catalog/noveraile ]; then
-    find /var/www/html/image/cache/catalog/noveraile -type f -delete
-    find /var/www/html/image/cache/catalog/noveraile -depth -type d -empty -delete
+# Generated thumbnails live in the persistent image volume. The versioned
+# storefront assets were just replaced by the overlay above, so their
+# thumbnails have to be rebuilt from the new originals.
+#
+# Catalog photography is excluded: those files are named after a hash of their
+# own content and can never go stale, while rebuilding several thousand
+# thumbnails would leave the whole catalog imageless for whoever visits first
+# after a deployment.
+noveraile_cache=/var/www/html/image/cache/catalog/noveraile
+
+if [ -d "$noveraile_cache" ]; then
+    for cached in "$noveraile_cache"/*; do
+        [ -e "$cached" ] || continue
+        [ "$cached" = "$noveraile_cache/feed" ] && continue
+        rm -rf "$cached"
+    done
 fi
 
 # Keep the module registration and its OpenCart events healthy after both a
