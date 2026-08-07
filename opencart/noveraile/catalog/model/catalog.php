@@ -51,8 +51,18 @@ class Catalog extends \Opencart\System\Engine\Model {
     }
 
     /**
+     * Attributes that hold several values at once, comma separated. A supplier
+     * article is offered in every gold caratage and diamond quality, so those
+     * two facets describe what a product is available in rather than what it is.
+     */
+    public const MULTI_VALUE_ATTRIBUTES = ['fineness', 'stone_quality', 'stone_origin'];
+
+    /**
      * Values are read from OpenCart product attributes, so a merchant can add
      * a new cut, gemstone or style in admin without changing this template.
+     * Facets with no matching products are returned empty and the storefront
+     * hides them, which is what keeps unstocked metals and finenesses off the
+     * filter panel.
      */
     public function getAttributeFacets(): array {
         $cache_key = $this->facetCacheKey('attributes');
@@ -86,7 +96,7 @@ class Catalog extends \Opencart\System\Engine\Model {
                 $sql .= " AND EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_attribute` `pa_carat` WHERE `pa_carat`.`product_id` = `p`.`product_id` AND `pa_carat`.`attribute_id` = '" . (int)$attribute_map['carat'] . "' AND `pa_carat`.`language_id` = '" . $language_id . "' AND CAST(REPLACE(`pa_carat`.`text`, ',', '.') AS DECIMAL(10,3)) > 0)";
             }
             $sql .= " GROUP BY TRIM(`pa`.`text`) ORDER BY TRIM(`pa`.`text`) ASC";
-            $facets[$key] = $this->db->query($sql)->rows;
+            $facets[$key] = $this->expandFacet($this->db->query($sql)->rows, $key);
         }
 
         // Supplier feeds often encode colour/clarity in a selectable variant
@@ -165,6 +175,63 @@ class Catalog extends \Opencart\System\Engine\Model {
             $facets[] = ['value' => $quality, 'total' => count($product_ids)];
         }
         return $facets;
+    }
+
+    /**
+     * A product carries exactly one attribute row per language, so splitting a
+     * multi-value text and adding the counts up never counts a product twice.
+     */
+    private function expandFacet(array $rows, string $key): array {
+        if (!in_array($key, self::MULTI_VALUE_ATTRIBUTES, true)) {
+            return $rows;
+        }
+
+        $totals = [];
+        foreach ($rows as $row) {
+            foreach (explode(',', (string)$row['value']) as $value) {
+                $value = trim($value);
+                if ($value === '') continue;
+                $totals[$value] = ($totals[$value] ?? 0) + (int)$row['total'];
+            }
+        }
+        ksort($totals, SORT_NATURAL);
+
+        $facet = [];
+        foreach ($totals as $value => $total) {
+            $facet[] = ['value' => (string)$value, 'total' => $total];
+        }
+        return $facet;
+    }
+
+    /**
+     * Turn a facet of localised attribute texts into the slug/label/count rows
+     * the filter panel renders. Only values that actually occur in the catalog
+     * come back, so a metal or fineness nobody stocks never appears.
+     */
+    public function getFilterOptions(string $key, array $facet): array {
+        $totals = [];
+        foreach ($facet as $row) {
+            $totals[mb_strtolower(trim((string)$row['value']))] = (int)$row['total'];
+        }
+
+        $slugs = $this->translatedSlugs($key);
+        if (!$slugs) {
+            $options = [];
+            foreach ($facet as $row) {
+                $options[] = ['value' => (string)$row['value'], 'name' => (string)$row['value'], 'total' => (int)$row['total']];
+            }
+            return $options;
+        }
+
+        $options = [];
+        foreach ($slugs as $slug) {
+            $label = $this->localizedAttributeValue($key, $slug);
+            $total = $totals[mb_strtolower($label)] ?? 0;
+            if ($total > 0) {
+                $options[] = ['value' => $slug, 'name' => $label, 'total' => $total];
+            }
+        }
+        return $options;
     }
 
     public function getRingSizes(): array {
@@ -378,12 +445,16 @@ class Catalog extends \Opencart\System\Engine\Model {
     private function localizedAttributeValue(string $key, string $value): string {
         $language = (string)$this->config->get('config_language');
         $language_index = ['en-gb' => 0, 'de-de' => 1, 'cs-cz' => 2, 'ru-ru' => 3, 'uk-ua' => 4][$language] ?? 0;
-        $values = [
+        return $this->attributeTranslations()[$key][$value][$language_index] ?? $value;
+    }
+
+    private function attributeTranslations(): array {
+        return [
             'metal' => [
                 'white-gold' => ['White gold','Weißgold','Bílé zlato','Белое золото','Біле золото'],
                 'yellow-gold' => ['Yellow gold','Gelbgold','Žluté zlato','Жёлтое золото','Жовте золото'],
-                'rose-gold' => ['Rose gold','Roségold','Růžové zlato','Розовое золото','Рожеве золото'],
-                'platinum' => ['Platinum','Platin','Platina','Платина','Платина']
+                // Platinum is deliberately absent: 6 Moments does not sell it.
+                'rose-gold' => ['Rose gold','Roségold','Růžové zlato','Розовое золото','Рожеве золото']
             ],
             'stone' => [
                 'natural' => ['Natural','Natürlich','Přírodní','Натуральный','Натуральний'],
@@ -397,9 +468,9 @@ class Catalog extends \Opencart\System\Engine\Model {
                 'baguette' => ['Baguette','Baguette','Bageta','Багет','Багет'],
                 'cushion' => ['Cushion','Kissen','Polštářek','Кушон','Кушон'],
                 'heart' => ['Heart','Herz','Srdce','Сердце','Серце'],
-                'oval' => ['Oval','Oval','Ovál','Овал','Овал']
+                'oval' => ['Oval','Oval','Ovál','Овал','Овал'],
+                'pear' => ['Pear','Tropfen','Hruška','Груша','Груша']
             ]
         ];
-        return $values[$key][$value][$language_index] ?? $value;
     }
 }

@@ -1,6 +1,10 @@
 <?php
 namespace Opencart\Catalog\Model\Extension\Noveraile\Shipping;
 
+/**
+ * DHL Express covers the European Union and the rest of the world. Rates and
+ * delivery windows come from the tier table configured in the suite.
+ */
 class Dhl extends \Opencart\System\Engine\Model {
     public function getQuote(array $address): array {
         $key = 'shipping_dhl';
@@ -20,7 +24,7 @@ class Dhl extends \Opencart\System\Engine\Model {
             'name' => 'DHL Express · ' . $days . ' business days',
             'cost' => $cost,
             'tax_class_id' => $tax_class_id,
-            'text' => $this->currency->format($this->tax->calculate($cost, $tax_class_id, $this->config->get('config_tax')), $this->session->data['currency'])
+            'text' => $this->currency->format($this->tax->calculate($tier['cost'], $tax_class_id, $this->config->get('config_tax')), $this->session->data['currency'])
         ]];
 
         return ['code' => 'dhl', 'name' => 'DHL Express', 'quote' => $quote, 'sort_order' => (int)$this->config->get($key . '_sort_order'), 'error' => false];

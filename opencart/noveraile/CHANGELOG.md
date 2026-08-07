@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.4.0 — 2026-08-06
+- Imported the supplier assortment: one product per articul, with every gold caratage and diamond quality priced exactly through a single combined option.
+- Built the metal, fineness, origin, cut, quality and style filters from what the catalog actually contains, so options nobody stocks disappear on their own.
+- Lent that filter panel to the category, search and special listings, which previously offered no refinement at all.
+- Rebuilt product breadcrumbs from the product's own category, so a piece reached from search or a shared link still leads back to its listing.
+- Gave embedded video its own gallery slide instead of letting it overflow the product columns.
+- Translated the storefront strings that still fell back to English across all five languages.
+- Removed the trailing full stops from storefront headings in all five languages.
+
 ## 2.3.0 — 2026-08-01
 
 - Completed the 6 Moments brand migration, multilingual static content and browser-language selection.

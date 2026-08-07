@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.4.0 — 2026-08-06
+- Supplier catalog import: the assortment arrives as products with images and exact per-combination pricing.
+- Filter panels are built from the catalog, so options nobody stocks disappear on their own — and category and search pages now carry them too.
+- Product pages lead back to their category, and product video plays in the gallery.
+- Storefront copy that still fell back to English is translated in all five languages.
+
 ## 2.3.0 — 2026-08-01
 
 - Completed the 6 Moments multilingual storefront requirements.

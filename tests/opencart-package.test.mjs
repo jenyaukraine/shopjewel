@@ -330,7 +330,7 @@ test("all six sales-readiness promises are implemented and release-checked", asy
   const manifest = JSON.parse(manifestSource);
   const feed = JSON.parse(feedSource);
 
-  assert.equal(manifest.version, "2.3.0");
+  assert.equal(manifest.version, "2.4.0");
   assert.equal(feed.version, manifest.version);
   assert.deepEqual(feed.opencart.tested, ["4.0.2.3", "4.1.0.3"]);
   assert.match(admin, /version_compare\(VERSION, '4\.0\.2\.3', '<'\)/);
