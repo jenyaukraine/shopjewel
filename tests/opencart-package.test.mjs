@@ -62,8 +62,8 @@ test("mobile categories are deduplicated and use semantic jewellery icons", asyn
   assert.match(event, /\$category_names\s*=\s*\[\]/);
   assert.match(event, /mb_strtolower/);
   assert.match(event, /'icon'\s*=>\s*\$this->categoryIcon\(\$name\)/);
-  assert.match(event, /noveraile\.css\?v=2\.3\.0\.1/);
-  assert.match(event, /noveraile\.js\?v=2\.3\.0\.1/);
+  assert.match(event, /noveraile\.css\?v=2\.4\.0\.0/);
+  assert.match(event, /noveraile\.js\?v=2\.4\.0\.0/);
   assert.match(header, /class="mobile-category-icon"/);
   assert.match(header, /category\.icon == 'earring'/);
   assert.match(header, /class="mobile-main-icon"/);
@@ -229,7 +229,7 @@ test("all six sales-readiness promises are implemented and release-checked", asy
   const manifest = JSON.parse(manifestSource);
   const feed = JSON.parse(feedSource);
 
-  assert.equal(manifest.version, "2.3.0");
+  assert.equal(manifest.version, "2.4.0");
   assert.equal(feed.version, manifest.version);
   assert.deepEqual(feed.opencart.tested, ["4.0.2.3", "4.1.0.3"]);
   assert.match(admin, /version_compare\(VERSION, '4\.0\.2\.3', '<'\)/);
@@ -365,7 +365,7 @@ test("6 Moments storefront requirements remain wired into the package", async ()
   assert.match(installer, /'stone_quality'\s*=>/);
   assert.doesNotMatch(catalogController, /'metal'\s*=>\s*\[[^\]]*'platinum'/);
   assert.doesNotMatch(catalogController, /'fineness'\s*=>\s*\[[^\]]*'950'/);
-  assert.match(catalogController, /\['round','princess','marquise','baguette','cushion','heart','oval'\]/);
+  assert.match(catalogController, /getFilterOptions\('stone_shape'|'stone_shapes' => \['filter' => 'stone_shape'/);
   assert.doesNotMatch(catalogTemplate, /value="(?:platinum|950)"/);
   assert.match(catalogTemplate, /name="stone_quality"/);
   assert.match(language, /six_contact'\]\s*=\s*'Personal consultation'/);
@@ -373,4 +373,149 @@ test("6 Moments storefront requirements remain wired into the package", async ()
   assert.match(contact, /six_whatsapp/);
   assert.equal((faq.match(/<details/g) ?? []).length, 15);
   assert.match(language, /six_faq_worldwide_q'\]\s*=\s*'Do you ship worldwide\?'/);
+});
+
+test("supplier feed import turns article rows into products with media and exact prices", async () => {
+  const [model, controller, template, language, installer, buildScript] = await Promise.all([
+    readFile(path.join(root, "admin/model/module/feed.php"), "utf8"),
+    readFile(path.join(root, "admin/controller/module/feed.php"), "utf8"),
+    readFile(path.join(root, "admin/view/template/module/noveraile.twig"), "utf8"),
+    readFile(path.join(root, "admin/language/en-gb/module/noveraile.php"), "utf8"),
+    readFile(path.join(root, "admin/model/module/noveraile.php"), "utf8"),
+    readFile(path.resolve("tools/build-opencart-release.ps1"), "utf8"),
+  ]);
+
+  // Rows are keyed by article, and the price comes from priceShowroom.
+  assert.match(model, /\$groups\[\$articul\]\[\]/);
+  assert.match(model, /'price' => \$this->positiveDecimal\(\$row\['priceshowroom'\]/);
+
+  // priceShowroom is not additively separable across caratage and quality, so
+  // the matrix has to live in one option with an exact adjustment per value.
+  assert.match(model, /private function comboOption\(\): array/);
+  assert.match(model, /\$adjustment = round\(\(float\)\$row\['price'\] - \$base, 4\);/);
+  assert.doesNotMatch(model, /CARATAGE_ORDER as \$caratage[\s\S]{0,400}addOption/);
+
+  // Media is downloaded once per URL and reused across runs.
+  assert.match(model, /noveraile_feed_media/);
+  assert.match(model, /SELECT `path` FROM `" \. DB_PREFIX \. "noveraile_feed_media` WHERE `url_hash`/);
+  assert.match(model, /getimagesizefromstring/);
+
+  // Batched processing with a queue, plus resume and cancel from the admin.
+  assert.match(model, /public function queue\(string \$path, string \$filename\): array/);
+  assert.match(model, /public function process\(int \$run_id, int \$limit\): array/);
+  assert.match(controller, /public function (upload|process|status|cancel|failures)\(\): void/);
+  assert.match(template, /id="button-feed-import"/);
+  assert.match(template, /feed-progress-bar/);
+  assert.match(template, /\{\{ feed_process \}\}/);
+
+  // Articles missing from a feed are disabled, never deleted.
+  assert.match(model, /SET `status` = '0', `date_modified` = NOW\(\) WHERE `product_id`/);
+  assert.doesNotMatch(model, /deleteProduct/);
+
+  // Descriptions are generated for every installed language.
+  assert.match(model, /public const LANGUAGES = \['en-gb', 'de-de', 'cs-cz', 'ru-ru', 'uk-ua'\]/);
+  // Every kind in the supplier taxonomy needs a name in all five languages,
+  // otherwise a product falls back to English on a translated storefront.
+  const kindsBlock = model.match(/private const KINDS = \[([\s\S]*?)\n    \];/)?.[1] ?? "";
+  const kinds = [...kindsBlock.matchAll(/'([A-Z_]+)' => \[([^\]]+)\]/g)];
+  assert.equal(kinds.length, 16);
+  for (const [, key, values] of kinds) {
+    assert.equal((values.match(/'/g) ?? []).length / 2, 5, `${key} must name all five languages`);
+  }
+
+  assert.match(installer, /model_extension_noveraile_module_feed->install\(\)/);
+  assert.match(installer, /'extension\/noveraile\/module\/noveraile', 'extension\/noveraile\/module\/feed'/);
+  assert.match(language, /text_feed_title/);
+  assert.match(buildScript, /admin\\model\\module\\feed\.php/);
+});
+
+test("catalog filters are built from stock, not hard-coded lists", async () => {
+  const [model, controller, template] = await Promise.all([
+    readFile(path.join(root, "catalog/model/catalog.php"), "utf8"),
+    readFile(path.join(root, "catalog/controller/page/catalog.php"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/page/catalog.twig"), "utf8"),
+  ]);
+
+  assert.match(model, /public function getFilterOptions\(string \$key, array \$facet\): array/);
+  assert.match(model, /MULTI_VALUE_ATTRIBUTES = \['fineness', 'stone_quality', 'stone_origin'\]/);
+  assert.match(model, /FIND_IN_SET/);
+  assert.match(model, /'pear' => \['Pear'/);
+  assert.doesNotMatch(model, /'platinum' =>/);
+
+  // Metal, fineness and origin panels loop over facet data instead of literals.
+  for (const field of ["metal", "fineness", "stone"]) {
+    assert.match(template, new RegExp(`name="${field}" value="\\{\\{ item.value \\}\\}"`));
+  }
+  assert.doesNotMatch(template, /value="(?:platinum|950|585|750)"/);
+  assert.match(controller, /'metal' => array_column\(\$data\['metals'\], 'value'\)/);
+});
+
+test("shipping quotes are destination based and headings carry no trailing dot", async () => {
+  const [tier, dhl, dpd, installer, ...languages] = await Promise.all([
+    readFile(path.join(root, "catalog/model/shipping/tier.php"), "utf8"),
+    readFile(path.join(root, "catalog/model/shipping/dhl.php"), "utf8"),
+    readFile(path.join(root, "catalog/model/shipping/dpd.php"), "utf8"),
+    readFile(path.join(root, "admin/model/module/noveraile.php"), "utf8"),
+    ...["en-gb", "de-de", "cs-cz", "ru-ru", "uk-ua"].map((code) =>
+      readFile(path.join(root, `catalog/language/${code}/module/noveraile.php`), "utf8")
+    ),
+  ]);
+
+  assert.match(tier, /public function resolve\(string \$carrier, array \$address\): array/);
+  assert.match(dhl, /model_extension_noveraile_shipping_tier->resolve\('dhl'/);
+  assert.match(dpd, /model_extension_noveraile_shipping_tier->resolve\('dpd'/);
+
+  // Ukraine 1-3 days, the EU 3-7, DHL Express everywhere else.
+  assert.match(installer, /'days_min' => 1, 'days_max' => 3/);
+  assert.match(installer, /'days_min' => 3, 'days_max' => 7/);
+  assert.match(installer, /'days_min' => 5, 'days_max' => 10/);
+  assert.match(installer, /6 Moments · European Union/);
+
+  for (const language of languages) {
+    const headings = [...language.matchAll(/\$_\['([a-z0-9_]+_(?:title|heading|headline|kicker|eyebrow))'\]\s*=\s*'((?:[^'\\]|\\.)*)'/g)];
+    assert.ok(headings.length > 10);
+    const withDot = headings.filter(([, , value]) => /[^.]\.$/.test(value)).map(([, key]) => key);
+    assert.deepEqual(withDot, []);
+  }
+});
+
+test("the shop logo replaces the wordmark in the header and footer", async () => {
+  const [header, footer, theme, template, installer] = await Promise.all([
+    readFile(path.join(root, "catalog/view/template/common/header.twig"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/common/footer.twig"), "utf8"),
+    readFile(path.join(root, "catalog/controller/event/theme.php"), "utf8"),
+    readFile(path.join(root, "admin/view/template/module/noveraile.twig"), "utf8"),
+    readFile(path.join(root, "admin/model/module/noveraile.php"), "utf8"),
+  ]);
+
+  for (const markup of [header, footer]) {
+    assert.match(markup, /\{% if six_logo %\}<img src="\{\{ six_logo \}\}"/);
+    assert.match(markup, /\{% else %\}\{\{ six_brand_name \}\}\{% endif %\}/);
+  }
+  assert.match(theme, /private function brandLogo\(\): string/);
+  assert.match(theme, /is_file\(DIR_IMAGE \. \$relative\)/);
+  assert.match(template, /name="module_noveraile_logo"/);
+  assert.match(installer, /'module_noveraile_logo' => ''/);
+});
+
+test("every storefront string is translated in all five languages", async () => {
+  const codes = ["en-gb", "de-de", "cs-cz", "ru-ru", "uk-ua"];
+  const sources = await Promise.all(
+    codes.map((code) => readFile(path.join(root, `catalog/language/${code}/module/noveraile.php`), "utf8"))
+  );
+
+  const keysOf = (source) => [...source.matchAll(/\$_\['(six_[a-z0-9_]+)'\]\s*=/g)].map((m) => m[1]);
+  const english = keysOf(sources[0]);
+  assert.ok(english.length > 350);
+
+  codes.forEach((code, index) => {
+    const keys = keysOf(sources[index]);
+    // A repeated key means an earlier value is silently shadowed.
+    const duplicated = [...new Set(keys.filter((key, at) => keys.indexOf(key) !== at))];
+    assert.deepEqual(duplicated, [], `${code} defines a key twice`);
+
+    // A missing key falls back to English and shows untranslated copy.
+    const missing = english.filter((key) => !keys.includes(key));
+    assert.deepEqual(missing, [], `${code} is missing translations`);
+  });
 });

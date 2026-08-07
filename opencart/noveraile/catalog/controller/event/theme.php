@@ -28,6 +28,20 @@ class Theme extends \Opencart\System\Engine\Controller {
             if (str_starts_with($key, 'six_')) $data[$key] = is_string($value) ? str_replace(['NOVERAILE', 'Six Moments'], $brand, $value) : $value;
         }
         $data['six_brand_name'] = $brand;
+        $data['six_logo'] = $this->brandLogo();
+    }
+
+    /**
+     * Resolve the configured shop logo to a URL. An unset or missing file falls
+     * back to the typographic wordmark, so the header never breaks.
+     */
+    private function brandLogo(): string {
+        $logo = trim((string)$this->config->get('module_noveraile_logo'));
+        if ($logo === '' || str_contains($logo, '..') || str_starts_with($logo, '/')) return '';
+        $relative = html_entity_decode($logo, ENT_QUOTES, 'UTF-8');
+        if (!is_file(DIR_IMAGE . $relative)) return '';
+
+        return rtrim(HTTP_SERVER, '/') . '/image/' . str_replace('%2F', '/', rawurlencode($relative));
     }
 
     public function header(string &$route, array &$data, string &$code = '', string &$output = ''): void {
@@ -39,8 +53,8 @@ class Theme extends \Opencart\System\Engine\Controller {
             $data['title'] = $data['six_brand_name'];
         }
 
-        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.3.0.1';
-        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.3.0.1';
+        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.4.0.0';
+        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.4.0.0';
         $data['six_favicon'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/favicon.svg?v=2';
         $data['six_og_image'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/og-store.png';
         $data['six_native_menu_status'] = (bool)$this->config->get('module_noveraile_native_menu_status');
@@ -149,7 +163,7 @@ class Theme extends \Opencart\System\Engine\Controller {
     public function footer(string &$route, array &$data, string &$code = '', string &$output = ''): void {
         if (!$this->enabled() || !$this->claimView($route, ['common/footer'], 'extension/noveraile/common/footer')) return;
         $this->words($data);
-        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.3.0.1';
+        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.4.0.0';
         $lang = 'language=' . $this->config->get('config_language');
         $data['six_home'] = $this->url->link('common/home', $lang);
         $data['six_about_url'] = $this->url->link('extension/noveraile/page/about', $lang);

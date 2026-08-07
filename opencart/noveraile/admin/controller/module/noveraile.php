@@ -2,7 +2,7 @@
 namespace Opencart\Admin\Controller\Extension\Noveraile\Module;
 
 class Noveraile extends \Opencart\System\Engine\Controller {
-    private const VERSION = '2.3.0';
+    private const VERSION = '2.4.0';
     private const CATALOG_HEADERS = [
         'product_id', 'model', 'sku', 'language_code', 'name', 'description', 'meta_title',
         'meta_description', 'meta_keyword', 'tag', 'price', 'quantity', 'status',
@@ -25,6 +25,12 @@ class Noveraile extends \Opencart\System\Engine\Controller {
         $data['catalog_export'] = $this->url->link('extension/noveraile/module/noveraile.exportProducts', 'user_token=' . $this->session->data['user_token']);
         $data['catalog_template'] = $this->url->link('extension/noveraile/module/noveraile.downloadCatalogTemplate', 'user_token=' . $this->session->data['user_token']);
         $data['install_demo'] = $this->url->link('extension/noveraile/module/noveraile.installDemo', 'user_token=' . $this->session->data['user_token']);
+        foreach (['upload', 'process', 'status', 'cancel', 'failures'] as $action) {
+            $data['feed_' . $action] = $this->url->link('extension/noveraile/module/feed.' . $action, 'user_token=' . $this->session->data['user_token']);
+        }
+        $this->load->model('extension/noveraile/module/feed');
+        $data['feed_run'] = $this->model_extension_noveraile_module_feed->getLatestRun();
+        $data['geo_zones'] = $this->db->query("SELECT `geo_zone_id`, `name` FROM `" . DB_PREFIX . "geo_zone` ORDER BY `name`")->rows;
         $data['ai_generate'] = $this->url->link('extension/noveraile/module/noveraile.aiGenerate', 'user_token=' . $this->session->data['user_token']);
         $data['ai_apply'] = $this->url->link('extension/noveraile/module/noveraile.aiApply', 'user_token=' . $this->session->data['user_token']);
         $data['back'] = $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=module');
@@ -38,7 +44,7 @@ class Noveraile extends \Opencart\System\Engine\Controller {
         unset($this->session->data['success'], $this->session->data['error_warning']);
 
         $keys = [
-            'module_noveraile_status', 'module_noveraile_brand_name', 'module_noveraile_instagram', 'module_noveraile_email',
+            'module_noveraile_status', 'module_noveraile_brand_name', 'module_noveraile_logo', 'module_noveraile_instagram', 'module_noveraile_email',
             'module_noveraile_phone', 'module_noveraile_whatsapp', 'module_noveraile_telegram', 'module_noveraile_facebook',
             'module_noveraile_legal_name', 'module_noveraile_legal_form',
             'module_noveraile_legal_representative', 'module_noveraile_legal_address',
@@ -55,13 +61,22 @@ class Noveraile extends \Opencart\System\Engine\Controller {
             'module_noveraile_blog_route',
             'module_noveraile_native_menu_status',
             'payment_stripe_secret_key', 'payment_stripe_webhook_secret',
-            'payment_stripe_status', 'shipping_dhl_cost', 'shipping_dpd_cost'
+            'payment_stripe_status', 'shipping_dhl_cost', 'shipping_dpd_cost',
+            'shipping_dhl_tiers', 'shipping_dpd_tiers'
         ];
 
         foreach ($keys as $key) {
             $data[$key] = $this->config->get($key);
         }
         $data['module_noveraile_blog_route'] = $data['module_noveraile_blog_route'] ?: 'cms/blog';
+
+        // Standard OpenCart image picker: a stored relative path plus a thumb.
+        $this->load->model('tool/image');
+        $logo = (string)$data['module_noveraile_logo'];
+        $data['logo_thumb'] = $logo !== '' && is_file(DIR_IMAGE . html_entity_decode($logo, ENT_QUOTES, 'UTF-8'))
+            ? $this->model_tool_image->resize($logo, 200, 60)
+            : $this->model_tool_image->resize('no_image.png', 200, 60);
+        $data['logo_placeholder'] = $this->model_tool_image->resize('no_image.png', 200, 60);
 
         $data['module_noveraile_ai_api_key'] = '';
         $data['ai_key_configured'] = (bool)$this->config->get('module_noveraile_ai_api_key');
@@ -110,6 +125,28 @@ class Noveraile extends \Opencart\System\Engine\Controller {
             $json['error'] = $this->language->get('error_builder_json');
         } else {
             $this->request->post['module_noveraile_page_builder'] = json_encode($builder, JSON_UNESCAPED_SLASHES);
+        }
+
+        // Shipping tiers arrive as JSON in a textarea and are normalised the
+        // same way as the other structured settings on this page.
+        foreach (['shipping_dhl_tiers', 'shipping_dpd_tiers'] as $key) {
+            if (!isset($this->request->post[$key])) continue;
+            $tiers = json_decode(htmlspecialchars_decode((string)$this->request->post[$key], ENT_COMPAT), true);
+            if (!is_array($tiers)) {
+                $json['error'] = $this->language->get('error_shipping_tiers');
+                continue;
+            }
+            $normalized = [];
+            foreach ($tiers as $tier) {
+                if (!is_array($tier)) continue;
+                $normalized[] = [
+                    'geo_zone_id' => max(0, (int)($tier['geo_zone_id'] ?? 0)),
+                    'cost' => max(0.0, (float)($tier['cost'] ?? 0)),
+                    'days_min' => max(0, (int)($tier['days_min'] ?? 0)),
+                    'days_max' => max(0, (int)($tier['days_max'] ?? 0))
+                ];
+            }
+            $this->request->post[$key] = json_encode($normalized, JSON_UNESCAPED_SLASHES);
         }
 
         $blog_route = trim((string)($this->request->post['module_noveraile_blog_route'] ?? 'cms/blog'));

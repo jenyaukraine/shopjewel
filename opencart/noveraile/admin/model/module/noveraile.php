@@ -10,6 +10,9 @@ class Noveraile extends \Opencart\System\Engine\Model {
         $this->db->query("CREATE TABLE IF NOT EXISTS `" . DB_PREFIX . "noveraile_subscriber` (`subscriber_id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `email` VARCHAR(190) NOT NULL, `language_code` VARCHAR(16) NOT NULL, `consent` TINYINT(1) NOT NULL DEFAULT 1, `date_added` DATETIME NOT NULL, PRIMARY KEY (`subscriber_id`), UNIQUE KEY `email` (`email`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
         $this->db->query("CREATE TABLE IF NOT EXISTS `" . DB_PREFIX . "noveraile_hint` (`hint_id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `product_id` INT UNSIGNED NOT NULL, `sender_name` VARCHAR(96) NOT NULL, `sender_email` VARCHAR(190) NOT NULL, `recipient_name` VARCHAR(96) NOT NULL, `recipient_email` VARCHAR(190) NOT NULL, `message` TEXT NOT NULL, `language_code` VARCHAR(16) NOT NULL, `date_added` DATETIME NOT NULL, PRIMARY KEY (`hint_id`), KEY `product_id` (`product_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
+        $this->load->model('extension/noveraile/module/feed');
+        $this->model_extension_noveraile_module_feed->install();
+
         $this->installPackageRegistration();
         $this->installEvents();
         $this->installServiceExtensions();
@@ -35,9 +38,9 @@ class Noveraile extends \Opencart\System\Engine\Model {
         $installed = $this->db->query("SELECT `extension_install_id` FROM `" . DB_PREFIX . "extension_install` WHERE `code` = 'noveraile' LIMIT 1");
 
         if (!$installed->num_rows) {
-            $this->db->query("INSERT INTO `" . DB_PREFIX . "extension_install` SET `extension_id` = '0', `extension_download_id` = '0', `name` = 'NOVERAILE Commerce Suite', `description` = 'OpenCart 4 storefront suite with Page Builder, catalog import/export, Mega Menu, progressive filters, checkout and reviewed AI tools', `code` = 'noveraile', `version` = '2.3.0', `author` = 'NOVERAILE', `link` = '', `status` = '1', `date_added` = NOW()");
+            $this->db->query("INSERT INTO `" . DB_PREFIX . "extension_install` SET `extension_id` = '0', `extension_download_id` = '0', `name` = 'NOVERAILE Commerce Suite', `description` = 'OpenCart 4 storefront suite with Page Builder, catalog import/export, Mega Menu, progressive filters, checkout and reviewed AI tools', `code` = 'noveraile', `version` = '2.4.0', `author` = 'NOVERAILE', `link` = '', `status` = '1', `date_added` = NOW()");
         } else {
-            $this->db->query("UPDATE `" . DB_PREFIX . "extension_install` SET `name` = 'NOVERAILE Commerce Suite', `version` = '2.3.0', `status` = '1' WHERE `extension_install_id` = '" . (int)$installed->row['extension_install_id'] . "'");
+            $this->db->query("UPDATE `" . DB_PREFIX . "extension_install` SET `name` = 'NOVERAILE Commerce Suite', `version` = '2.4.0', `status` = '1' WHERE `extension_install_id` = '" . (int)$installed->row['extension_install_id'] . "'");
         }
     }
 
@@ -123,6 +126,7 @@ class Noveraile extends \Opencart\System\Engine\Model {
         $defaults = [
             'module_noveraile_status' => (int)$enable_storefront,
             'module_noveraile_brand_name' => in_array(trim((string)$this->config->get('config_name')), ['', 'Your Store'], true) ? '6 Moments' : (string)$this->config->get('config_name'),
+            'module_noveraile_logo' => '',
             'module_noveraile_instagram' => 'https://www.instagram.com/6moments_jewelry?igsh=MTdnaHg4eWo0YzlrNQ==',
             'module_noveraile_email' => '6moments.jewelry@gmail.com',
             'module_noveraile_phone' => '+49 170 7647729',
@@ -142,6 +146,8 @@ class Noveraile extends \Opencart\System\Engine\Model {
             'module_noveraile_retention_periods' => '',
             'module_noveraile_catalog_category_id' => 0,
             'module_noveraile_lab_category_id' => 0,
+            // Filled by the supplier feed importer with the shared gold/quality option.
+            'module_noveraile_feed_option' => '',
             'module_noveraile_page_builder' => json_encode([
                 ['id' => 'hero', 'enabled' => 1], ['id' => 'featured', 'enabled' => 1],
                 ['id' => 'benefits', 'enabled' => 1], ['id' => 'categories', 'enabled' => 1],
@@ -213,17 +219,63 @@ class Noveraile extends \Opencart\System\Engine\Model {
             'payment_stripe_order_status_id' => (int)($this->config->get('payment_noveraile_stripe_order_status_id') ?: (((array)$this->config->get('config_processing_status'))[0] ?? 0)),
             'payment_stripe_sort_order' => 1
         ]);
+        // Destination tiers from the launch brief: Ukraine 1–3 days at 15,
+        // the European Union 3–7 days, and DHL Express everywhere else at 25.
+        $zones = $this->installShippingZones();
         $this->installDefaultSettings('shipping_dhl', [
             'shipping_dhl_status' => 0, 'shipping_dhl_cost' => 25, 'shipping_dhl_tax_class_id' => 0,
-            'shipping_dhl_geo_zone_id' => 0, 'shipping_dhl_sort_order' => 1
+            'shipping_dhl_geo_zone_id' => 0, 'shipping_dhl_sort_order' => 1,
+            'shipping_dhl_tiers' => json_encode([
+                ['geo_zone_id' => $zones['eu'], 'cost' => 25, 'days_min' => 3, 'days_max' => 7],
+                ['geo_zone_id' => 0, 'cost' => 25, 'days_min' => 5, 'days_max' => 10]
+            ])
         ]);
         $this->installDefaultSettings('shipping_dpd', [
             'shipping_dpd_status' => 0, 'shipping_dpd_cost' => 15, 'shipping_dpd_tax_class_id' => 0,
-            'shipping_dpd_geo_zone_id' => 0, 'shipping_dpd_sort_order' => 2
+            'shipping_dpd_geo_zone_id' => 0, 'shipping_dpd_sort_order' => 2,
+            'shipping_dpd_tiers' => json_encode([
+                ['geo_zone_id' => $zones['ua'], 'cost' => 15, 'days_min' => 1, 'days_max' => 3],
+                ['geo_zone_id' => $zones['eu'], 'cost' => 15, 'days_min' => 3, 'days_max' => 7]
+            ])
         ]);
         $this->installDefaultSettings('total_bundle', [
             'total_bundle_status' => 1, 'total_bundle_sort_order' => 4
         ]);
+    }
+
+    /**
+     * Ensure the two geo zones the shipping tiers reference exist. Countries
+     * are matched by ISO code so the zones stay correct on any OpenCart
+     * localisation, and existing zones are reused rather than duplicated.
+     */
+    private function installShippingZones(): array {
+        $zones = [
+            'ua' => ['name' => '6 Moments · Ukraine', 'countries' => ['UA']],
+            'eu' => ['name' => '6 Moments · European Union', 'countries' => [
+                'AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT',
+                'LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE'
+            ]]
+        ];
+
+        $ids = [];
+        foreach ($zones as $key => $zone) {
+            $existing = $this->db->query("SELECT `geo_zone_id` FROM `" . DB_PREFIX . "geo_zone` WHERE `name` = '" . $this->db->escape($zone['name']) . "' LIMIT 1");
+            if ($existing->num_rows) {
+                $ids[$key] = (int)$existing->row['geo_zone_id'];
+                continue;
+            }
+
+            $this->db->query("INSERT INTO `" . DB_PREFIX . "geo_zone` SET `name` = '" . $this->db->escape($zone['name']) . "', `description` = 'Created by the NOVERAILE suite for 6 Moments shipping tiers.', `date_added` = NOW(), `date_modified` = NOW()");
+            $geo_zone_id = (int)$this->db->getLastId();
+            $ids[$key] = $geo_zone_id;
+
+            $codes = implode("','", array_map([$this->db, 'escape'], $zone['countries']));
+            foreach ($this->db->query("SELECT `country_id` FROM `" . DB_PREFIX . "country` WHERE `iso_code_2` IN ('" . $codes . "')")->rows as $country) {
+                $this->db->query("INSERT INTO `" . DB_PREFIX . "zone_to_geo_zone` SET `country_id` = '" . (int)$country['country_id'] . "', `zone_id` = '0', `geo_zone_id` = '" . $geo_zone_id . "', `date_added` = NOW(), `date_modified` = NOW()");
+            }
+        }
+
+        return $ids;
     }
 
     private function refreshProjectSettings(): void {
@@ -493,7 +545,7 @@ class Noveraile extends \Opencart\System\Engine\Model {
     }
 
     private function installPermissions(): void {
-        $route = 'extension/noveraile/module/noveraile';
+        $routes = ['extension/noveraile/module/noveraile', 'extension/noveraile/module/feed'];
         $group = $this->db->query("SELECT `user_group_id`, `permission` FROM `" . DB_PREFIX . "user_group` WHERE `user_group_id` = '1' LIMIT 1");
         if (!$group->num_rows) return;
 
@@ -501,7 +553,9 @@ class Noveraile extends \Opencart\System\Engine\Model {
         if (!is_array($permission)) $permission = [];
         foreach (['access', 'modify'] as $type) {
             if (!isset($permission[$type]) || !is_array($permission[$type])) $permission[$type] = [];
-            if (!in_array($route, $permission[$type], true)) $permission[$type][] = $route;
+            foreach ($routes as $route) {
+                if (!in_array($route, $permission[$type], true)) $permission[$type][] = $route;
+            }
         }
 
         $this->db->query("UPDATE `" . DB_PREFIX . "user_group` SET `permission` = '" . $this->db->escape(json_encode($permission, JSON_UNESCAPED_SLASHES)) . "' WHERE `user_group_id` = '" . (int)$group->row['user_group_id'] . "'");

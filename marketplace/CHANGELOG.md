@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.4.0 — 2026-08-06
+
+- Supplier feed import: upload the CSV your supplier sends, and the suite turns repeated article rows into products with images, exact per-combination prices and five-language descriptions.
+- Imports run in batches with live progress, resume and a failure report, so large feeds and thousands of images do not time out.
+- Filter panels are built from the catalog, so options nobody stocks disappear on their own.
+- Destination-based DHL and DPD rates with delivery windows.
+- Shop logo setting for the header and footer.
+
 ## 2.3.0 — 2026-08-01
 
 - Completed the 6 Moments multilingual storefront requirements.

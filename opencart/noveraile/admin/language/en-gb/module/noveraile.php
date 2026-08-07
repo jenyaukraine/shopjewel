@@ -150,3 +150,40 @@ $_['error_ai_endpoint'] = 'The AI endpoint must use HTTPS and resolve only to pu
 $_['error_ai_network'] = 'The AI provider could not complete the request.';
 $_['error_ai_response'] = 'The AI provider returned an invalid structured response. Try again.';
 $_['error_ai_empty'] = 'There is no generated content to apply.';
+
+$_['entry_logo'] = 'Shop logo';
+$_['help_logo'] = 'Shown in the header and footer instead of the typographic wordmark. Upload an SVG or a transparent PNG at least 360 px wide; leave empty to keep the wordmark.';
+
+// Destination-based shipping
+$_['text_geo_zones'] = 'Geo zone IDs available in this store';
+$_['entry_dhl_tiers'] = 'DHL rate tiers';
+$_['entry_dpd_tiers'] = 'DPD rate tiers';
+$_['help_shipping_tiers'] = 'One JSON object per destination, checked in order. The first tier whose geo zone contains the delivery address wins; a geo_zone_id of 0 matches everywhere and is how "rest of the world" is expressed. Leave a carrier without a matching tier and it will not be offered for that destination. Example: [{"geo_zone_id":3,"cost":15,"days_min":1,"days_max":3}]';
+$_['help_shipping_fallback'] = 'Used only when the tier table below is empty.';
+$_['error_shipping_tiers'] = 'The shipping rate tiers must be a valid JSON array.';
+
+// Supplier feed import
+$_['text_feed'] = 'Supplier feed';
+$_['text_feed_title'] = 'Import the supplier feed';
+$_['text_feed_help'] = 'Upload the supplier CSV exactly as delivered. Rows are grouped by article number, so one article with fifteen gold and diamond-quality combinations becomes one product with one price per combination. Images are downloaded from the supplier and stored in this shop.';
+$_['text_feed_drop'] = 'Drop the supplier CSV here';
+$_['text_feed_browse'] = 'or click to choose a file (max 48 MB)';
+$_['text_feed_notice'] = 'Importing runs in the background in small batches. Keep this tab open until it finishes; you can close it and resume later without losing progress.';
+$_['text_feed_queued'] = 'Queued %d articles from %d feed rows. Importing now.';
+$_['text_feed_cancelled'] = 'The import run was cancelled.';
+$_['text_feed_progress'] = 'Imported %s of %s articles';
+$_['text_feed_done'] = 'Import finished: %s created, %s updated, %s failed, %s images stored, %s discontinued and demo products disabled.';
+$_['text_feed_created'] = 'Created';
+$_['text_feed_updated'] = 'Updated';
+$_['text_feed_failed'] = 'Failed';
+$_['text_feed_images'] = 'Images';
+$_['text_feed_retired'] = 'Disabled';
+$_['text_feed_last_run'] = 'Last import';
+$_['text_feed_idle'] = 'No supplier feed has been imported yet.';
+$_['text_feed_failures'] = 'Articles that could not be imported';
+$_['button_feed_import'] = 'Upload and import';
+$_['button_feed_cancel'] = 'Stop';
+$_['button_feed_resume'] = 'Resume';
+$_['error_feed_upload'] = 'Choose the supplier CSV and make sure the upload completed.';
+$_['error_feed_file'] = 'The supplier feed must use the .csv extension.';
+$_['error_feed_size'] = 'The supplier feed is larger than the 48 MB limit.';

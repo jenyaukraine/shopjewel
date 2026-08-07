@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.4.0 — 2026-08-06
+
+- Added a supplier feed importer that groups the article-per-combination CSV into products, generates five-language catalogue copy from the structured columns, and downloads the supplier images into the shop.
+- Priced every gold caratage and diamond quality combination exactly through one combined product option, because the supplier's showroom prices are not additively separable across the two axes.
+- Made the import run in batches from the admin with live progress, resume, cancel and a per-article failure report, so a 10 MB feed with thousands of images never depends on a single request.
+- Retired articles that disappear from a feed by disabling them instead of deleting, keeping their orders, reviews and URLs intact.
+- Built the metal, fineness, origin, cut, quality and style filters from what the catalog actually contains, so unstocked options such as platinum and 950 gold cannot appear.
+- Added destination-based DHL and DPD rate tiers with delivery windows for Ukraine, the European Union and the rest of the world.
+- Added a shop logo setting used by the header and footer, falling back to the typographic wordmark.
+- Removed the trailing full stops from storefront headings in all five languages.
+
 ## 2.3.0 — 2026-08-01
 
 - Completed the 6 Moments brand migration, multilingual static content and browser-language selection.

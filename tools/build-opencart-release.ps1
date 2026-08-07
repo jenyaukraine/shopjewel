@@ -17,7 +17,10 @@ $requiredFiles = @(
     'admin\language\en-gb\module\noveraile.php',
     'admin\view\template\module\noveraile.twig',
     'catalog\controller\event\theme.php',
-    'catalog\view\stylesheet\noveraile.css'
+    'catalog\view\stylesheet\noveraile.css',
+    'admin\controller\module\feed.php',
+    'admin\model\module\feed.php',
+    'catalog\model\shipping\tier.php'
 )
 foreach ($relativePath in $requiredFiles) {
     if (-not (Test-Path -LiteralPath (Join-Path $extensionRoot $relativePath) -PathType Leaf)) { throw "Required extension file is missing: $relativePath" }

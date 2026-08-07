@@ -314,6 +314,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .mega-menu-promo b { position: absolute; right: 25px; bottom: 25px; font: 18px/1 var(--sans); transition: transform .2s ease; }
 .mega-menu-promo:hover b { transform: translate(3px,-3px); }
 .wordmark { justify-self: start; font: 600 25px/1 var(--serif); letter-spacing: .18em; }
+.wordmark--image { display: inline-flex; align-items: center; letter-spacing: 0; }
+.wordmark--image img { width: auto; height: 34px; max-width: 220px; object-fit: contain; }
+.wordmark--footer.wordmark--image img { height: 40px; }
 .desktop-nav { display: flex; align-items: center; justify-content: center; gap: 34px; }
 .desktop-nav > .desktop-nav-link,.mega-menu-shell > .desktop-nav-link,.header-actions a,.bag { position: relative; border: 0; background: transparent; font-size: 10px; letter-spacing: .13em; text-transform: uppercase; }
 .desktop-nav > .desktop-nav-link::after,.mega-menu-shell > .desktop-nav-link::after { content: ""; position: absolute; right: 0; bottom: 29px; left: 0; border-top: 1px solid transparent; }

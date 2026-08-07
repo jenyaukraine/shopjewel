@@ -9,12 +9,29 @@ class Catalog extends \Opencart\System\Engine\Controller {
         $data = $this->language->all();
         $data['six_brand_name'] = $brand;
 
+        // The metal, fineness, origin, cut, quality and style panels are built
+        // from what the catalog actually contains, so nothing the shop does not
+        // stock — platinum, 950 gold — can appear, and a fineness the supplier
+        // starts offering shows up without a code change.
+        $this->load->model('extension/noveraile/catalog');
+        $facets = $this->model_extension_noveraile_catalog->getAttributeFacets();
+        $panels = [
+            'metals' => ['filter' => 'metal', 'facet' => 'metal'],
+            'finenesses' => ['filter' => 'fineness', 'facet' => 'fineness'],
+            'stones' => ['filter' => 'stone', 'facet' => 'stone_origin'],
+            'stone_shapes' => ['filter' => 'stone_shape', 'facet' => 'stone_shape']
+        ];
+        foreach ($panels as $data_key => $panel) {
+            $data[$data_key] = $this->model_extension_noveraile_catalog->getFilterOptions($panel['filter'], $facets[$panel['facet']] ?? []);
+        }
+        $data['six_fineness_karat'] = ['375' => '9K', '585' => '14K', '750' => '18K'];
+
         $allowed = [
             'type' => ['rings','earrings','necklaces','bracelets','wedding'],
             'moment' => ['engagement','wedding','motherhood','career','self-purchase','milestone'],
-            'metal' => ['white-gold','yellow-gold','rose-gold'],
-            'fineness' => ['585','750'],
-            'stone' => ['natural','lab-grown','no-stones'],
+            'metal' => array_column($data['metals'], 'value'),
+            'fineness' => array_column($data['finenesses'], 'value'),
+            'stone' => array_column($data['stones'], 'value'),
             'availability' => ['ready','preorder'],
             'delivery' => ['delivery-3','delivery-10'],
             'sort' => ['popular','price-asc','price-desc','newest','carat-asc','carat-desc','weight-asc','weight-desc','name-asc']
@@ -41,7 +58,6 @@ class Catalog extends \Opencart\System\Engine\Controller {
             $data[$key] = $value;
         }
 
-        $this->load->model('extension/noveraile/catalog');
         $price_bounds = $this->model_extension_noveraile_catalog->getPriceBounds();
         $data['price_floor'] = max(0, (int)floor($this->currency->convert($price_bounds['min'], $this->config->get('config_currency'), $selected_currency)));
         $data['price_ceiling'] = max($data['price_floor'] + 1, (int)ceil($this->currency->convert($price_bounds['max'], $this->config->get('config_currency'), $selected_currency)));
@@ -50,25 +66,11 @@ class Catalog extends \Opencart\System\Engine\Controller {
         if ($data['price_slider_min'] > $data['price_slider_max']) {
             $data['price_slider_min'] = $data['price_slider_max'];
         }
-        $facets = $this->model_extension_noveraile_catalog->getAttributeFacets();
         foreach (['gemstone' => 'gemstones', 'stone_quality' => 'stone_qualities', 'style' => 'styles'] as $key => $data_key) {
             $data[$data_key] = $facets[$key] ?? [];
             $values = array_column($data[$data_key], 'value');
             $value = trim((string)($this->request->get[$key] ?? ''));
             $filter[$key] = in_array($value, $values, true) ? $value : '';
-        }
-        $shape_facets = [];
-        foreach ($facets['stone_shape'] ?? [] as $facet) {
-            $shape_facets[mb_strtolower(trim((string)$facet['value']))] = (int)$facet['total'];
-        }
-        $data['stone_shapes'] = [];
-        foreach (['round','princess','marquise','baguette','cushion','heart','oval'] as $shape) {
-            $localized = (string)($data['six_shape_' . $shape] ?? ucfirst($shape));
-            $data['stone_shapes'][] = [
-                'value' => $shape,
-                'name' => $localized,
-                'total' => $shape_facets[mb_strtolower($localized)] ?? 0
-            ];
         }
         $shape = trim((string)($this->request->get['stone_shape'] ?? ''));
         $filter['stone_shape'] = in_array($shape, array_column($data['stone_shapes'], 'value'), true) ? $shape : '';

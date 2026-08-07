@@ -39,6 +39,7 @@
           <ul class="nav nav-tabs" role="tablist">
             <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-general" type="button">{{ text_general }}</button></li>
             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-catalog" type="button"><i class="fa-solid fa-arrows-rotate me-1"></i>{{ text_catalog }}</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-feed" type="button"><i class="fa-solid fa-truck-ramp-box me-1"></i>{{ text_feed }}</button></li>
             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-builder" type="button">{{ text_page_builder }}</button></li>
             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-navigation" type="button">{{ text_navigation }}</button></li>
             <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-ai" type="button">{{ text_ai_studio }}</button></li>
@@ -49,6 +50,7 @@
             <section class="tab-pane fade show active" id="tab-general">
               <div class="row mb-3"><label class="col-sm-3 col-form-label">{{ entry_status }}</label><div class="col-sm-9"><div class="form-check form-switch form-switch-lg"><input type="hidden" name="module_noveraile_status" value="0"><input class="form-check-input" type="checkbox" name="module_noveraile_status" value="1"{% if module_noveraile_status %} checked{% endif %}></div></div></div>
               <div class="row mb-3"><label class="col-sm-3 col-form-label">{{ entry_brand_name }}</label><div class="col-sm-9"><input class="form-control" name="module_noveraile_brand_name" value="{{ module_noveraile_brand_name }}" required><div class="form-text">{{ help_brand_name }}</div></div></div>
+              <div class="row mb-3"><label class="col-sm-3 col-form-label">{{ entry_logo }}</label><div class="col-sm-9"><div class="d-flex align-items-center gap-3"><a href="{{ logo_thumb }}" id="thumb-noveraile-logo" data-oc-toggle="image" data-oc-target="input-noveraile-logo" data-oc-thumb="thumb-noveraile-logo" data-oc-placeholder="{{ logo_placeholder }}" class="img-thumbnail"><img src="{{ logo_thumb }}" alt="" title="" id="noveraile-logo"></a><input type="hidden" name="module_noveraile_logo" value="{{ module_noveraile_logo }}" id="input-noveraile-logo"></div><div class="form-text">{{ help_logo }}</div></div></div>
               <div class="row mb-3"><label class="col-sm-3 col-form-label">{{ entry_instagram }}</label><div class="col-sm-9"><input class="form-control" type="url" name="module_noveraile_instagram" value="{{ module_noveraile_instagram }}"></div></div>
               <div class="row mb-3"><label class="col-sm-3 col-form-label">{{ entry_email }}</label><div class="col-sm-9"><input class="form-control" type="email" name="module_noveraile_email" value="{{ module_noveraile_email }}"></div></div>
               <div class="row mb-3"><label class="col-sm-3 col-form-label">{{ entry_phone }}</label><div class="col-sm-9"><input class="form-control" name="module_noveraile_phone" value="{{ module_noveraile_phone }}"></div></div>
@@ -79,6 +81,35 @@
                   <div class="form-check mb-3"><input class="form-check-input" id="input-update-existing" type="checkbox" name="update_existing" value="1" checked form="form-catalog-import"><label class="form-check-label" for="input-update-existing"><strong>{{ text_catalog_update_existing }}</strong><small class="d-block text-muted">{{ text_catalog_update_help }}</small></label></div>
                   <div class="alert alert-light border py-2"><i class="fa-solid fa-lock text-success"></i> {{ text_catalog_import_notice }}</div>
                   <button class="btn btn-success btn-lg w-100" type="submit" form="form-catalog-import" id="button-catalog-import" disabled><i class="fa-solid fa-file-import"></i> {{ button_catalog_import }}</button>
+                </div></div>
+              </div>
+            </section>
+
+            <section class="tab-pane fade" id="tab-feed">
+              <div class="mb-4"><h3 class="mb-1">{{ text_feed_title }}</h3><p class="text-muted mb-0">{{ text_feed_help }}</p></div>
+              <div class="row g-3">
+                <div class="col-lg-6"><div class="catalog-action-card">
+                  <input class="visually-hidden" id="input-feed-file" type="file" name="feed_file" accept=".csv,text/csv">
+                  <label class="catalog-drop mb-3" for="input-feed-file"><i class="fa-solid fa-cloud-arrow-up"></i><strong class="d-block" id="feed-file-label">{{ text_feed_drop }}</strong><span class="text-muted">{{ text_feed_browse }}</span></label>
+                  <div class="alert alert-light border py-2"><i class="fa-solid fa-circle-info text-primary"></i> {{ text_feed_notice }}</div>
+                  <div class="d-flex gap-2">
+                    <button class="btn btn-success btn-lg flex-grow-1" type="button" id="button-feed-import" disabled><i class="fa-solid fa-file-import"></i> {{ button_feed_import }}</button>
+                    <button class="btn btn-outline-danger btn-lg d-none" type="button" id="button-feed-cancel">{{ button_feed_cancel }}</button>
+                    <button class="btn btn-outline-primary btn-lg d-none" type="button" id="button-feed-resume">{{ button_feed_resume }}</button>
+                  </div>
+                </div></div>
+                <div class="col-lg-6"><div class="catalog-action-card">
+                  <h4 class="h6 text-uppercase text-muted">{{ text_feed_last_run }}</h4>
+                  <div class="progress mb-3" style="height:1.5rem"><div class="progress-bar progress-bar-striped" id="feed-progress-bar" role="progressbar" style="width:0%">0%</div></div>
+                  <p class="mb-3" id="feed-progress-text">{{ text_feed_idle }}</p>
+                  <div class="row g-2 text-center">
+                    <div class="col-4"><div class="catalog-stat"><strong id="feed-stat-created">0</strong><span>{{ text_feed_created }}</span></div></div>
+                    <div class="col-4"><div class="catalog-stat"><strong id="feed-stat-updated">0</strong><span>{{ text_feed_updated }}</span></div></div>
+                    <div class="col-4"><div class="catalog-stat"><strong id="feed-stat-images">0</strong><span>{{ text_feed_images }}</span></div></div>
+                    <div class="col-6"><div class="catalog-stat"><strong id="feed-stat-failed">0</strong><span>{{ text_feed_failed }}</span></div></div>
+                    <div class="col-6"><div class="catalog-stat"><strong id="feed-stat-retired">0</strong><span>{{ text_feed_retired }}</span></div></div>
+                  </div>
+                  <div class="mt-3 d-none" id="feed-failures"><h5 class="h6">{{ text_feed_failures }}</h5><ul class="small text-danger mb-0" id="feed-failure-list"></ul></div>
                 </div></div>
               </div>
             </section>
@@ -124,7 +155,12 @@
               <div class="row mb-3"><label class="col-sm-3 col-form-label">{{ entry_stripe_key }}</label><div class="col-sm-9"><input class="form-control" type="password" autocomplete="new-password" name="payment_stripe_secret_key" value="" placeholder="{% if stripe_key_configured %}Configured — leave blank to keep{% endif %}"><div class="form-text">{{ help_stripe }}</div></div></div>
               <div class="row mb-3"><label class="col-sm-3 col-form-label">{{ entry_stripe_webhook }}</label><div class="col-sm-9"><input class="form-control" type="password" autocomplete="new-password" name="payment_stripe_webhook_secret" value="" placeholder="{% if stripe_webhook_configured %}Configured — leave blank to keep{% endif %}"><div class="form-text">Webhook URL: <code>{{ stripe_webhook_url }}</code></div></div></div>
               <div class="row mb-3"><label class="col-sm-3 col-form-label">{{ entry_stripe_status }}</label><div class="col-sm-9"><div class="form-check form-switch"><input type="hidden" name="payment_stripe_status" value="0"><input class="form-check-input" type="checkbox" name="payment_stripe_status" value="1"{% if payment_stripe_status %} checked{% endif %}></div></div></div>
-              <hr><h4>DHL / DPD</h4><div class="row mb-3"><label class="col-sm-3 col-form-label">{{ entry_dhl_cost }}</label><div class="col-sm-9"><input class="form-control" type="number" step="0.01" name="shipping_dhl_cost" value="{{ shipping_dhl_cost }}"></div></div><div class="row mb-3"><label class="col-sm-3 col-form-label">{{ entry_dpd_cost }}</label><div class="col-sm-9"><input class="form-control" type="number" step="0.01" name="shipping_dpd_cost" value="{{ shipping_dpd_cost }}"></div></div>
+              <hr><h4>DHL / DPD</h4>
+              <div class="row mb-3"><label class="col-sm-3 col-form-label">{{ entry_dhl_cost }}</label><div class="col-sm-9"><input class="form-control" type="number" step="0.01" name="shipping_dhl_cost" value="{{ shipping_dhl_cost }}"><div class="form-text">{{ help_shipping_fallback }}</div></div></div>
+              <div class="row mb-3"><label class="col-sm-3 col-form-label">{{ entry_dpd_cost }}</label><div class="col-sm-9"><input class="form-control" type="number" step="0.01" name="shipping_dpd_cost" value="{{ shipping_dpd_cost }}"></div></div>
+              <div class="alert alert-light border"><strong>{{ text_geo_zones }}</strong><ul class="mb-0 small">{% for zone in geo_zones %}<li><code>{{ zone.geo_zone_id }}</code> — {{ zone.name }}</li>{% endfor %}</ul></div>
+              <div class="row mb-3"><label class="col-sm-3 col-form-label">{{ entry_dhl_tiers }}</label><div class="col-sm-9"><textarea class="form-control font-monospace" rows="6" name="shipping_dhl_tiers">{{ shipping_dhl_tiers }}</textarea><div class="form-text">{{ help_shipping_tiers }}</div></div></div>
+              <div class="row mb-3"><label class="col-sm-3 col-form-label">{{ entry_dpd_tiers }}</label><div class="col-sm-9"><textarea class="form-control font-monospace" rows="6" name="shipping_dpd_tiers">{{ shipping_dpd_tiers }}</textarea></div></div>
             </section>
 
             <section class="tab-pane fade" id="tab-legal">
@@ -197,6 +233,100 @@
   ['dragleave','drop'].forEach(type=>catalogDrop.addEventListener(type,event=>{event.preventDefault();catalogDrop.classList.remove('is-dragging');}));
   catalogDrop.addEventListener('drop',event=>{const file=event.dataTransfer.files[0];if(!file)return;const transfer=new DataTransfer();transfer.items.add(file);catalogInput.files=transfer.files;drawCatalogPreview(file);});
   document.querySelector('#form-catalog-import').addEventListener('submit',()=>{catalogButton.disabled=true;catalogButton.innerHTML='<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Importing…';});
+
+  // Supplier feed: upload once, then drive the queue in small batches so no
+  // single request has to download hundreds of images.
+  const feedInput=document.querySelector('#input-feed-file');
+  const feedLabel=document.querySelector('#feed-file-label');
+  const feedImport=document.querySelector('#button-feed-import');
+  const feedStop=document.querySelector('#button-feed-cancel');
+  const feedResume=document.querySelector('#button-feed-resume');
+  const feedBar=document.querySelector('#feed-progress-bar');
+  const feedText=document.querySelector('#feed-progress-text');
+  const feedFailures=document.querySelector('#feed-failures');
+  const feedFailureList=document.querySelector('#feed-failure-list');
+  const feedIdleText=feedText.textContent;
+  const progressTemplate='{{ text_feed_progress|escape('js') }}';
+  const doneTemplate='{{ text_feed_done|escape('js') }}';
+  const stat=(id,value)=>{document.querySelector('#feed-stat-'+id).textContent=Number(value||0).toLocaleString();};
+  let feedRunId=0,feedActive=false;
+
+  const format=(template,...values)=>{let index=0;return template.replace(/%s|%d/g,()=>Number(values[index]!==undefined?values[index++]:0).toLocaleString());};
+
+  const renderRun=run=>{
+    if(!run||!run.run_id){feedText.textContent=feedIdleText;return;}
+    feedRunId=Number(run.run_id);
+    const total=Number(run.total||0),processed=Number(run.processed||0);
+    const percent=total?Math.round(processed/total*100):0;
+    feedBar.style.width=percent+'%';feedBar.textContent=percent+'%';
+    ['created','updated','failed','images','retired'].forEach(key=>stat(key,run[key]));
+    feedText.textContent=run.status==='done'
+      ? format(doneTemplate,run.created,run.updated,run.failed,run.images,run.retired)
+      : format(progressTemplate,processed,total);
+    feedBar.classList.toggle('progress-bar-animated',run.status==='running');
+    feedBar.classList.toggle('bg-danger',Number(run.failed||0)>0);
+    feedStop.classList.toggle('d-none',run.status!=='running'||!feedActive);
+    feedResume.classList.toggle('d-none',run.status!=='running'||feedActive);
+    if(Number(run.failed||0)>0)loadFailures();
+  };
+
+  const loadFailures=async()=>{
+    try{
+      const response=await fetch('{{ feed_failures }}&run_id='+feedRunId,{headers:{'X-Requested-With':'XMLHttpRequest'}});
+      const json=await response.json();
+      if(!json.failures||!json.failures.length)return;
+      feedFailureList.replaceChildren(...json.failures.map(item=>{const li=document.createElement('li');li.textContent=item.articul+' — '+item.message;return li;}));
+      feedFailures.classList.remove('d-none');
+    }catch{/* the report is informational only */}
+  };
+
+  const runQueue=async()=>{
+    feedActive=true;feedImport.disabled=true;
+    while(feedActive){
+      const data=new FormData();data.set('run_id',feedRunId);data.set('limit','5');
+      let json;
+      try{json=await post('{{ feed_process }}',data);}
+      catch{feedText.textContent='Connection lost. Press Resume to continue.';break;}
+      if(json.error){feedText.textContent=json.error;break;}
+      renderRun(json);
+      if(json.status!=='running'||Number(json.remaining||0)===0)break;
+    }
+    feedActive=false;feedImport.disabled=!feedInput.files.length;
+    feedStop.classList.add('d-none');
+  };
+
+  feedInput.addEventListener('change',()=>{
+    const file=feedInput.files[0];
+    if(!file)return;
+    feedLabel.textContent=file.name;
+    feedImport.disabled=!file.name.toLowerCase().endsWith('.csv');
+  });
+
+  feedImport.addEventListener('click',async()=>{
+    const file=feedInput.files[0];
+    if(!file)return;
+    feedImport.disabled=true;
+    feedText.textContent='Uploading…';
+    const data=new FormData();data.set('feed_file',file);
+    try{
+      const json=await post('{{ feed_upload }}',data);
+      if(json.error){feedText.textContent=json.error;feedImport.disabled=false;return;}
+      feedRunId=Number(json.run_id);
+      feedFailures.classList.add('d-none');
+      feedText.textContent=json.success;
+      await runQueue();
+    }catch{feedText.textContent='The feed could not be uploaded.';feedImport.disabled=false;}
+  });
+
+  feedStop.addEventListener('click',async()=>{
+    feedActive=false;
+    const data=new FormData();data.set('run_id',feedRunId);
+    try{await post('{{ feed_cancel }}',data);}catch{/* the run stops client-side regardless */}
+  });
+
+  feedResume.addEventListener('click',()=>{if(feedRunId)runQueue();});
+
+  {% if feed_run.run_id is defined %}renderRun({{ feed_run|json_encode|raw }});{% endif %}
 })();
 </script>
 {{ footer }}

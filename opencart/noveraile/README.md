@@ -1,6 +1,30 @@
 # NOVERAILE Commerce Suite for OpenCart
 
-Installable storefront extension for OpenCart 4.0.2.3 and 4.1.x. It uses OpenCart events and does not replace core files. Version 2.3.0 works with an existing merchant catalog, includes transactional multilingual CSV import/export, fixed market price books, and keeps the jewelry sample catalog optional.
+Installable storefront extension for OpenCart 4.0.2.3 and 4.1.x. It uses OpenCart events and does not replace core files. Version 2.4.0 works with an existing merchant catalog, imports a supplier feed directly, includes transactional multilingual CSV import/export, fixed market price books, and keeps the jewelry sample catalog optional.
+
+## Supplier feed import
+
+Open **Extensions → Modules → NOVERAILE Commerce Suite → Supplier feed**, drop in the CSV exactly as the supplier delivers it, and press **Upload and import**.
+
+The feed lists one row per sellable combination: an article repeats for every gold caratage and diamond quality it is offered in. The importer groups rows by `articul`, so one article becomes one product and its combinations become one **Gold and diamond quality** option with an exact price per combination.
+
+Prices come from `priceShowroom`. That column is rounded to whole euros and is not additively separable across caratage and quality, so the combinations cannot be split into two independent options without changing prices — one combined option is what keeps the cart, checkout and totals exact.
+
+What each import does:
+
+- Downloads every supplier image once, stores it under `image/catalog/6moments/`, and reuses it on later runs.
+- Generates names, descriptions, tags and SEO keywords in all five store languages from the structured columns; the feed carries no copy of its own.
+- Writes the jewelry attributes used by the storefront filters, including the caratages and diamond qualities the article can be ordered in.
+- Treats stock as made to order, and attaches the ring-size option to rings.
+- Disables articles that disappeared from the feed instead of deleting them, so their orders, reviews and URLs survive.
+
+Importing runs in small batches with a progress bar because the feed is large and every article fetches up to eleven images. Closing the page pauses the run; reopening the tab offers **Resume**. Articles that fail are listed by article number and never block the rest of the run.
+
+The feed does not carry a metal colour, so the metal filter stays empty until that data is supplied. Filter panels are built from the catalog, so a facet with no products simply does not render.
+
+## Shipping rates
+
+**Commerce → DHL / DPD** holds one rate tier table per carrier. Tiers are checked in order and the first geo zone containing the delivery address wins; `geo_zone_id: 0` matches everywhere and expresses "rest of the world". A carrier with no matching tier is not offered for that destination. The suite creates the `6 Moments · Ukraine` and `6 Moments · European Union` geo zones on install and lists every zone ID above the fields.
 
 ## Product import and export
 
