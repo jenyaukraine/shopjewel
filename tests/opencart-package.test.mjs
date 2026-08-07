@@ -562,6 +562,8 @@ test("category, search and special listings borrow the catalog refinement rail",
 
   assert.match(controller, /public function panel\(int \$category_id = 0, string \$clear_url = ''\): string/);
   assert.match(controller, /private function resolveFilter\(array &\$data\): array/);
+  assert.match(controller, /\$this->load->model\('extension\/noveraile\/catalog'\);[\s\S]*?getPriceBounds\(\)/);
+  assert.match(controller, /\$facets = \$this->model_extension_noveraile_catalog->getAttributeFacets\(\);/);
   assert.match(controller, /\$data\['filter_panel'\] = \$this->load->view\('extension\/noveraile\/page\/filters', \$data\)/);
   assert.match(event, /public function listing[\s\S]*?extension\/noveraile\/page\/catalog\.panel/);
   // The rail keeps the visitor inside the category they came from.
