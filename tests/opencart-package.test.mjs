@@ -87,6 +87,10 @@ test("deployment imports the catalog feed and keeps collecting its photography",
   // Each option value is priced as the difference to the product's own price.
   assert.match(importer, /\$base = min\(\$prices\)/);
   assert.match(importer, /'price' => round\(\(float\)\$variant\[2\] - \$base, 2\), 'price_prefix' => '\+'/);
+  // An articul the feed owns must not also be sold by an earlier import.
+  assert.match(importer, /private function retireDuplicates\(\): int/);
+  assert.match(importer, /SET `status` = '0', `date_modified` = NOW\(\) WHERE `product_id` IN/);
+  assert.doesNotMatch(importer, /DELETE FROM `" \. DB_PREFIX \. "product`/);
   // The supplier assortment must never be sold inside the extension package.
   assert.match(release, /must not contain the private supplier catalog feed/);
 });

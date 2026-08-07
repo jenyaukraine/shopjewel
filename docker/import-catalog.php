@@ -110,11 +110,12 @@ try {
 }
 
 fwrite(STDOUT, sprintf(
-    "Catalog import: %d created, %d updated, %d unchanged, %d removed. Images: %d downloaded, %d failed, %d pending.\n",
+    "Catalog import: %d created, %d updated, %d unchanged, %d removed, %d duplicates disabled. Images: %d downloaded, %d failed, %d pending.\n",
     $report['created'],
     $report['updated'],
     $report['skipped'],
     $report['removed'],
+    $report['retired'],
     $report['images'],
     $report['failed'],
     $report['pending']
