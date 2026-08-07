@@ -36,7 +36,11 @@ class CatalogFeed extends \Opencart\System\Engine\Model {
             throw new \RuntimeException('No storefront language is installed, so the catalog cannot be imported.');
         }
 
-        $report = ['products' => count($feed['products']), 'created' => 0, 'updated' => 0, 'skipped' => 0, 'removed' => 0, 'images' => 0, 'failed' => 0, 'pending' => 0, 'complete' => false];
+        $report = ['products' => count($feed['products']), 'created' => 0, 'updated' => 0, 'skipped' => 0, 'removed' => 0, 'retired' => 0, 'images' => 0, 'failed' => 0, 'pending' => 0, 'complete' => false];
+
+        // Runs even when the catalog pass is skipped: a duplicate can be
+        // introduced by an import this model does not control.
+        $report['retired'] = $this->retireDuplicates();
 
         // Deployments that do not change the feed must not pay for a full
         // rewrite, so the caller can ask for the catalog pass to be skipped
@@ -737,6 +741,42 @@ class CatalogFeed extends \Opencart\System\Engine\Model {
         }
 
         return $removed;
+    }
+
+    /**
+     * This assortment was already loaded into the store once, before the feed
+     * existed, by an import this model does not own. Those products carry the
+     * same supplier articuls, so every piece would be offered twice.
+     *
+     * The feed is the authority on its own articuls, but the earlier rows are
+     * only disabled, never deleted: they leave the storefront immediately and
+     * stay in admin until a merchant decides what to do with them.
+     */
+    private function retireDuplicates(): int {
+        $sources = ["SELECT `p`.`product_id` FROM `" . DB_PREFIX . "product` `p` INNER JOIN `" . DB_PREFIX . "noveraile_feed_product` `f` ON (`f`.`articul` = `p`.`model`) WHERE `p`.`product_id` <> `f`.`product_id` AND `p`.`status` = '1'"];
+
+        if ($this->usesProductCodeTable()) {
+            $sources[] = "SELECT `pc`.`product_id` FROM `" . DB_PREFIX . "product_code` `pc` INNER JOIN `" . DB_PREFIX . "noveraile_feed_product` `f` ON (`f`.`articul` = `pc`.`value`) INNER JOIN `" . DB_PREFIX . "product` `p` ON (`p`.`product_id` = `pc`.`product_id`) WHERE `pc`.`code` = 'sku' AND `pc`.`product_id` <> `f`.`product_id` AND `p`.`status` = '1'";
+        } else {
+            $sources[] = "SELECT `p`.`product_id` FROM `" . DB_PREFIX . "product` `p` INNER JOIN `" . DB_PREFIX . "noveraile_feed_product` `f` ON (`f`.`articul` = `p`.`sku`) WHERE `p`.`product_id` <> `f`.`product_id` AND `p`.`status` = '1'";
+        }
+
+        $product_ids = [];
+        foreach ($sources as $sql) {
+            foreach ($this->db->query($sql)->rows as $row) $product_ids[(int)$row['product_id']] = true;
+        }
+        if (!$product_ids) return 0;
+
+        $this->db->query("UPDATE `" . DB_PREFIX . "product` SET `status` = '0', `date_modified` = NOW() WHERE `product_id` IN (" . implode(',', array_keys($product_ids)) . ")");
+        foreach (['product', 'category', 'noveraile.facet'] as $key) {
+            $this->cache->delete($key);
+        }
+
+        return count($product_ids);
+    }
+
+    private function usesProductCodeTable(): bool {
+        return (bool)$this->db->query("SHOW TABLES LIKE '" . DB_PREFIX . "product_code'")->num_rows;
     }
 
     /**
