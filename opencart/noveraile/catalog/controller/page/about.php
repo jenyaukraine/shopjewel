@@ -14,7 +14,7 @@ class About extends \Opencart\System\Engine\Controller {
         $language = 'language=' . $this->config->get('config_language');
         $data['six_catalog_url'] = $this->url->link('extension/noveraile/page/catalog', $language);
         $data['six_diamonds_url'] = $this->url->link('extension/noveraile/page/diamonds', $language);
-        $data['six_contact_url'] = $this->url->link('information/contact', $language);
+        $data['six_contact_url'] = (string)($this->config->get('module_noveraile_whatsapp') ?: 'https://wa.me/491707647729');
         $this->response->setOutput($this->load->view('extension/noveraile/page/about', $data));
     }
 
