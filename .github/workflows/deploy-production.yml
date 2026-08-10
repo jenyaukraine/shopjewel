@@ -73,6 +73,8 @@ jobs:
           OPENCART_ADMIN_PASSWORD: ${{ secrets.OPENCART_ADMIN_PASSWORD }}
           OPENCART_ADMIN_EMAIL: ${{ vars.OPENCART_ADMIN_EMAIL }}
           OPENCART_ADMIN_USERNAME: ${{ vars.OPENCART_ADMIN_USERNAME || 'admin' }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
         run: |
           set -Eeuo pipefail
           umask 077
@@ -88,6 +90,8 @@ jobs:
             printf 'OPENCART_ADMIN_PASSWORD=%s\n' "$OPENCART_ADMIN_PASSWORD"
             printf 'OPENCART_ADMIN_EMAIL=%s\n' "$OPENCART_ADMIN_EMAIL"
             printf 'MODULE_IMAGE_TAG=%s\n' "$GITHUB_SHA"
+            printf 'STRIPE_SECRET_KEY=%s\n' "$STRIPE_SECRET_KEY"
+            printf 'STRIPE_WEBHOOK_SECRET=%s\n' "$STRIPE_WEBHOOK_SECRET"
           } > .env.runtime
 
       - name: Upload release

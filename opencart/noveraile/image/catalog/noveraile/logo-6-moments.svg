@@ -3,7 +3,6 @@
   <desc id="desc">6 MOMENTS fine jewelry wordmark</desc>
   <g fill="none" stroke="#b08a55" stroke-width="1.4">
     <circle cx="39" cy="46" r="27"/>
-    <path d="M39 12v8M39 72v8M5 46h8M65 46h8M15 22l6 6M57 64l6 6M63 22l-6 6M21 64l-6 6"/>
   </g>
   <text x="22" y="61" fill="#1d1a17" font-family="Georgia, 'Times New Roman', serif" font-size="48" font-style="italic">6</text>
   <path d="M89 22v48" stroke="#d3c7b8" stroke-width="1"/>

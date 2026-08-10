@@ -190,7 +190,7 @@ class Catalog extends \Opencart\System\Engine\Model {
 
         $totals = [];
         foreach ($rows as $row) {
-            foreach (explode(',', (string)$row['value']) as $value) {
+            foreach (preg_split('/\s*[,;·]\s*/u', (string)$row['value']) ?: [] as $value) {
                 $value = trim($value);
                 if ($value === '') continue;
                 $totals[$value] = ($totals[$value] ?? 0) + (int)$row['total'];
@@ -305,7 +305,7 @@ class Catalog extends \Opencart\System\Engine\Model {
                 $value = $this->db->escape($quality);
                 $predicates = ["EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_option_value` `pov_quality` INNER JOIN `" . DB_PREFIX . "option_value_description` `ovd_quality` ON (`ovd_quality`.`option_value_id` = `pov_quality`.`option_value_id` AND `ovd_quality`.`language_id` = '" . (int)$this->config->get('config_language_id') . "') WHERE `pov_quality`.`product_id` = `p`.`product_id` AND UPPER(`ovd_quality`.`name`) LIKE '%" . $value . "%')"];
                 if (!empty($attribute_map['stone_quality'])) {
-                    $predicates[] = "EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_attribute` `pa_quality` WHERE `pa_quality`.`product_id` = `p`.`product_id` AND `pa_quality`.`attribute_id` = '" . (int)$attribute_map['stone_quality'] . "' AND `pa_quality`.`language_id` = '" . (int)$this->config->get('config_language_id') . "' AND UPPER(TRIM(`pa_quality`.`text`)) = '" . $value . "')";
+                    $predicates[] = "EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_attribute` `pa_quality` WHERE `pa_quality`.`product_id` = `p`.`product_id` AND `pa_quality`.`attribute_id` = '" . (int)$attribute_map['stone_quality'] . "' AND `pa_quality`.`language_id` = '" . (int)$this->config->get('config_language_id') . "' AND FIND_IN_SET('" . $value . "', REPLACE(REPLACE(UPPER(TRIM(`pa_quality`.`text`)), '; ', ','), ' · ', ',')))";
                 }
                 $sql .= ' AND (' . implode(' OR ', $predicates) . ')';
             }

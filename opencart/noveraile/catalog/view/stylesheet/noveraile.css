@@ -357,6 +357,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .desktop-nav > .desktop-nav-link::after,.mega-menu-shell > .desktop-nav-link::after { content: ""; position: absolute; right: 0; bottom: 29px; left: 0; border-top: 1px solid transparent; }
 .desktop-nav > .desktop-nav-link:hover::after,.desktop-nav > .desktop-nav-link[aria-current="page"]::after,.mega-menu-shell:hover > .desktop-nav-link::after,.mega-menu-shell:focus-within > .desktop-nav-link::after { border-color: var(--ink); }
 .header-actions { display: flex; justify-content: flex-end; align-items: center; gap: 25px; }
+.header-whatsapp,.header-wishlist { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+.header-whatsapp svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.45; stroke-linecap: round; stroke-linejoin: round; }
+.header-wishlist { min-width: 44px; margin: 0 -10px; }
+.header-wishlist svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.45; stroke-linecap: round; stroke-linejoin: round; transition: fill .2s,color .2s; }
+.header-wishlist:hover svg { fill: currentColor; }
 .six-extension-menu { position: relative; z-index: 20; border-bottom: 1px solid var(--line); background: var(--paper); }
 .six-extension-menu:empty { display: none; }
 .currency-control select, .mobile-currency select { min-height: 36px; padding: 0 24px 0 8px; border: 0; background: transparent; font-size: 9px; font-weight: 600; letter-spacing: .12em; }
@@ -468,6 +473,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .mobile-drawer-controls .dropdown-item.is-current .switcher-check { opacity: 1; }
 .mobile-drawer-contact { margin-top: auto; padding: 28px; display: grid; gap: 6px; border-top: 1px solid var(--line); }
 .mobile-drawer-contact a { font: 17px var(--serif); }
+.mobile-drawer-contact .mobile-whatsapp { min-height: 44px; display: flex; align-items: center; gap: 10px; }
+.mobile-whatsapp svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.45; stroke-linecap: round; stroke-linejoin: round; }
 .mobile-drawer-contact small { color: var(--muted); font-size: 10px; }
 
 .hero { height: calc(100svh - 118px); min-height: 610px; max-height: 760px; position: relative; display: flex; align-items: center; padding: 5vw 16vw; color: white; background: #77695a; overflow: hidden; }

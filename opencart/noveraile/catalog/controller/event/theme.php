@@ -40,8 +40,8 @@ class Theme extends \Opencart\System\Engine\Controller {
             $data['title'] = $data['six_brand_name'];
         }
 
-        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.4.1.0';
-        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.4.1.0';
+        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.5.0.0';
+        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.5.0.0';
         $data['six_favicon'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/favicon.svg?v=2';
         $data['six_og_image'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/og-store.png';
         $data['six_native_menu_status'] = (bool)$this->config->get('module_noveraile_native_menu_status');
@@ -150,7 +150,7 @@ class Theme extends \Opencart\System\Engine\Controller {
     public function footer(string &$route, array &$data, string &$code = '', string &$output = ''): void {
         if (!$this->enabled() || !$this->claimView($route, ['common/footer'], 'extension/noveraile/common/footer')) return;
         $this->words($data);
-        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.4.1.0';
+        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.5.0.0';
         $lang = 'language=' . $this->config->get('config_language');
         $data['six_home'] = $this->url->link('common/home', $lang);
         $data['six_about_url'] = $this->url->link('extension/noveraile/page/about', $lang);
@@ -238,7 +238,7 @@ class Theme extends \Opencart\System\Engine\Controller {
         $category_names = [];
         $data['six_category_tiles'] = [];
         if ($uses_current_catalog) {
-            $category_query = $this->db->query("SELECT `c`.`category_id`, `cd`.`name`, `c`.`image` AS `category_image`, (SELECT `p_rep`.`image` FROM `" . DB_PREFIX . "product_to_category` `p2c_rep` INNER JOIN `" . DB_PREFIX . "product` `p_rep` ON (`p_rep`.`product_id` = `p2c_rep`.`product_id`) WHERE `p2c_rep`.`category_id` = `c`.`category_id` AND `p_rep`.`status` = '1' AND `p_rep`.`model` NOT LIKE 'NVR-%' AND NULLIF(`p_rep`.`image`, '') IS NOT NULL ORDER BY `p_rep`.`sort_order`, `p_rep`.`product_id` LIMIT 1) AS `product_image` FROM `" . DB_PREFIX . "category` `c` INNER JOIN `" . DB_PREFIX . "category_description` `cd` ON (`cd`.`category_id` = `c`.`category_id` AND `cd`.`language_id` = '" . (int)$this->config->get('config_language_id') . "') WHERE `c`.`status` = '1' AND EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_to_category` `p2c_exists` INNER JOIN `" . DB_PREFIX . "product` `p_exists` ON (`p_exists`.`product_id` = `p2c_exists`.`product_id`) WHERE `p2c_exists`.`category_id` = `c`.`category_id` AND `p_exists`.`status` = '1' AND `p_exists`.`model` NOT LIKE 'NVR-%') ORDER BY `c`.`sort_order`, `c`.`category_id` LIMIT 5");
+            $category_query = $this->db->query("SELECT `c`.`category_id`, `cd`.`name`, `c`.`image` AS `category_image`, (SELECT `p_rep`.`image` FROM `" . DB_PREFIX . "product_to_category` `p2c_rep` INNER JOIN `" . DB_PREFIX . "product` `p_rep` ON (`p_rep`.`product_id` = `p2c_rep`.`product_id`) WHERE `p2c_rep`.`category_id` = `c`.`category_id` AND `p_rep`.`status` = '1' AND `p_rep`.`model` NOT LIKE 'NVR-%' AND NULLIF(`p_rep`.`image`, '') IS NOT NULL ORDER BY `p_rep`.`sort_order`, `p_rep`.`product_id` LIMIT 1) AS `product_image` FROM `" . DB_PREFIX . "category` `c` INNER JOIN `" . DB_PREFIX . "category_description` `cd` ON (`cd`.`category_id` = `c`.`category_id` AND `cd`.`language_id` = '" . (int)$this->config->get('config_language_id') . "') WHERE `c`.`status` = '1' AND EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_to_category` `p2c_exists` INNER JOIN `" . DB_PREFIX . "product` `p_exists` ON (`p_exists`.`product_id` = `p2c_exists`.`product_id`) WHERE `p2c_exists`.`category_id` = `c`.`category_id` AND `p_exists`.`status` = '1' AND `p_exists`.`model` NOT LIKE 'NVR-%') ORDER BY `c`.`sort_order`, `c`.`category_id` LIMIT 4");
             foreach ($category_query->rows as $category) {
                 // A category cover may be a generic campaign photograph. Prefer
                 // a real product from the destination category so the homepage
@@ -257,6 +257,12 @@ class Theme extends \Opencart\System\Engine\Controller {
                 $data['six_category_tiles'][] = ['name'=>$category_names[$type], 'image'=>$data['six_asset'] . 'products/' . $image, 'href'=>$this->url->link('extension/noveraile/page/catalog', $lang . '&type=' . $type)];
             }
         }
+        $data['six_category_tiles'] = array_slice($data['six_category_tiles'], 0, 4);
+        $data['six_category_tiles'][] = [
+            'name' => $data['six_type_wedding'],
+            'image' => $data['six_asset'] . 'products/union-band.webp',
+            'href' => $this->url->link('extension/noveraile/page/catalog', $lang . '&moment=wedding')
+        ];
 
         $data['six_articles'] = [];
         $this->load->model('cms/article');

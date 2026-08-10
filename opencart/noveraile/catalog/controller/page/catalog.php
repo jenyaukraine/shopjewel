@@ -108,7 +108,7 @@ class Catalog extends \Opencart\System\Engine\Controller {
             'type' => ['rings','earrings','necklaces','bracelets','wedding'],
             'moment' => ['engagement','wedding','motherhood','career','self-purchase','milestone'],
             'metal' => ['white-gold','yellow-gold','rose-gold'],
-            'fineness' => ['375','585','750'],
+            'fineness' => ['585','750'],
             'stone' => ['natural','lab-grown','no-stones'],
             'availability' => ['ready','preorder'],
             'delivery' => ['delivery-3','delivery-10'],
@@ -170,7 +170,7 @@ class Catalog extends \Opencart\System\Engine\Controller {
         // instead of offering a filter that always returns nothing.
         $specifications = [
             'metals' => ['metal', $allowed['metal'], ['white-gold' => $data['six_white_gold'], 'yellow-gold' => $data['six_yellow_gold'], 'rose-gold' => $data['six_rose_gold']]],
-            'finenesses' => ['fineness', $allowed['fineness'], ['375' => '375 / 9K', '585' => '585 / 14K', '750' => '750 / 18K']],
+            'finenesses' => ['fineness', $allowed['fineness'], ['585' => '585 / 14K', '750' => '750 / 18K']],
             'stone_origins' => ['stone', $allowed['stone'], ['natural' => $data['six_natural'], 'lab-grown' => $data['six_lab_grown'], 'no-stones' => $data['six_no_stones']]]
         ];
         foreach ($specifications as $data_key => [$filter_key, $values, $names]) {

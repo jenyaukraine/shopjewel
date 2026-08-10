@@ -125,8 +125,8 @@ test("mobile categories are deduplicated and use semantic jewellery icons", asyn
   assert.match(event, /\$category_names\s*=\s*\[\]/);
   assert.match(event, /mb_strtolower/);
   assert.match(event, /'icon'\s*=>\s*\$this->categoryIcon\(\$name\)/);
-  assert.match(event, /noveraile\.css\?v=2\.4\.1\.0/);
-  assert.match(event, /noveraile\.js\?v=2\.4\.1\.0/);
+  assert.match(event, /noveraile\.css\?v=2\.5\.0\.0/);
+  assert.match(event, /noveraile\.js\?v=2\.5\.0\.0/);
   assert.match(header, /class="mobile-category-icon"/);
   assert.match(header, /category\.icon == 'earring'/);
   assert.match(header, /class="mobile-main-icon"/);
@@ -191,7 +191,7 @@ test("homepage Instagram callout can never render as an empty shell", async () =
 
   assert.match(event, /public function home[\s\S]*?six_instagram_label/);
   assert.match(event, /public function home[\s\S]*?social_fallbacks/);
-  assert.match(event, /noveraile\.css\?v=2\.4\.1\.0/);
+  assert.match(event, /noveraile\.css\?v=2\.5\.0\.0/);
   assert.match(home, /six_follow\|default/);
   assert.match(home, /six_follow_copy\|default/);
   assert.match(home, /six_instagram_label\|default/);
@@ -425,6 +425,8 @@ test("Stripe and zonal delivery are checkout-ready without embedding credentials
   assert.match(dpd, /'1–3' : '3–7'/);
   assert.match(dhl, /\$region === 'eu' \? \$key \. '_eu_cost' : \$key \. '_world_cost'/);
   assert.match(dhl, /'3–7' : '5–10'/);
+  assert.doesNotMatch(dhl, /\$tier\['cost'\]/);
+  assert.doesNotMatch(dpd, /\$tier\['cost'\]/);
   assert.match(commerceTemplate, /shipping_dpd_ukraine_cost/);
   assert.match(commerceTemplate, /shipping_dhl_world_cost/);
 });
@@ -451,6 +453,41 @@ test("storefront uses the 6 Moments wordmark and data-backed stone filters", asy
   assert.match(catalogModel, /'stone_shape' => 900002/);
   assert.match(catalogModel, /cached module settings still point at the removed IDs/);
   assert.equal((catalogModel.match(/is_array\(\$cached\) && \$cached/g) ?? []).length, 2);
+});
+
+test("client acceptance fixes stay enforced across catalog, quiz and header", async () => {
+  const [feed, catalogController, catalogModel, quizController, quizScript, theme, header, product, logo, workflow] = await Promise.all([
+    readFile(path.join(root, "admin/model/module/catalog_feed.php"), "utf8"),
+    readFile(path.join(root, "catalog/controller/page/catalog.php"), "utf8"),
+    readFile(path.join(root, "catalog/model/catalog.php"), "utf8"),
+    readFile(path.join(root, "catalog/controller/page/quiz.php"), "utf8"),
+    readFile(path.join(root, "catalog/view/javascript/noveraile.js"), "utf8"),
+    readFile(path.join(root, "catalog/controller/event/theme.php"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/common/header.twig"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/product/product.twig"), "utf8"),
+    readFile(path.join(root, "image/catalog/noveraile/logo-6-moments.svg"), "utf8"),
+    readFile(path.resolve(".github/workflows/deploy-production.yml"), "utf8"),
+  ]);
+
+  assert.match(feed, /private const CATALOG_VERSION = 9/);
+  assert.match(feed, /findProductByArticul/);
+  assert.match(feed, /installMetalColorOption/);
+  for (const metal of ["white-gold", "yellow-gold", "rose-gold"]) assert.match(feed, new RegExp(metal));
+  assert.match(feed, /16\.5 \/ EU 52/);
+  assert.match(feed, /17 \/ EU 54/);
+  assert.doesNotMatch(catalogController.match(/\$allowed\s*=\s*\[[\s\S]*?\n\s*\];/)?.[0] ?? "", /'375'/);
+  assert.match(catalogModel, /preg_split\('\/\\s\*\[,;·\]\\s\*\/u'/);
+  assert.doesNotMatch(quizController, /starter_tags/);
+  assert.match(quizScript, /item\.type && item\.metal && item\.stone/);
+  assert.match(theme, /six_type_wedding/);
+  assert.match(theme, /&moment=wedding/);
+  assert.match(header, /class="header-whatsapp"/);
+  assert.match(header, /class="header-wishlist"/);
+  assert.doesNotMatch(header, /href="tel:/);
+  assert.match(product, /required aria-required="true"/);
+  assert.doesNotMatch(logo, /M39 12v8/);
+  assert.match(workflow, /STRIPE_SECRET_KEY: \$\{\{ secrets\.STRIPE_SECRET_KEY \}\}/);
+  assert.match(workflow, /STRIPE_WEBHOOK_SECRET: \$\{\{ secrets\.STRIPE_WEBHOOK_SECRET \}\}/);
 });
 
 test("storefront catalog accepts normal merchant products", async () => {

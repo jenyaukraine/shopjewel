@@ -852,12 +852,12 @@
         const metal = !values.metal || tags.includes(values.metal);
         const stone = !values.stone || tags.includes(values.stone);
         const score = (occasion ? 16 : 0) + (budget ? 8 : 0) + (type ? 4 : 0) + (metal ? 2 : 0) + (stone ? 1 : 0);
-        return { card, order, score, exact: occasion && budget && type && metal && stone };
+        return { card, order, score, occasion, budget, type, metal, stone, exact: occasion && budget && type && metal && stone };
       });
       const exact = ranked.filter((item) => item.exact).sort((a, b) => b.score - a.score || a.order - b.order);
       const selected = exact.slice(0, 8);
       if (selected.length < Math.min(4, cards.length)) {
-        ranked.filter((item) => !selected.includes(item)).sort((a, b) => b.score - a.score || a.order - b.order).slice(0, Math.min(4, cards.length) - selected.length).forEach((item) => selected.push(item));
+        ranked.filter((item) => !selected.includes(item) && item.type && item.metal && item.stone).sort((a, b) => b.score - a.score || a.order - b.order).slice(0, Math.min(4, cards.length) - selected.length).forEach((item) => selected.push(item));
       }
       cards.forEach((card) => { card.hidden = !selected.some((item) => item.card === card); });
       const choice = steps[0].querySelector('input:checked + span');

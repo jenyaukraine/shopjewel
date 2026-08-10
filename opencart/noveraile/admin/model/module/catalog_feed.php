@@ -17,7 +17,7 @@ class CatalogFeed extends \Opencart\System\Engine\Model {
     private const FEED_FILE = 'noveraile/data/catalog-feed.json';
     private const IMAGE_DIR = 'catalog/noveraile/feed/';
     private const LANGUAGES = ['en-gb', 'de-de', 'cs-cz', 'ru-ru', 'uk-ua'];
-    private const CATALOG_VERSION = 8;
+    private const CATALOG_VERSION = 9;
 
     private array $feed = [];
     private array $copy = [];
@@ -76,6 +76,10 @@ class CatalogFeed extends \Opencart\System\Engine\Model {
                 unset($fingerprint['date_available']);
                 $checksum = sha1(json_encode($fingerprint, JSON_UNESCAPED_UNICODE));
                 $known = $existing[$articul] ?? null;
+                if (!$known) {
+                    $adopted_id = $this->findProductByArticul($articul);
+                    if ($adopted_id) $known = ['product_id' => $adopted_id, 'checksum' => ''];
+                }
 
                 if ($known && !$force && $known['checksum'] === $checksum && $this->productExists($known['product_id'])) {
                     $report['skipped']++;
@@ -97,6 +101,7 @@ class CatalogFeed extends \Opencart\System\Engine\Model {
 
             $report['removed'] = $this->pruneProducts(array_column($feed['products'], 'articul'));
             $this->retireSeedCatalog();
+            $report['retired'] += $this->retireDuplicates();
 
             // The storefront caches which metal, fineness and stone choices are
             // worth offering, and the catalog it counted has just changed.
@@ -159,6 +164,10 @@ class CatalogFeed extends \Opencart\System\Engine\Model {
     }
 
     private function upToDate(array $feed): bool {
+        if ((int)$this->config->get('module_noveraile_catalog_version') !== self::CATALOG_VERSION) {
+            return false;
+        }
+
         $state = json_decode((string)$this->config->get('module_noveraile_feed_state'), true);
         if (!is_array($state) || (string)($state['checksum'] ?? '') !== (string)($feed['source']['sha256'] ?? '')) {
             return false;
@@ -342,7 +351,15 @@ class CatalogFeed extends \Opencart\System\Engine\Model {
             if (isset($by_label[$value['label']])) $value_ids[$key] = $by_label[$value['label']];
         }
 
-        $map = ['option_id' => $option_id, 'values' => $value_ids, 'ring_size_option_id' => $this->installRingSizeOption($languages)];
+        $ring_size = $this->installRingSizeOption($languages, (int)($stored['ring_size_option_id'] ?? 0));
+        $metal = $this->installMetalColorOption($languages, (int)($stored['metal_option_id'] ?? 0));
+        $map = [
+            'option_id' => $option_id,
+            'values' => $value_ids,
+            'ring_size_option_id' => $ring_size['option_id'],
+            'metal_option_id' => $metal['option_id'],
+            'metal_values' => $metal['values']
+        ];
         $this->setValue('module_noveraile_feed_options', json_encode($map));
         if ($map['ring_size_option_id']) {
             $this->setValue('module_noveraile_ring_size_option_id', (string)$map['ring_size_option_id']);
@@ -355,25 +372,67 @@ class CatalogFeed extends \Opencart\System\Engine\Model {
      * Rings need a size before they can be made, so the existing storefront
      * size option is reused when present and created otherwise.
      */
-    private function installRingSizeOption(array $languages): int {
-        $option_id = (int)$this->config->get('module_noveraile_ring_size_option_id');
-        if ($option_id && $this->db->query("SELECT `option_id` FROM `" . DB_PREFIX . "option` WHERE `option_id` = '" . $option_id . "' LIMIT 1")->num_rows) {
-            return $option_id;
+    private function installRingSizeOption(array $languages, int $stored_option_id = 0): array {
+        $option_id = (int)$this->config->get('module_noveraile_ring_size_option_id') ?: $stored_option_id;
+        $names = ['en-gb' => 'Ring size', 'de-de' => 'Ringgröße', 'cs-cz' => 'Velikost prstenu', 'ru-ru' => 'Размер кольца', 'uk-ua' => 'Розмір каблучки'];
+        $sizes = ['16 / EU 50', '16.5 / EU 52', '17 / EU 54', '18 / EU 56', '18.5 / EU 58', '19 / EU 60'];
+        $values = [];
+        foreach ($sizes as $sort => $label) $values[(string)$sort] = ['label' => $label, 'sort_order' => $sort];
+
+        return $this->installSelectOption($languages, $option_id, $names, $values, 2);
+    }
+
+    private function installMetalColorOption(array $languages, int $option_id = 0): array {
+        $names = [
+            'en-gb' => 'Metal color', 'de-de' => 'Goldfarbe', 'cs-cz' => 'Barva zlata',
+            'ru-ru' => 'Цвет металла', 'uk-ua' => 'Колір металу'
+        ];
+        $labels = [
+            'white-gold' => ['White gold', 'Weißgold', 'Bílé zlato', 'Белое золото', 'Біле золото'],
+            'yellow-gold' => ['Yellow gold', 'Gelbgold', 'Žluté zlato', 'Жёлтое золото', 'Жовте золото'],
+            'rose-gold' => ['Rose gold', 'Roségold', 'Růžové zlato', 'Розовое золото', 'Рожеве золото']
+        ];
+        $values = [];
+        foreach ($labels as $key => $translations) {
+            $localized = [];
+            foreach (array_keys($languages) as $position => $code) $localized[$code] = $translations[$position] ?? $translations[0];
+            $values[$key] = ['labels' => $localized, 'label' => $translations[0], 'sort_order' => count($values)];
         }
 
-        $names = ['en-gb' => 'Ring size', 'de-de' => 'Ringgröße', 'cs-cz' => 'Velikost prstenu', 'ru-ru' => 'Размер кольца', 'uk-ua' => 'Розмір каблучки'];
+        return $this->installSelectOption($languages, $option_id, $names, $values, 3);
+    }
+
+    private function installSelectOption(array $languages, int $option_id, array $names, array $values, int $sort_order): array {
         $description = [];
         foreach ($languages as $code => $language_id) $description[$language_id] = ['name' => $names[$code] ?? $names['en-gb']];
 
-        $values = [];
-        foreach ([50, 52, 54, 56, 58, 60] as $sort => $size) {
+        $option_values = [];
+        foreach ($values as $value) {
             $value_description = [];
-            foreach ($languages as $language_id) $value_description[$language_id] = ['name' => (string)$size];
-            $values[] = ['option_value_id' => 0, 'image' => '', 'sort_order' => $sort, 'option_value_description' => $value_description];
+            foreach ($languages as $code => $language_id) {
+                $value_description[$language_id] = ['name' => (string)($value['labels'][$code] ?? $value['label'])];
+            }
+            $option_values[] = ['option_value_id' => 0, 'image' => '', 'sort_order' => $value['sort_order'], 'option_value_description' => $value_description];
         }
 
         $this->load->model('catalog/option');
-        return (int)$this->model_catalog_option->addOption(['option_description' => $description, 'type' => 'select', 'validation' => '', 'sort_order' => 2, 'option_value' => $values]);
+        $payload = ['option_description' => $description, 'type' => 'select', 'validation' => '', 'sort_order' => $sort_order, 'option_value' => $option_values];
+        if ($option_id && $this->db->query("SELECT `option_id` FROM `" . DB_PREFIX . "option` WHERE `option_id` = '" . $option_id . "' LIMIT 1")->num_rows) {
+            $this->model_catalog_option->editOption($option_id, $payload);
+        } else {
+            $option_id = (int)$this->model_catalog_option->addOption($payload);
+        }
+
+        $value_ids = [];
+        $rows = $this->db->query("SELECT `ov`.`option_value_id`, `ovd`.`name` FROM `" . DB_PREFIX . "option_value` `ov` INNER JOIN `" . DB_PREFIX . "option_value_description` `ovd` ON (`ovd`.`option_value_id` = `ov`.`option_value_id` AND `ovd`.`language_id` = '" . (int)reset($languages) . "') WHERE `ov`.`option_id` = '" . $option_id . "'")->rows;
+        $by_label = [];
+        foreach ($rows as $row) $by_label[(string)$row['name']] = (int)$row['option_value_id'];
+        foreach ($values as $key => $value) {
+            if (isset($by_label[$value['label']])) $value_ids[$key] = $by_label[$value['label']];
+        }
+
+        if (count($value_ids) !== count($values)) throw new \RuntimeException('A required storefront option could not be installed completely.');
+        return ['option_id' => $option_id, 'values' => $value_ids];
     }
 
     private function productPayload(array $product, int $index, array $languages, array $attributes, array $categories, array $options_map, int $stock_status_id): array {
@@ -410,14 +469,31 @@ class CatalogFeed extends \Opencart\System\Engine\Model {
             'value' => '', 'required' => 1, 'product_option_value' => $option_values
         ]];
 
-        if ((string)$product['category'] === 'RING' && !empty($options_map['ring_size_option_id'])) {
+        $metal_values = [];
+        foreach (['white-gold', 'yellow-gold', 'rose-gold'] as $metal) {
+            $option_value_id = (int)($options_map['metal_values'][$metal] ?? 0);
+            if (!$option_value_id) continue;
+            $metal_values[] = [
+                'product_option_value_id' => 0, 'option_value_id' => $option_value_id,
+                'quantity' => 0, 'subtract' => 0, 'price' => 0, 'price_prefix' => '+',
+                'points' => 0, 'points_prefix' => '+', 'weight' => 0, 'weight_prefix' => '+'
+            ];
+        }
+        if (count($metal_values) !== 3 || empty($options_map['metal_option_id'])) {
+            throw new \RuntimeException(sprintf('Articul "%s" is missing a metal color option value.', (string)$product['articul']));
+        }
+        $product_options[] = [
+            'product_option_id' => 0, 'option_id' => (int)$options_map['metal_option_id'], 'type' => 'select',
+            'value' => '', 'required' => 1, 'product_option_value' => $metal_values
+        ];
+
+        if ((string)$product['category'] === 'RING') {
             $size_values = $this->ringSizeValues((int)$options_map['ring_size_option_id']);
-            if ($size_values) {
-                $product_options[] = [
-                    'product_option_id' => 0, 'option_id' => (int)$options_map['ring_size_option_id'], 'type' => 'select',
-                    'value' => '', 'required' => 1, 'product_option_value' => $size_values
-                ];
-            }
+            if (!$size_values) throw new \RuntimeException(sprintf('Articul "%s" is missing ring sizes.', (string)$product['articul']));
+            $product_options[] = [
+                'product_option_id' => 0, 'option_id' => (int)$options_map['ring_size_option_id'], 'type' => 'select',
+                'value' => '', 'required' => 1, 'product_option_value' => $size_values
+            ];
         }
 
         $descriptions = [];
@@ -492,6 +568,9 @@ class CatalogFeed extends \Opencart\System\Engine\Model {
             'natural' => ['Natural', 'Natürlich', 'Přírodní', 'Натуральный', 'Натуральний'],
             'lab-grown' => ['Lab-grown', 'Laborgezüchtet', 'Laboratorní', 'Лабораторный', 'Лабораторний']
         ];
+        $metals = [
+            ['White gold · Yellow gold · Rose gold', 'Weißgold · Gelbgold · Roségold', 'Bílé zlato · Žluté zlato · Růžové zlato', 'Белое золото · Жёлтое золото · Розовое золото', 'Біле золото · Жовте золото · Рожеве золото']
+        ];
 
         $origin = $origins[$this->originKey($product)];
         $style = $styles[(string)$kind['style']] ?? $gemstone;
@@ -506,6 +585,7 @@ class CatalogFeed extends \Opencart\System\Engine\Model {
             'carat' => array_fill(0, count($codes), $this->number((float)$product['caratsTotal'], 2)),
             'fineness' => array_fill(0, count($codes), $fineness)
         ];
+        $texts['metal'] = $metals[0];
 
         $product_attributes = [];
         foreach ($texts as $key => $values) {
@@ -573,6 +653,7 @@ class CatalogFeed extends \Opencart\System\Engine\Model {
         $origin = $this->originKey($product);
         foreach ($origin === 'both' ? ['natural', 'lab-grown'] : [$origin] as $value) $tags[] = $value;
         foreach ($this->goldKeys($product) as $gold) $tags[] = $this->feedGold($gold);
+        foreach (['white-gold', 'yellow-gold', 'rose-gold'] as $metal) $tags[] = $metal;
         if (!empty($product['certificated'])) $tags[] = 'certificated';
 
         return array_values(array_unique(array_filter($tags)));
@@ -725,6 +806,20 @@ class CatalogFeed extends \Opencart\System\Engine\Model {
 
     private function productExists(int $product_id): bool {
         return (bool)$this->db->query("SELECT `product_id` FROM `" . DB_PREFIX . "product` WHERE `product_id` = '" . $product_id . "' LIMIT 1")->num_rows;
+    }
+
+    private function findProductByArticul(string $articul): int {
+        $value = $this->db->escape($articul);
+        $match = $this->db->query("SELECT `product_id` FROM `" . DB_PREFIX . "product` WHERE `model` = '" . $value . "' ORDER BY `status` DESC, `product_id` LIMIT 1");
+        if ($match->num_rows) return (int)$match->row['product_id'];
+
+        if ($this->usesProductCodeTable()) {
+            $match = $this->db->query("SELECT `product_id` FROM `" . DB_PREFIX . "product_code` WHERE `code` = 'sku' AND `value` = '" . $value . "' ORDER BY `product_id` LIMIT 1");
+        } else {
+            $match = $this->db->query("SELECT `product_id` FROM `" . DB_PREFIX . "product` WHERE `sku` = '" . $value . "' ORDER BY `status` DESC, `product_id` LIMIT 1");
+        }
+
+        return $match->num_rows ? (int)$match->row['product_id'] : 0;
     }
 
     private function pruneProducts(array $articuls): int {

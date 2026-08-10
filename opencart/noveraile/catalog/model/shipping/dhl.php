@@ -24,7 +24,7 @@ class Dhl extends \Opencart\System\Engine\Model {
             'name' => 'DHL Express · ' . $days . ' business days',
             'cost' => $cost,
             'tax_class_id' => $tax_class_id,
-            'text' => $this->currency->format($this->tax->calculate($tier['cost'], $tax_class_id, $this->config->get('config_tax')), $this->session->data['currency'])
+            'text' => $this->currency->format($this->tax->calculate($cost, $tax_class_id, $this->config->get('config_tax')), $this->session->data['currency'])
         ]];
 
         return ['code' => 'dhl', 'name' => 'DHL Express', 'quote' => $quote, 'sort_order' => (int)$this->config->get($key . '_sort_order'), 'error' => false];

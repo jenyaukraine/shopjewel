@@ -25,7 +25,7 @@ class Dpd extends \Opencart\System\Engine\Model {
             'name' => 'DPD · ' . $days . ' business days',
             'cost' => $cost,
             'tax_class_id' => $tax_class_id,
-            'text' => $this->currency->format($this->tax->calculate($tier['cost'], $tax_class_id, $this->config->get('config_tax')), $this->session->data['currency'])
+            'text' => $this->currency->format($this->tax->calculate($cost, $tax_class_id, $this->config->get('config_tax')), $this->session->data['currency'])
         ]];
 
         return ['code' => 'dpd', 'name' => 'DPD', 'quote' => $quote, 'sort_order' => (int)$this->config->get($key . '_sort_order'), 'error' => false];
@@ -37,6 +37,7 @@ class Dpd extends \Opencart\System\Engine\Model {
             $query = $this->db->query("SELECT `iso_code_2` FROM `" . DB_PREFIX . "country` WHERE `country_id` = '" . (int)$address['country_id'] . "' LIMIT 1");
             $code = strtoupper((string)($query->row['iso_code_2'] ?? ''));
         }
+        if ($code === '') return '';
         if ($code === 'UA') return 'ukraine';
         $eu = ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE'];
         return in_array($code, $eu, true) ? 'eu' : 'world';
