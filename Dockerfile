@@ -62,12 +62,14 @@ RUN cp .htaccess.txt .htaccess \
 COPY opencart/noveraile/ /var/www/html/extension/noveraile/
 COPY docker/opencart.ini /usr/local/etc/php/conf.d/opencart.ini
 COPY docker/apache-vhost.conf /etc/apache2/sites-available/000-default.conf
+COPY docker/apache-tuning.conf /etc/apache2/conf-available/noveraile-tuning.conf
 COPY docker/render-config.php /usr/local/bin/render-opencart-config
 COPY docker/bootstrap-noveraile.php /usr/local/bin/bootstrap-noveraile.php
 COPY docker/import-catalog.php /usr/local/bin/noveraile-import-catalog
 COPY docker/entrypoint.sh /usr/local/bin/noveraile-entrypoint
 
-RUN find /var/www/html/extension/noveraile -type f -name '*.php' \
+RUN a2enconf noveraile-tuning \
+    && find /var/www/html/extension/noveraile -type f -name '*.php' \
         -exec php -l '{}' ';' \
     && php -l /usr/local/bin/bootstrap-noveraile.php \
     && php -l /usr/local/bin/noveraile-import-catalog \
