@@ -49,6 +49,11 @@ $db = new \Opencart\System\Library\DB(
     (string)($config->get('db_ssl_ca') ?? '')
 );
 $registry->set('db', $db);
+
+// The image pass downloads for up to an hour without touching the database, so
+// this connection is idle for far longer than the storefront timeout the server
+// enforces. Opt this session out instead of holding the whole server open.
+$db->query("SET SESSION wait_timeout = 28800, SESSION interactive_timeout = 28800");
 $registry->set('cache', new \Opencart\System\Library\Cache(
     (string)$config->get('cache_engine'),
     (int)$config->get('cache_expire')
