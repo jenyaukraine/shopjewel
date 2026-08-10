@@ -472,6 +472,7 @@ test("client acceptance fixes stay enforced across catalog, quiz and header", as
   assert.match(feed, /private const CATALOG_VERSION = 9/);
   assert.match(feed, /findProductByArticul/);
   assert.match(feed, /installMetalColorOption/);
+  assert.match(feed, /function_exists\('chgrp'\)/);
   for (const metal of ["white-gold", "yellow-gold", "rose-gold"]) assert.match(feed, new RegExp(metal));
   assert.match(feed, /16\.5 \/ EU 52/);
   assert.match(feed, /17 \/ EU 54/);

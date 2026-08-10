@@ -991,8 +991,11 @@ class CatalogFeed extends \Opencart\System\Engine\Model {
         // owner here instead of relying on that pass.
         $owner = @fileowner(DIR_IMAGE);
         $group = @filegroup(DIR_IMAGE);
-        if ($owner !== false) @chown($path, $owner);
-        if ($group !== false) @chgrp($path, $group);
+        // Shared hosts commonly disable ownership-changing functions. The file
+        // is already written by the web account there, so ownership repair is
+        // only needed (and attempted) when PHP actually exposes the helpers.
+        if ($owner !== false && function_exists('chown')) @\chown($path, $owner);
+        if ($group !== false && function_exists('chgrp')) @\chgrp($path, $group);
 
         return true;
     }
