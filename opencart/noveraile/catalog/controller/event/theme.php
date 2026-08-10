@@ -40,8 +40,8 @@ class Theme extends \Opencart\System\Engine\Controller {
             $data['title'] = $data['six_brand_name'];
         }
 
-        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.5.0.0';
-        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.5.0.0';
+        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.5.1.0';
+        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.5.1.0';
         $data['six_favicon'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/favicon.svg?v=2';
         $data['six_og_image'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/og-store.png';
         $data['six_native_menu_status'] = (bool)$this->config->get('module_noveraile_native_menu_status');
@@ -99,6 +99,31 @@ class Theme extends \Opencart\System\Engine\Controller {
         }
     }
 
+    /**
+     * The four supplier categories describe what a piece is; a customer looking
+     * for a wedding ring is shopping for an occasion instead, and the tile row
+     * had no destination for that — which is also why its fifth cell was empty.
+     * The tile is offered only when the catalog can answer it, so the homepage
+     * never sends anyone to an empty listing.
+     */
+    private function addWeddingTile(array &$data, string $lang): void {
+        foreach ($data['six_category_tiles'] as $tile) {
+            if ($this->categoryIcon((string)$tile['name']) === 'wedding') return;
+        }
+
+        $language_id = (int)$this->config->get('config_language_id');
+        $store_id = (int)$this->config->get('config_store_id');
+        $wedding = $this->db->query("SELECT `p`.`image` FROM `" . DB_PREFIX . "product` `p` INNER JOIN `" . DB_PREFIX . "product_description` `pd` ON (`pd`.`product_id` = `p`.`product_id` AND `pd`.`language_id` = '" . $language_id . "') INNER JOIN `" . DB_PREFIX . "product_to_store` `p2s` ON (`p2s`.`product_id` = `p`.`product_id` AND `p2s`.`store_id` = '" . $store_id . "') WHERE `p`.`status` = '1' AND `p`.`date_available` <= NOW() AND NULLIF(`p`.`image`, '') IS NOT NULL AND FIND_IN_SET('wedding', REPLACE(LOWER(`pd`.`tag`), ' ', '')) ORDER BY `p`.`sort_order` ASC, `p`.`product_id` ASC LIMIT 1");
+
+        if (!$wedding->num_rows) return;
+
+        $data['six_category_tiles'][] = [
+            'name' => (string)($data['six_type_wedding'] ?? 'Wedding rings'),
+            'image' => '/image/' . ltrim(str_replace('\', '/', (string)$wedding->row['image']), '/'),
+            'href' => $this->url->link('extension/noveraile/page/catalog', $lang . '&type=wedding')
+        ];
+    }
+
     private function categoryIcon(string $name): string {
         $value = function_exists('mb_strtolower') ? mb_strtolower($name, 'UTF-8') : strtolower($name);
         $icons = [
@@ -150,7 +175,7 @@ class Theme extends \Opencart\System\Engine\Controller {
     public function footer(string &$route, array &$data, string &$code = '', string &$output = ''): void {
         if (!$this->enabled() || !$this->claimView($route, ['common/footer'], 'extension/noveraile/common/footer')) return;
         $this->words($data);
-        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.5.0.0';
+        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.5.1.0';
         $lang = 'language=' . $this->config->get('config_language');
         $data['six_home'] = $this->url->link('common/home', $lang);
         $data['six_about_url'] = $this->url->link('extension/noveraile/page/about', $lang);
@@ -182,6 +207,11 @@ class Theme extends \Opencart\System\Engine\Controller {
         $data['six_special_products'] = $this->productThumbs($this->getNoveraileProducts(true, 10));
         $lang = 'language=' . $this->config->get('config_language');
         $data['six_catalog'] = $this->url->link('extension/noveraile/page/catalog', $lang);
+        // Built here rather than glued onto six_catalog in the template: the
+        // link builder is free to return an address that already carries a
+        // query string, or none at all, and appending "&key=value" by hand is
+        // only correct for one of those shapes.
+        $data['six_catalog_lab'] = $this->url->link('extension/noveraile/page/catalog', $lang . '&stone=lab-grown');
         $data['six_special'] = $this->url->link('extension/noveraile/page/catalog', $lang . '&sale=1');
         $data['six_quiz'] = $this->url->link('extension/noveraile/page/quiz', $lang);
         $data['six_about'] = $this->url->link('extension/noveraile/page/about', $lang);
@@ -257,6 +287,7 @@ class Theme extends \Opencart\System\Engine\Controller {
                 $data['six_category_tiles'][] = ['name'=>$category_names[$type], 'image'=>$data['six_asset'] . 'products/' . $image, 'href'=>$this->url->link('extension/noveraile/page/catalog', $lang . '&type=' . $type)];
             }
         }
+        $this->addWeddingTile($data, $lang);
         $data['six_category_tiles'] = array_slice($data['six_category_tiles'], 0, 4);
         $data['six_category_tiles'][] = [
             'name' => $data['six_type_wedding'],

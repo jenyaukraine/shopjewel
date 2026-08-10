@@ -2,7 +2,7 @@
 {{ content_top }}
 <section class="interior-hero interior-hero--contact" aria-labelledby="contact-title">
   <div>
-    <p class="eyebrow">{{ six_contact_eyebrow }}</p>
+    <p class="eyebrow">{{ six_contact_eyebrow|trim('.') }}</p>
     <h1 id="contact-title">{{ six_contact_hero_title|trim('.') }}</h1>
     <p>{{ six_contact_hero_copy }}</p>
   </div>
@@ -11,7 +11,7 @@
 
 <section class="contact-layout" aria-labelledby="contact-details-title">
   <div class="contact-details">
-    <p class="eyebrow">{{ six_contact_details_eyebrow }}</p>
+    <p class="eyebrow">{{ six_contact_details_eyebrow|trim('.') }}</p>
     <h2 id="contact-details-title">{{ six_contact_details_title|trim('.') }}</h2>
     <p>{{ six_contact_details_copy }}</p>
     <dl>
@@ -37,7 +37,7 @@
 
   <form id="form-contact" class="contact-form" action="{{ send }}" method="post" data-oc-toggle="ajax">
     <fieldset>
-      <legend class="sr-only">{{ text_contact }}</legend>
+      <legend class="sr-only">{{ text_contact|trim('.') }}</legend>
       <label for="input-name">
         {{ entry_name }}
         <input type="text" name="name" value="{{ name }}" id="input-name" autocomplete="name" required>

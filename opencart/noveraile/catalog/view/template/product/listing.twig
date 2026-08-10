@@ -7,7 +7,7 @@
       <span>01—06</span>
     </div>
     <div class="listing-hero__copy">
-      <p class="eyebrow">{{ six_collections }}</p>
+      <p class="eyebrow">{{ six_collections|trim('.') }}</p>
       <h1>{{ heading_title|trim('.') }}</h1>
       <div class="listing-description">
         {% if description %}{{ description }}{% else %}<p>{{ six_catalog_intro }}</p>{% endif %}
@@ -77,7 +77,7 @@
         <div class="listing-empty-state">
           <div class="listing-empty-state__mark" aria-hidden="true"><span>6</span><i></i></div>
           <div class="listing-empty-state__copy">
-            <p class="eyebrow">{{ six_collections }}</p>
+            <p class="eyebrow">{{ six_collections|trim('.') }}</p>
             <h2>{{ six_no_products|trim('.') }}</h2>
             <p>{{ six_catalog_intro }}</p>
             <a class="button button--dark" href="{{ six_catalog_url }}">{{ six_view_all }}</a>

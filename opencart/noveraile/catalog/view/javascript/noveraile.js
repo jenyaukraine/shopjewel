@@ -265,7 +265,13 @@
       const url = new URL(ajaxFilterForm.action, location.href);
       const formData = new FormData(ajaxFilterForm);
       for (const [key, value] of formData.entries()) {
-        if (key === 'route' || value === '') url.searchParams.delete(key);
+        // `route` used to be dropped here on the assumption that the form
+        // action is a keyword address that already identifies the page. The
+        // catalog is an extension route and never gets a keyword, so its
+        // action carries the route in the query string — deleting it asked for
+        // a page with no route at all, which OpenCart answers with the store
+        // front page, and pushState then wrote that into the address bar.
+        if (value === '') url.searchParams.delete(key);
         else url.searchParams.set(key, value);
       }
       url.searchParams.delete('page');
@@ -803,6 +809,12 @@
 
   const quiz = document.querySelector('[data-six-quiz]');
   if (quiz) setupQuiz(quiz);
+  const TYPE_TAGS = {
+    ring: ['ring', 'rings'],
+    earring: ['earring', 'earrings', 'ear_ring'],
+    necklace: ['necklace', 'necklaces'],
+    bracelet: ['bracelet', 'bracelets']
+  };
   function setupQuiz(root) {
     const form = root.querySelector('.quiz-form');
     const steps = Array.from(form.querySelectorAll('[data-step]'));
@@ -848,7 +860,10 @@
         const occasionTags = Array.isArray(configured.tags) ? configured.tags : [values.occasion];
         const occasion = tags.includes(values.occasion) || occasionTags.some((tag) => tags.includes(tag));
         const budget = price >= (budgetMin || 0) && price <= (budgetMax || 999999);
-        const type = !values.type || tags.includes(values.type);
+        // Matched against whole tags rather than as substrings: "earrings"
+        // contains "ring", so a request for rings also answered with studs.
+        const tagList = tags.split(',').map((tag) => tag.trim());
+        const type = !values.type || (TYPE_TAGS[values.type] || [values.type]).some((tag) => tagList.includes(tag));
         const metal = !values.metal || tags.includes(values.metal);
         const stone = !values.stone || tags.includes(values.stone);
         const score = (occasion ? 16 : 0) + (budget ? 8 : 0) + (type ? 4 : 0) + (metal ? 2 : 0) + (stone ? 1 : 0);

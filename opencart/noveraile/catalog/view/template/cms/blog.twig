@@ -1,7 +1,7 @@
 {{ header }}
 <section class="interior-hero interior-hero--journal">
   <div>
-    <p class="eyebrow">{{ six_journal_kicker }}</p>
+    <p class="eyebrow">{{ six_journal_kicker|trim('.') }}</p>
     <h1>{{ six_journal_title|trim('.') }}</h1>
     <p>{{ six_journal_copy }}</p>
   </div>
@@ -54,7 +54,7 @@
               <img class="journal-art" src="{{ article.image }}" alt="{{ article.name }}">
               <span class="journal-art-arrow" aria-hidden="true">↗</span>
             </span>
-            <span class="eyebrow">{{ article.six_label }} · {{ article.date_added }}</span>
+            <span class="eyebrow">{{ article.six_label|trim('.') }} · {{ article.date_added }}</span>
             <h2>{{ article.name|trim('.') }}</h2>
             <span class="journal-excerpt">{{ article.description }}</span>
             <span class="journal-card-link">{{ six_read_note }} <span aria-hidden="true">↗</span></span>
@@ -68,7 +68,7 @@
     </div>
   {% else %}
     <div class="journal-empty">
-      <p class="eyebrow">{{ six_journal_kicker }}</p>
+      <p class="eyebrow">{{ six_journal_kicker|trim('.') }}</p>
       <h2>{{ text_no_results|trim('.') }}</h2>
       <a class="text-link" href="index.php?route=cms/blog&amp;language={{ language }}">{{ six_clear }} <span aria-hidden="true">→</span></a>
     </div>

@@ -1,7 +1,7 @@
 {{ header }}
 <main class="checkout-success-page">
   <section class="checkout-success-card">
-    <p class="eyebrow">{{ six_brand_name }} · {{ six_order_received }}</p>
+    <p class="eyebrow">{{ six_brand_name|trim('.') }} · {{ six_order_received }}</p>
     <h1>{{ six_thank_you|trim('.') }}</h1>
     <p>{{ six_thank_you_copy }}</p>
     {% if six_order_id %}<p class="checkout-success-number">{{ six_order_number }} <strong>#{{ six_order_id }}</strong></p>{% endif %}

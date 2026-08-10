@@ -125,8 +125,8 @@ test("mobile categories are deduplicated and use semantic jewellery icons", asyn
   assert.match(event, /\$category_names\s*=\s*\[\]/);
   assert.match(event, /mb_strtolower/);
   assert.match(event, /'icon'\s*=>\s*\$this->categoryIcon\(\$name\)/);
-  assert.match(event, /noveraile\.css\?v=2\.5\.0\.0/);
-  assert.match(event, /noveraile\.js\?v=2\.5\.0\.0/);
+  assert.match(event, /noveraile\.css\?v=2.5.1.0/);
+  assert.match(event, /noveraile\.js\?v=2.5.1.0/);
   assert.match(header, /class="mobile-category-icon"/);
   assert.match(header, /category\.icon == 'earring'/);
   assert.match(header, /class="mobile-main-icon"/);
@@ -191,7 +191,7 @@ test("homepage Instagram callout can never render as an empty shell", async () =
 
   assert.match(event, /public function home[\s\S]*?six_instagram_label/);
   assert.match(event, /public function home[\s\S]*?social_fallbacks/);
-  assert.match(event, /noveraile\.css\?v=2\.5\.0\.0/);
+  assert.match(event, /noveraile\.css\?v=2.5.1.0/);
   assert.match(home, /six_follow\|default/);
   assert.match(home, /six_follow_copy\|default/);
   assert.match(home, /six_instagram_label\|default/);
@@ -547,7 +547,11 @@ test("6 Moments storefront requirements remain wired into the package", async ()
   assert.match(installer, /if \(\$managed_catalog->num_rows\) \{\s*\$this->seedCatalog\(\);/);
   assert.equal((installer.match(/\['(?:promise-solitaire|union-band|arrival-pendant|becoming-hoops|gratitude-bracelet|legacy-signet|eternity-band|horizon-studs|keepsake-pendant|self-promise-ring)'/g) ?? []).length, 10);
   assert.doesNotMatch(installer, /First Ride Balance Bike|NVR-SE-007/);
-  assert.match(home, /stone=lab-grown/);
+  // The lab-grown shortcut is built by the link builder and handed to the view,
+  // so the template must not glue query parameters onto a finished URL.
+  assert.match(theme, /six_catalog_lab.*stone=lab-grown/);
+  assert.match(home, /href="\{\{ six_catalog_lab \}\}"/);
+  assert.doesNotMatch(home, /\}\}&[a-z_]+=/);
   assert.match(theme, /open\.er-api\.com\/v6\/latest\/USD/);
   assert.match(theme, /six_coupon_action/);
   assert.match(cart, /six_coupon-form|six-coupon-form/);
@@ -644,4 +648,38 @@ test("the review panel is a wide, compact card", async () => {
 
   assert.match(stylesheet, /\.product-reviews #form-review \{ width: min\(980px,100%\)/);
   assert.match(stylesheet, /\.product-reviews textarea\.form-control \{ min-height: 116px; \}/);
+});
+
+test("applying a refinement stays on the catalog instead of the store front page", async () => {
+  const script = await readFile(path.join(root, "catalog/view/javascript/noveraile.js"), "utf8");
+
+  // The catalog is an extension route and never receives a SEO keyword, so its
+  // form action carries the route in the query string. Dropping it asked for a
+  // page with no route, and OpenCart answers that with the home page.
+  assert.match(script, /const buildFormUrl[\s\S]*?if \(value === ''\) url\.searchParams\.delete\(key\);/);
+  assert.doesNotMatch(script, /key === 'route' \|\| value === ''/);
+});
+
+test("the quiz tells rings apart from earrings", async () => {
+  const script = await readFile(path.join(root, "catalog/view/javascript/noveraile.js"), "utf8");
+
+  // "earrings" contains "ring", so a substring match answered rings with studs.
+  assert.match(script, /const TYPE_TAGS = \{/);
+  assert.match(script, /TYPE_TAGS\[values\.type\] \|\| \[values\.type\]\)\.some\(\(tag\) => tagList\.includes\(tag\)\)/);
+});
+
+test("the homepage offers wedding rings and leaves no empty tile", async () => {
+  const [event, stylesheet, language] = await Promise.all([
+    readFile(path.join(root, "catalog/controller/event/theme.php"), "utf8"),
+    readFile(path.join(root, "catalog/view/stylesheet/noveraile.css"), "utf8"),
+    readFile(path.join(root, "catalog/language/ru-ru/module/noveraile.php"), "utf8"),
+  ]);
+
+  assert.match(event, /private function addWeddingTile\(array &\$data, string \$lang\): void/);
+  assert.match(event, /addWeddingTile[\s\S]*?FIND_IN_SET\('wedding'/);
+  // No tile is offered when it would lead to an empty listing.
+  assert.match(event, /if \(!\$wedding->num_rows\) return;/);
+  // The track count follows the tiles, so four categories no longer leave a gap.
+  assert.match(stylesheet, /\.category-showcase \{ display: grid; grid-template-columns: repeat\(auto-fit/);
+  assert.match(language, /six_type_wedding'\] = 'Обручальные кольца'/);
 });

@@ -17,7 +17,7 @@
   <section class="about-origin" aria-labelledby="origin-title">
     <div class="about-section-index" aria-hidden="true"><span>01</span><small>{{ six_about_beginning }}</small></div>
     <div class="about-origin-copy">
-      <p class="eyebrow">{{ six_about_idea }}</p>
+      <p class="eyebrow">{{ six_about_idea|trim('.') }}</p>
       <h2 id="origin-title">{{ six_about_origin_title|trim('.') }}</h2>
       <p class="about-lead">{{ six_about_origin_one }}</p>
       <p>{{ six_about_origin_two }}</p>
@@ -41,7 +41,7 @@
       <figcaption><span>02</span> {{ six_about_making }}</figcaption>
     </figure>
     <div class="about-craft-copy">
-      <p class="eyebrow">{{ six_about_thoughtfully }}</p>
+      <p class="eyebrow">{{ six_about_thoughtfully|trim('.') }}</p>
       <h2 id="craft-title">{{ six_about_craft_title|trim('.') }}</h2>
       <p class="about-lead">{{ six_about_craft_one }}</p>
       <p>{{ six_about_craft_two }}</p>
@@ -52,7 +52,7 @@
 
   <section class="about-values" aria-labelledby="values-title">
     <header>
-      <p class="eyebrow">{{ six_about_standards }}</p>
+      <p class="eyebrow">{{ six_about_standards|trim('.') }}</p>
       <h2 id="values-title">{{ six_about_values_title|trim('.') }}</h2>
     </header>
     <div class="about-values-grid">
@@ -65,7 +65,7 @@
   <section class="about-closing" aria-labelledby="closing-title">
     <span class="about-closing-number" aria-hidden="true">6</span>
     <div>
-      <p class="eyebrow">{{ six_about_tagline }}</p>
+      <p class="eyebrow">{{ six_about_tagline|trim('.') }}</p>
       <h2 id="closing-title">{{ six_about_closing_title|trim('.') }}</h2>
       <p>{{ six_about_closing_copy }}</p>
       <div class="about-closing-actions">

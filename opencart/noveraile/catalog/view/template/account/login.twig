@@ -27,7 +27,7 @@
     {{ content_top }}
 
     <header class="account-login__intro">
-      <p class="eyebrow">{{ six_brand_name }} · {{ text_account }}</p>
+      <p class="eyebrow">{{ six_brand_name|trim('.') }} · {{ text_account }}</p>
       <h1>{{ heading_title|trim('.') }}</h1>
       <span aria-hidden="true">01 — 06</span>
     </header>
@@ -38,7 +38,7 @@
           <div class="account-login__section-heading">
             <span aria-hidden="true">01</span>
             <div>
-              <p class="eyebrow">{{ text_account }}</p>
+              <p class="eyebrow">{{ text_account|trim('.') }}</p>
               <h2>{{ text_returning_customer|trim('.') }}</h2>
             </div>
           </div>
@@ -71,7 +71,7 @@
           <div class="account-login__section-heading">
             <span aria-hidden="true">02</span>
             <div>
-              <p class="eyebrow">{{ six_brand_name }}</p>
+              <p class="eyebrow">{{ six_brand_name|trim('.') }}</p>
               <h2>{{ text_new_customer|trim('.') }}</h2>
             </div>
           </div>

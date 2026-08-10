@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.5.1 — 2026-08-11
+- Applying a refinement stays on the catalog. The filter dropped the route from the address it requested, and OpenCart answers a request without one with the store front page — which `pushState` then wrote into the address bar.
+- The quiz tells rings apart from earrings: choices were matched as substrings, and "earrings" contains "ring".
+- The homepage offers wedding rings beside the four supplier categories, and its tile row no longer reserves a fifth cell the catalog cannot fill.
+- Headings, kickers and field legends carry no trailing full stop in any of the five languages.
+
 ## 2.4.0 — 2026-08-06
 - Imported the supplier assortment: one product per articul, with every gold caratage and diamond quality priced exactly through a single combined option.
 - Built the metal, fineness, origin, cut, quality and style filters from what the catalog actually contains, so options nobody stocks disappear on their own.

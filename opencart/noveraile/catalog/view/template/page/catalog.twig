@@ -1,5 +1,5 @@
 {{ header }}
-<section class="interior-hero catalog-hero"><div><p class="eyebrow">{{ six_collections }}</p><h1>{{ six_catalog_title|trim('.') }}</h1><p>{{ six_catalog_intro }}</p></div></section>
+<section class="interior-hero catalog-hero"><div><p class="eyebrow">{{ six_collections|trim('.') }}</p><h1>{{ six_catalog_title|trim('.') }}</h1><p>{{ six_catalog_intro }}</p></div></section>
 <main class="six-catalog-page">
   <nav class="catalog-dual-nav" aria-label="{{ six_shop_by_type }}">
     <div><strong>{{ six_shop_by_type }}</strong><a href="{{ clear_url }}"{% if not filters.type and not filters.category_id %} class="is-active"{% endif %}>{{ six_all }}</a>{% for type in types %}<a href="{{ type.href }}"{% if filters.type == type.value %} class="is-active"{% endif %}>{{ type.name }}</a>{% endfor %}</div>
