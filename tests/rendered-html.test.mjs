@@ -297,17 +297,17 @@ test("server-renders Stripe checkout outcomes and protected orders admin", async
 });
 
 test("OpenCart catalog keeps jewelry facets and attribute sorts wired", async () => {
-  const [template, controller, model, installer] = await Promise.all([
-    readFile(new URL("../opencart/noveraile/catalog/view/template/page/catalog.twig", import.meta.url), "utf8"),
+  const [filters, controller, model, installer] = await Promise.all([
+    readFile(new URL("../opencart/noveraile/catalog/view/template/page/filters.twig", import.meta.url), "utf8"),
     readFile(new URL("../opencart/noveraile/catalog/controller/page/catalog.php", import.meta.url), "utf8"),
     readFile(new URL("../opencart/noveraile/catalog/model/catalog.php", import.meta.url), "utf8"),
     readFile(new URL("../opencart/noveraile/admin/model/module/noveraile.php", import.meta.url), "utf8"),
   ]);
 
-  assert.match(template, /name="ring_size"/);
-  assert.match(template, /name="carat_min"/);
-  assert.match(template, /name="stone_shape"/);
-  assert.match(template, /name="style"/);
+  assert.match(filters, /name="ring_size"/);
+  assert.match(filters, /name="carat_min"/);
+  assert.match(filters, /name="stone_shape"/);
+  assert.match(filters, /name="style"/);
   assert.match(controller, /carat-desc/);
   assert.match(controller, /weight-desc/);
   assert.match(model, /product_attribute/);
