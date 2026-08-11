@@ -3560,6 +3560,65 @@ body.noveraile-store,
 .filter-heading__actions { display: flex; align-items: center; gap: 14px; }
 .filter-close { display: none; }
 
+/* Warm-dark refinement rail: a deliberate jewellery-case contrast instead of
+   another large pale panel, especially important on OLED displays. */
+.noveraile-store .catalog-filters {
+  --filter-bg: #1e1a17;
+  --filter-surface: #29231e;
+  --filter-text: #f1e9df;
+  --filter-muted: #b9ada0;
+  --filter-line: rgba(231,216,197,.18);
+  --filter-gold: #c1a06f;
+  padding: 0 18px 18px;
+  color: var(--filter-text);
+  border-color: var(--filter-gold);
+  background: var(--filter-bg);
+  box-shadow: 0 18px 45px rgba(27,22,18,.16);
+}
+.noveraile-store .catalog-filters .filter-heading { border-bottom-color: var(--filter-line); }
+.noveraile-store .catalog-filters .filter-heading h2,
+.noveraile-store .catalog-filters summary { color: var(--filter-text); }
+.noveraile-store .catalog-filters .filter-heading a { color: #d1c1aa; }
+.noveraile-store .catalog-filters .filter-search {
+  color: var(--filter-muted);
+  border-bottom-color: var(--filter-line);
+}
+.noveraile-store .catalog-filters .filter-search input,
+.noveraile-store .catalog-filters .price-range input {
+  color: var(--filter-text);
+  border-color: rgba(225,207,184,.28);
+  background: var(--filter-surface);
+}
+.noveraile-store .catalog-filters .filter-search input::placeholder,
+.noveraile-store .catalog-filters .price-range input::placeholder { color: #918477; opacity: 1; }
+.noveraile-store .catalog-filters details { border-bottom-color: var(--filter-line); }
+.noveraile-store .catalog-filters details label { color: var(--filter-muted); }
+.noveraile-store .catalog-filters details label small { color: #8f8174; }
+.noveraile-store .catalog-filters input[type="radio"] { accent-color: var(--filter-gold); }
+.noveraile-store .catalog-filters .filter-metal-option { border-color: transparent; }
+.noveraile-store .catalog-filters .filter-metal-option:has(input:checked) {
+  color: var(--filter-text);
+  border-color: rgba(193,160,111,.58);
+  background: rgba(193,160,111,.12);
+}
+.noveraile-store .catalog-filters .filter-size-grid label {
+  color: var(--filter-text);
+  border-color: var(--filter-line);
+  background: var(--filter-surface);
+}
+.noveraile-store .catalog-filters .filter-size-grid label:has(input:checked) {
+  color: #1b1714;
+  border-color: var(--filter-gold);
+  background: var(--filter-gold);
+}
+.noveraile-store .catalog-filters .price-range__slider::before { background: rgba(231,216,197,.2); }
+.noveraile-store .catalog-filters .price-range__slider::after { background: var(--filter-gold); }
+.noveraile-store .catalog-filters form > .button {
+  color: #1b1714;
+  border-color: #c8a878;
+  background: linear-gradient(120deg,#aa8756,#d2b486 52%,#b28e5b);
+}
+
 /* Review form: a wider, tighter panel --------------------------------- */
 .product-reviews { padding: clamp(58px,6vw,92px) max(4vw,20px); }
 .product-reviews #form-review { width: min(980px,100%); padding: clamp(28px,3.2vw,44px) clamp(24px,3.4vw,54px); }
@@ -3604,7 +3663,7 @@ body.noveraile-store,
     position: fixed;
     inset: 0;
     z-index: 840;
-    background: rgba(24,21,18,.46);
+    background: rgba(10,8,7,.68);
     backdrop-filter: blur(2px);
     -webkit-backdrop-filter: blur(2px);
   }
@@ -3623,9 +3682,9 @@ body.noveraile-store,
     overflow-y: auto;
     overscroll-behavior: contain;
     border: 0;
-    border-left: 1px solid rgba(139,124,106,.32);
-    background: #eee8df;
-    box-shadow: -24px 0 70px rgba(24,21,18,.22);
+    border-left: 1px solid rgba(193,160,111,.34);
+    background: #1e1a17;
+    box-shadow: -28px 0 80px rgba(0,0,0,.42);
     visibility: hidden;
     opacity: 0;
     transform: translateX(100%);
@@ -3650,8 +3709,8 @@ body.noveraile-store,
     align-items: center;
     gap: 16px;
     padding: 10px 0;
-    border-bottom: 1px solid #bdb3a7;
-    background: rgba(238,232,223,.96);
+    border-bottom: 1px solid rgba(231,216,197,.18);
+    background: rgba(30,26,23,.96);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
   }
@@ -3668,7 +3727,7 @@ body.noveraile-store,
     min-height: 42px;
     display: inline-flex;
     align-items: center;
-    color: #615a52;
+    color: #d1c1aa;
     font-size: 9px;
     letter-spacing: .1em;
     text-decoration: none;
@@ -3681,41 +3740,41 @@ body.noveraile-store,
     place-items: center;
     flex: 0 0 42px;
     padding: 0 0 3px;
-    border: 1px solid #b9aea1;
+    border: 1px solid rgba(209,193,170,.48);
     border-radius: 50%;
-    color: var(--ink);
-    background: rgba(255,255,255,.34);
+    color: #f1e9df;
+    background: rgba(255,255,255,.04);
     font: 27px/1 var(--serif);
     cursor: pointer;
   }
   .filter-close:hover,
-  .filter-close:focus-visible { color: #fff; border-color: var(--ink); background: var(--ink); }
+  .filter-close:focus-visible { color: #1b1714; border-color: #c1a06f; background: #c1a06f; }
   .catalog-filters form { display: block; padding-bottom: 18px; }
   .catalog-filters .filter-search {
     position: relative;
     padding: 20px 0 16px;
     gap: 8px;
-    border-bottom-color: #c8beb2;
-    color: #6d665e;
+    border-bottom-color: rgba(231,216,197,.18);
+    color: #b9ada0;
     font-size: 9px;
     letter-spacing: .14em;
   }
   .catalog-filters .filter-search input {
     height: 48px;
     padding: 0 42px 0 14px;
-    border: 1px solid #bdb2a6;
+    border: 1px solid rgba(225,207,184,.28);
     border-radius: 0;
-    color: var(--ink);
-    background: rgba(255,255,255,.44);
+    color: #f1e9df;
+    background: #29231e;
     font: 15px var(--sans);
     outline: 0;
   }
-  .catalog-filters .filter-search input:focus { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
-  .catalog-filters details { border-bottom-color: #c8beb2; }
+  .catalog-filters .filter-search input:focus { border-color: #c1a06f; box-shadow: inset 0 0 0 1px #c1a06f; }
+  .catalog-filters details { border-bottom-color: rgba(231,216,197,.18); }
   .catalog-filters details summary {
     min-height: 56px;
     padding: 0 2px;
-    color: var(--ink);
+    color: #f1e9df;
     font-size: 10px;
     letter-spacing: .16em;
   }
@@ -3726,9 +3785,9 @@ body.noveraile-store,
     display: grid;
     place-items: center;
     flex: 0 0 26px;
-    border: 1px solid #c0b5a8;
+    border: 1px solid rgba(209,193,170,.34);
     border-radius: 50%;
-    color: #796b5a;
+    color: #c1a06f;
     font: 17px/1 var(--serif);
   }
   .catalog-filters details[open] { padding-bottom: 13px; }
@@ -3738,11 +3797,11 @@ body.noveraile-store,
     min-height: 44px;
     padding: 0 4px;
     gap: 11px;
-    color: #5f5951;
+    color: #b9ada0;
     font-size: 13px;
   }
   .catalog-filters details label:last-child { margin-bottom: 0; }
-  .catalog-filters details label small { color: #968c80; font-size: 10px; }
+  .catalog-filters details label small { color: #8f8174; font-size: 10px; }
   .catalog-filters .filter-metal-grid {
     display: grid;
     grid-template-columns: repeat(2,minmax(0,1fr));
@@ -3752,8 +3811,8 @@ body.noveraile-store,
     min-height: 54px;
     margin: 0;
     padding: 0 10px;
-    border-color: #c8beb2;
-    background: rgba(255,255,255,.26);
+    border-color: rgba(231,216,197,.18);
+    background: #29231e;
   }
   .catalog-filters .filter-metal-option > span:last-child {
     min-width: 0;
@@ -3764,13 +3823,13 @@ body.noveraile-store,
     line-height: 1.15;
   }
   .catalog-filters .filter-metal-option:has(input:checked) {
-    border-color: #88745b;
-    color: var(--ink);
-    background: #f8f4ee;
-    box-shadow: inset 0 0 0 1px rgba(136,116,91,.18);
+    border-color: rgba(193,160,111,.68);
+    color: #f1e9df;
+    background: rgba(193,160,111,.14);
+    box-shadow: inset 0 0 0 1px rgba(193,160,111,.12);
   }
   .price-range { padding: 2px 2px 8px; }
-  .price-range input { height: 44px; background: rgba(255,255,255,.42); }
+  .price-range input { height: 44px; background: #29231e; }
   .filter-size-grid { grid-template-columns: repeat(4,1fr); gap: 7px; padding: 2px 0 4px; }
   .catalog-filters .filter-size-grid label { min-height: 44px; }
   .catalog-filters form > .button {
@@ -3779,9 +3838,10 @@ body.noveraile-store,
     bottom: 14px;
     z-index: 4;
     margin: 18px 0 0;
-    border-color: #211e1a;
-    background: #211e1a;
-    box-shadow: 0 10px 28px rgba(24,21,18,.2), 0 0 0 8px #eee8df;
+    color: #1b1714;
+    border-color: #c8a878;
+    background: linear-gradient(120deg,#aa8756,#d2b486 52%,#b28e5b);
+    box-shadow: 0 12px 32px rgba(0,0,0,.34), 0 0 0 8px #1e1a17;
   }
   .filter-toggle {
     min-height: 46px;
