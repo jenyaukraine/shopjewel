@@ -3569,6 +3569,7 @@ body.noveraile-store,
   --filter-muted: #b9ada0;
   --filter-line: rgba(231,216,197,.18);
   --filter-gold: #c1a06f;
+  --field: #29231e;
   padding: 0 18px 18px;
   color: var(--filter-text);
   border-color: var(--filter-gold);
