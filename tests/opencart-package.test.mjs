@@ -683,3 +683,13 @@ test("the homepage offers wedding rings and leaves no empty tile", async () => {
   assert.match(stylesheet, /\.category-showcase \{ display: grid; grid-template-columns: repeat\(auto-fit/);
   assert.match(language, /six_type_wedding'\] = 'Обручальные кольца'/);
 });
+
+test("a translation is read by the language it belongs to", async () => {
+  const importer = await readFile(path.join(root, "admin/model/module/catalog_feed.php"), "utf8");
+
+  // Feed strings are arrays positioned against feed["languages"]. Indexing them
+  // by the position a language holds among the installed ones puts German text
+  // under Russian on any store that does not install all five.
+  assert.match(importer, /private function languageIndex\(string \$code\): int/);
+  assert.doesNotMatch(importer, /foreach \(\$codes as \$(?:position|index) => \$code\)/);
+});

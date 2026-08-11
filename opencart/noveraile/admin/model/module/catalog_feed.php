@@ -211,6 +211,17 @@ class CatalogFeed extends \Opencart\System\Engine\Model {
         return $languages;
     }
 
+    /**
+     * Every translated string in the feed is an array positioned against the
+     * feed's own language list. Reading it by the position a language happens
+     * to hold among the installed ones puts German text under Russian as soon
+     * as a store does not install all five.
+     */
+    private function languageIndex(string $code): int {
+        $index = array_search($code, (array)($this->feed()['languages'] ?? self::LANGUAGES), true);
+        return $index === false ? 0 : (int)$index;
+    }
+
     private function attributes(): array {
         $map = $this->config->get('module_noveraile_attribute_map');
         if (!is_array($map)) $map = json_decode((string)$map, true);
@@ -263,8 +274,8 @@ class CatalogFeed extends \Opencart\System\Engine\Model {
     private function upsertCategory(array $stored, string $slug, array $names, int $parent_id, int $sort_order, array $languages, array $codes, string $brand): int {
         $description = [];
         $seo = [];
-        foreach ($codes as $index => $code) {
-            $name = (string)($names[$index] ?? $names[0]);
+        foreach ($codes as $code) {
+            $name = (string)($names[$this->languageIndex($code)] ?? $names[0]);
             $description[$languages[$code]] = ['name' => $name, 'description' => '', 'meta_title' => $name . ' | ' . $brand, 'meta_description' => $name . ' — ' . $brand, 'meta_keyword' => ''];
             $seo[$languages[$code]] = 'noveraile-' . $slug . '-' . $code;
         }
@@ -498,7 +509,8 @@ class CatalogFeed extends \Opencart\System\Engine\Model {
 
         $descriptions = [];
         $seo = [];
-        foreach ($codes as $position => $code) {
+        foreach ($codes as $code) {
+            $position = $this->languageIndex($code);
             $language_id = $languages[$code];
             $name = trim(((string)($kind['name'][$position] ?? $kind['name'][0])) . ' ' . (string)$product['articul']);
             $descriptions[$language_id] = [
@@ -592,8 +604,8 @@ class CatalogFeed extends \Opencart\System\Engine\Model {
             $attribute_id = (int)($attributes[$key] ?? 0);
             if (!$attribute_id || !$values) continue;
             $description = [];
-            foreach ($codes as $position => $code) {
-                $description[$languages[$code]] = ['text' => (string)($values[$position] ?? $values[0])];
+            foreach ($codes as $code) {
+                $description[$languages[$code]] = ['text' => (string)($values[$this->languageIndex($code)] ?? $values[0])];
             }
             $product_attributes[] = ['attribute_id' => $attribute_id, 'product_attribute_description' => $description];
         }
