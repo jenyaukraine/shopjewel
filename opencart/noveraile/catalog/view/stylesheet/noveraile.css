@@ -3903,7 +3903,7 @@ body.noveraile-store,
   border-left-color: rgba(213,186,148,.2);
 }
 .noveraile-store .footer-signup form { border-bottom-color: rgba(225,207,184,.38); }
-.noveraile-store .footer-signup input {
+.noveraile-store .site-footer .footer-signup input:not([type="checkbox"]):not([type="radio"]):not([type="range"]) {
   color: #f4ede5;
   background: transparent;
 }
@@ -3935,7 +3935,7 @@ body.noveraile-store,
       linear-gradient(180deg, rgba(18,15,13,.96) 0%, rgba(25,20,17,.88) 100%),
       url("/image/catalog/noveraile/footer-signup-bg.webp") 58% center / cover no-repeat;
   }
-  .noveraile-store .footer-signup input {
+  .noveraile-store .site-footer .footer-signup input:not([type="checkbox"]):not([type="radio"]):not([type="range"]) {
     border-color: rgba(225,207,184,.32);
     color: #f4ede5;
     background: rgba(13,11,10,.34);
