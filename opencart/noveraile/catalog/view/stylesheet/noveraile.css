@@ -3743,12 +3743,11 @@ body.noveraile-store,
   }
   .catalog-filters details label:last-child { margin-bottom: 0; }
   .catalog-filters details label small { color: #968c80; font-size: 10px; }
-  .catalog-filters .filter-metal[open] {
+  .catalog-filters .filter-metal-grid {
     display: grid;
     grid-template-columns: repeat(2,minmax(0,1fr));
     gap: 8px;
   }
-  .catalog-filters .filter-metal summary { grid-column: 1 / -1; }
   .catalog-filters .filter-metal-option {
     min-height: 54px;
     margin: 0;
