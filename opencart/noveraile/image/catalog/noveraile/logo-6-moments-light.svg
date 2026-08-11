@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 92" role="img" aria-labelledby="title desc">
+  <title id="title">6 MOMENTS</title>
+  <desc id="desc">6 MOMENTS fine jewelry wordmark for dark backgrounds</desc>
+  <g fill="none" stroke="#c8a878" stroke-width="1.4">
+    <circle cx="39" cy="46" r="27"/>
+  </g>
+  <text x="22" y="61" fill="#f1e9df" font-family="Georgia, 'Times New Roman', serif" font-size="48" font-style="italic">6</text>
+  <path d="M89 22v48" stroke="#8e8275" stroke-width="1"/>
+  <text x="112" y="53" fill="#f1e9df" font-family="Georgia, 'Times New Roman', serif" font-size="31" letter-spacing="7">MOMENTS</text>
+  <text x="115" y="72" fill="#c8a878" font-family="Arial, Helvetica, sans-serif" font-size="8" letter-spacing="5.4">FINE JEWELRY</text>
+</svg>

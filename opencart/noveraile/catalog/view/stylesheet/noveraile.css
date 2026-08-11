@@ -3928,6 +3928,31 @@ body.noveraile-store,
   border-left-color: #7ba484;
   background: rgba(58,84,64,.28);
 }
+.noveraile-store .footer-main { border-top: 1px solid rgba(225,207,184,.08); }
+.noveraile-store .wordmark--footer img { opacity: 1; }
+.noveraile-store .footer-brand > p { color: #c7baaa; }
+.noveraile-store .footer-brand ul { color: #a99d91; }
+.noveraile-store .footer-brand li > .line-icon { color: #c8a878; }
+.noveraile-store .footer-brand ul a { color: #d9cfc3; }
+.noveraile-store .footer-socials a {
+  color: #c7baaa;
+  border-color: rgba(225,207,184,.28);
+}
+.noveraile-store .footer-socials a:hover,
+.noveraile-store .footer-socials a:focus-visible {
+  color: #1b1714;
+  border-color: #c8a878;
+  background: #c8a878;
+}
+.noveraile-store .footer-column h3 { color: #f1e9df; }
+.noveraile-store .footer-column a { color: #b9ada0; }
+.noveraile-store .footer-column a:hover,
+.noveraile-store .footer-column a:focus-visible { color: #d2b486; }
+.noveraile-store .footer-bottom {
+  color: #9f9488;
+  border-top-color: rgba(225,207,184,.18);
+}
+.noveraile-store .footer-bottom nav a { color: #b9ada0; }
 
 @media (max-width: 640px) {
   .noveraile-store .footer-signup {
