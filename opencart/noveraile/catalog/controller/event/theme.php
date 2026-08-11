@@ -119,7 +119,7 @@ class Theme extends \Opencart\System\Engine\Controller {
 
         $data['six_category_tiles'][] = [
             'name' => (string)($data['six_type_wedding'] ?? 'Wedding rings'),
-            'image' => '/image/' . ltrim(str_replace('\', '/', (string)$wedding->row['image']), '/'),
+            'image' => '/image/' . ltrim(str_replace('\\', '/', (string)$wedding->row['image']), '/'),
             'href' => $this->url->link('extension/noveraile/page/catalog', $lang . '&type=wedding')
         ];
     }

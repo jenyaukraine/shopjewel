@@ -68,9 +68,12 @@ COPY docker/bootstrap-noveraile.php /usr/local/bin/bootstrap-noveraile.php
 COPY docker/import-catalog.php /usr/local/bin/noveraile-import-catalog
 COPY docker/entrypoint.sh /usr/local/bin/noveraile-entrypoint
 
+# `find -exec ... ;` reports its own success, not the command's, so a file that
+# fails to parse used to be built into the image and only surfaced as a blank
+# storefront. xargs propagates the failure and stops the build here instead.
 RUN a2enconf noveraile-tuning \
-    && find /var/www/html/extension/noveraile -type f -name '*.php' \
-        -exec php -l '{}' ';' \
+    && find /var/www/html/extension/noveraile -type f -name '*.php' -print0 \
+        | xargs -0 -n1 php -l > /dev/null \
     && php -l /usr/local/bin/bootstrap-noveraile.php \
     && php -l /usr/local/bin/noveraile-import-catalog \
     && sed -i 's/\r$//' /usr/local/bin/noveraile-entrypoint \
