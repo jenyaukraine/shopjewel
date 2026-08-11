@@ -1,9 +1,15 @@
-<aside class="catalog-filters" data-six-filters>
-  <div class="filter-heading"><h2>{{ six_filters|trim('.') }}</h2><a href="{{ clear_url }}">{{ six_clear }}</a></div>
+<aside class="catalog-filters" id="six-catalog-filters" data-six-filters aria-labelledby="six-filter-title">
+  <div class="filter-heading">
+    <h2 id="six-filter-title">{{ six_filters|trim('.') }}</h2>
+    <div class="filter-heading__actions">
+      <a href="{{ clear_url }}">{{ six_clear }}</a>
+      <button class="filter-close" type="button" data-six-filter-close aria-label="{{ six_filters|trim('.') }}">&times;</button>
+    </div>
+  </div>
   <form action="{{ catalog_action }}" method="get"{% if ajax_filter_status %} data-six-ajax-filter{% endif %}>
     <input type="hidden" name="route" value="extension/noveraile/page/catalog"><input type="hidden" name="language" value="{{ language }}">
-    <label class="filter-search">{{ six_search }}<input type="search" name="q" value="{{ filters.q }}"></label>
-    {% if metals %}<details class="filter-metal" open><summary>{{ six_metal|trim('.') }}</summary><label class="filter-metal-option"><input type="radio" name="metal" value=""{% if not filters.metal %} checked{% endif %}><span class="metal-swatch metal-swatch--all" aria-hidden="true"></span><span>{{ six_all }}</span></label>{% for item in metals %}<label class="filter-metal-option"><input type="radio" name="metal" value="{{ item.value }}"{% if filters.metal == item.value %} checked{% endif %}><span class="metal-swatch metal-swatch--{{ item.value }}" aria-hidden="true"></span><span>{{ item.name }} <small>({{ item.total }})</small></span></label>{% endfor %}</details>{% endif %}
+    <label class="filter-search"><span>{{ six_search }}</span><input type="search" name="q" value="{{ filters.q }}" placeholder="{{ six_search|trim('.') }}" autocomplete="off"></label>
+    {% if metals %}<details class="filter-metal"{% if filters.metal %} open{% endif %}><summary>{{ six_metal|trim('.') }}</summary><label class="filter-metal-option"><input type="radio" name="metal" value=""{% if not filters.metal %} checked{% endif %}><span class="metal-swatch metal-swatch--all" aria-hidden="true"></span><span>{{ six_all }}</span></label>{% for item in metals %}<label class="filter-metal-option"><input type="radio" name="metal" value="{{ item.value }}"{% if filters.metal == item.value %} checked{% endif %}><span class="metal-swatch metal-swatch--{{ item.value }}" aria-hidden="true"></span><span>{{ item.name }} <small>({{ item.total }})</small></span></label>{% endfor %}</details>{% endif %}
     {% if finenesses %}<details><summary>{{ six_fineness|trim('.') }}</summary><label><input type="radio" name="fineness" value=""{% if not filters.fineness %} checked{% endif %}> {{ six_all }}</label>{% for item in finenesses %}<label><input type="radio" name="fineness" value="{{ item.value }}"{% if filters.fineness == item.value %} checked{% endif %}> {{ item.name }} <small>({{ item.total }})</small></label>{% endfor %}</details>{% endif %}
     {% if gemstones %}<details><summary>{{ six_gemstone|trim('.') }}</summary><label><input type="radio" name="gemstone" value=""{% if not filters.gemstone %} checked{% endif %}> {{ six_all }}</label>{% for item in gemstones %}<label><input type="radio" name="gemstone" value="{{ item.value }}"{% if filters.gemstone == item.value %} checked{% endif %}> {{ item.value }} <small>({{ item.total }})</small></label>{% endfor %}</details>{% endif %}
     {% if stone_origins %}<details><summary>{{ six_stone|trim('.') }}</summary><label><input type="radio" name="stone" value=""{% if not filters.stone %} checked{% endif %}> {{ six_all }}</label>{% for item in stone_origins %}<label><input type="radio" name="stone" value="{{ item.value }}"{% if filters.stone == item.value %} checked{% endif %}> {{ item.name }} <small>({{ item.total }})</small></label>{% endfor %}</details>{% endif %}

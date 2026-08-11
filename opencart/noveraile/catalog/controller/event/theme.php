@@ -40,8 +40,8 @@ class Theme extends \Opencart\System\Engine\Controller {
             $data['title'] = $data['six_brand_name'];
         }
 
-        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.6.0.0';
-        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.6.0.0';
+        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.6.1.0';
+        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.6.1.0';
         $data['six_favicon'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/favicon.svg?v=2';
         $data['six_og_image'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/og-oled.png';
         $data['six_native_menu_status'] = (bool)$this->config->get('module_noveraile_native_menu_status');

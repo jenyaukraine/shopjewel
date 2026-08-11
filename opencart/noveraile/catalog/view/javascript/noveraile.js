@@ -202,14 +202,53 @@
     const element = document.createElement('span'); element.textContent = String(value || ''); return element.innerHTML;
   }
 
-  const filterPanel = document.querySelector('[data-six-filters]');
   const ajaxFilterForm = document.querySelector('[data-six-ajax-filter]');
   const catalogResults = document.querySelector('#six-catalog-results');
+  let lastFilterToggle = null;
+  const getFilterPanel = () => document.querySelector('[data-six-filters]');
+  const setFilterPanelOpen = (open, restoreFocus = false) => {
+    const panel = getFilterPanel();
+    if (!panel) return;
+    panel.classList.toggle('is-open', open);
+    panel.setAttribute('aria-modal', open ? 'true' : 'false');
+    document.body.classList.toggle('six-filters-open', open);
+    document.querySelectorAll('[data-six-filter-toggle]').forEach((toggle) => toggle.setAttribute('aria-expanded', open ? 'true' : 'false'));
+    if (open) {
+      window.setTimeout(() => panel.querySelector('[data-six-filter-close]')?.focus(), 0);
+    } else if (restoreFocus && lastFilterToggle) {
+      lastFilterToggle.focus();
+    }
+  };
   function bindFilterToggle() {
-    const filterToggle = document.querySelector('[data-six-filter-toggle]');
-    if (filterPanel && filterToggle) filterToggle.addEventListener('click', () => filterPanel.classList.toggle('is-open'));
+    const open = Boolean(getFilterPanel()?.classList.contains('is-open'));
+    document.querySelectorAll('[data-six-filter-toggle]').forEach((toggle) => toggle.setAttribute('aria-expanded', open ? 'true' : 'false'));
   }
   bindFilterToggle();
+
+  document.addEventListener('click', (event) => {
+    const toggle = event.target.closest('[data-six-filter-toggle]');
+    if (toggle) {
+      event.preventDefault();
+      lastFilterToggle = toggle;
+      setFilterPanelOpen(!getFilterPanel()?.classList.contains('is-open'));
+      return;
+    }
+    if (event.target.closest('[data-six-filter-close]')) {
+      event.preventDefault();
+      setFilterPanelOpen(false, true);
+      return;
+    }
+    const panel = getFilterPanel();
+    if (document.body.classList.contains('six-filters-open') && panel && !panel.contains(event.target)) {
+      setFilterPanelOpen(false);
+    }
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && document.body.classList.contains('six-filters-open')) setFilterPanelOpen(false, true);
+  });
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 980 && document.body.classList.contains('six-filters-open')) setFilterPanelOpen(false);
+  });
 
   document.querySelectorAll('[data-six-price-range]').forEach((range) => {
     const numberLower = range.querySelector('input[name="price_min"]');

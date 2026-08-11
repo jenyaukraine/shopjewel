@@ -54,7 +54,7 @@
           <span>{{ six_pieces }}</span>
         </div>
         <div class="listing-controls">
-          <button class="filter-toggle" type="button" data-six-filter-toggle>{{ six_filters }}</button>
+          <button class="filter-toggle" type="button" data-six-filter-toggle aria-controls="six-catalog-filters" aria-expanded="false">{{ six_filters }}</button>
           <label>
             <span>{{ six_sort }}</span>
             <select aria-label="{{ six_sort }}" onchange="location=this.value">
