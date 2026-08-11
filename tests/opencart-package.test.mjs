@@ -675,10 +675,9 @@ test("the homepage offers wedding rings and leaves no empty tile", async () => {
     readFile(path.join(root, "catalog/language/ru-ru/module/noveraile.php"), "utf8"),
   ]);
 
-  assert.match(event, /private function addWeddingTile\(array &\$data, string \$lang\): void/);
-  assert.match(event, /addWeddingTile[\s\S]*?FIND_IN_SET\('wedding'/);
-  // No tile is offered when it would lead to an empty listing.
-  assert.match(event, /if \(!\$wedding->num_rows\) return;/);
+  // Four supplier categories plus the occasion a customer actually shops for.
+  assert.match(event, /six_category_tiles'\] = array_slice\(\$data\['six_category_tiles'\], 0, 4\)/);
+  assert.match(event, /'name' => \$data\['six_type_wedding'\][\s\S]*?moment=wedding/);
   // The track count follows the tiles, so four categories no longer leave a gap.
   assert.match(stylesheet, /\.category-showcase \{ display: grid; grid-template-columns: repeat\(auto-fit/);
   assert.match(language, /six_type_wedding'\] = 'Обручальные кольца'/);

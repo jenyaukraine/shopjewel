@@ -99,31 +99,6 @@ class Theme extends \Opencart\System\Engine\Controller {
         }
     }
 
-    /**
-     * The four supplier categories describe what a piece is; a customer looking
-     * for a wedding ring is shopping for an occasion instead, and the tile row
-     * had no destination for that — which is also why its fifth cell was empty.
-     * The tile is offered only when the catalog can answer it, so the homepage
-     * never sends anyone to an empty listing.
-     */
-    private function addWeddingTile(array &$data, string $lang): void {
-        foreach ($data['six_category_tiles'] as $tile) {
-            if ($this->categoryIcon((string)$tile['name']) === 'wedding') return;
-        }
-
-        $language_id = (int)$this->config->get('config_language_id');
-        $store_id = (int)$this->config->get('config_store_id');
-        $wedding = $this->db->query("SELECT `p`.`image` FROM `" . DB_PREFIX . "product` `p` INNER JOIN `" . DB_PREFIX . "product_description` `pd` ON (`pd`.`product_id` = `p`.`product_id` AND `pd`.`language_id` = '" . $language_id . "') INNER JOIN `" . DB_PREFIX . "product_to_store` `p2s` ON (`p2s`.`product_id` = `p`.`product_id` AND `p2s`.`store_id` = '" . $store_id . "') WHERE `p`.`status` = '1' AND `p`.`date_available` <= NOW() AND NULLIF(`p`.`image`, '') IS NOT NULL AND FIND_IN_SET('wedding', REPLACE(LOWER(`pd`.`tag`), ' ', '')) ORDER BY `p`.`sort_order` ASC, `p`.`product_id` ASC LIMIT 1");
-
-        if (!$wedding->num_rows) return;
-
-        $data['six_category_tiles'][] = [
-            'name' => (string)($data['six_type_wedding'] ?? 'Wedding rings'),
-            'image' => '/image/' . ltrim(str_replace('\\', '/', (string)$wedding->row['image']), '/'),
-            'href' => $this->url->link('extension/noveraile/page/catalog', $lang . '&type=wedding')
-        ];
-    }
-
     private function categoryIcon(string $name): string {
         $value = function_exists('mb_strtolower') ? mb_strtolower($name, 'UTF-8') : strtolower($name);
         $icons = [
@@ -287,7 +262,6 @@ class Theme extends \Opencart\System\Engine\Controller {
                 $data['six_category_tiles'][] = ['name'=>$category_names[$type], 'image'=>$data['six_asset'] . 'products/' . $image, 'href'=>$this->url->link('extension/noveraile/page/catalog', $lang . '&type=' . $type)];
             }
         }
-        $this->addWeddingTile($data, $lang);
         $data['six_category_tiles'] = array_slice($data['six_category_tiles'], 0, 4);
         $data['six_category_tiles'][] = [
             'name' => $data['six_type_wedding'],
