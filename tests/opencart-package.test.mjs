@@ -125,8 +125,8 @@ test("mobile categories are deduplicated and use semantic jewellery icons", asyn
   assert.match(event, /\$category_names\s*=\s*\[\]/);
   assert.match(event, /mb_strtolower/);
   assert.match(event, /'icon'\s*=>\s*\$this->categoryIcon\(\$name\)/);
-  assert.match(event, /noveraile\.css\?v=2.6.1.0/);
-  assert.match(event, /noveraile\.js\?v=2.6.1.0/);
+  assert.match(event, /noveraile\.css\?v=2.6.2.0/);
+  assert.match(event, /noveraile\.js\?v=2.6.2.0/);
   assert.match(header, /class="mobile-category-icon"/);
   assert.match(header, /category\.icon == 'earring'/);
   assert.match(header, /class="mobile-main-icon"/);
@@ -191,7 +191,7 @@ test("homepage Instagram callout can never render as an empty shell", async () =
 
   assert.match(event, /public function home[\s\S]*?six_instagram_label/);
   assert.match(event, /public function home[\s\S]*?social_fallbacks/);
-  assert.match(event, /noveraile\.css\?v=2.6.1.0/);
+  assert.match(event, /noveraile\.css\?v=2.6.2.0/);
   assert.match(home, /six_follow\|default/);
   assert.match(home, /six_follow_copy\|default/);
   assert.match(home, /six_instagram_label\|default/);
