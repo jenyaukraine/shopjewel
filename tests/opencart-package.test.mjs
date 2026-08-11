@@ -125,8 +125,8 @@ test("mobile categories are deduplicated and use semantic jewellery icons", asyn
   assert.match(event, /\$category_names\s*=\s*\[\]/);
   assert.match(event, /mb_strtolower/);
   assert.match(event, /'icon'\s*=>\s*\$this->categoryIcon\(\$name\)/);
-  assert.match(event, /noveraile\.css\?v=2.5.1.0/);
-  assert.match(event, /noveraile\.js\?v=2.5.1.0/);
+  assert.match(event, /noveraile\.css\?v=2.6.0.0/);
+  assert.match(event, /noveraile\.js\?v=2.6.0.0/);
   assert.match(header, /class="mobile-category-icon"/);
   assert.match(header, /category\.icon == 'earring'/);
   assert.match(header, /class="mobile-main-icon"/);
@@ -173,7 +173,7 @@ test("catalog identifies gold colors and uses a compact pagination footer", asyn
   assert.match(event, /six_metal_options/);
   assert.match(thumb, /class="card-metal-line"/);
   assert.match(thumb, /metal-swatch--/);
-  assert.match(product, /class="product-metal-list"/);
+  assert.doesNotMatch(product, /class="product-metal-list"/);
   assert.match(filters, /class="filter-metal-option"/);
   // The colours offered are whatever the catalog actually stocks.
   assert.match(filters, /metal-swatch--\{\{ item\.value \}\}/);
@@ -191,7 +191,7 @@ test("homepage Instagram callout can never render as an empty shell", async () =
 
   assert.match(event, /public function home[\s\S]*?six_instagram_label/);
   assert.match(event, /public function home[\s\S]*?social_fallbacks/);
-  assert.match(event, /noveraile\.css\?v=2.5.1.0/);
+  assert.match(event, /noveraile\.css\?v=2.6.0.0/);
   assert.match(home, /six_follow\|default/);
   assert.match(home, /six_follow_copy\|default/);
   assert.match(home, /six_instagram_label\|default/);
@@ -456,7 +456,7 @@ test("storefront uses the 6 Moments wordmark and data-backed stone filters", asy
 });
 
 test("client acceptance fixes stay enforced across catalog, quiz and header", async () => {
-  const [feed, catalogController, catalogModel, quizController, quizScript, theme, header, product, logo, workflow] = await Promise.all([
+  const [feed, catalogController, catalogModel, quizController, quizScript, theme, header, product, thumb, english, logo, workflow] = await Promise.all([
     readFile(path.join(root, "admin/model/module/catalog_feed.php"), "utf8"),
     readFile(path.join(root, "catalog/controller/page/catalog.php"), "utf8"),
     readFile(path.join(root, "catalog/model/catalog.php"), "utf8"),
@@ -465,11 +465,13 @@ test("client acceptance fixes stay enforced across catalog, quiz and header", as
     readFile(path.join(root, "catalog/controller/event/theme.php"), "utf8"),
     readFile(path.join(root, "catalog/view/template/common/header.twig"), "utf8"),
     readFile(path.join(root, "catalog/view/template/product/product.twig"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/product/thumb.twig"), "utf8"),
+    readFile(path.join(root, "catalog/language/en-gb/module/noveraile.php"), "utf8"),
     readFile(path.join(root, "image/catalog/noveraile/logo-6-moments.svg"), "utf8"),
     readFile(path.resolve(".github/workflows/deploy-production.yml"), "utf8"),
   ]);
 
-  assert.match(feed, /private const CATALOG_VERSION = 9/);
+  assert.match(feed, /private const CATALOG_VERSION = 10/);
   assert.match(feed, /findProductByArticul/);
   assert.match(feed, /installMetalColorOption/);
   assert.match(feed, /function_exists\('chgrp'\)/);
@@ -477,6 +479,13 @@ test("client acceptance fixes stay enforced across catalog, quiz and header", as
   assert.match(feed, /16\.5 \/ EU 52/);
   assert.match(feed, /17 \/ EU 54/);
   assert.doesNotMatch(catalogController.match(/\$allowed\s*=\s*\[[\s\S]*?\n\s*\];/)?.[0] ?? "", /'375'/);
+  assert.match(feed, /\$gold_key === 'CT_9'/);
+  assert.match(feed, /\$variant\[0\].*!== 'CT_9'/);
+  assert.doesNotMatch(theme.match(/\$data\['six_fineness_value'\][\s\S]*?;/)?.[0] ?? "", /375/);
+  assert.doesNotMatch(product, /class="product-metal-list"/);
+  assert.doesNotMatch(thumb, /card-metal-label|<small>\{\{ six_fineness_value/);
+  assert.match(theme, /productThumbs\(\$home_products, true\)/);
+  assert.match(english, /\['six_moment_yes'\]\s*=\s*'The Promise'/);
   assert.match(catalogModel, /preg_split\('\/\\s\*\[,;·\]\\s\*\/u'/);
   assert.doesNotMatch(quizController, /starter_tags/);
   assert.match(quizScript, /item\.type && item\.metal && item\.stone/);

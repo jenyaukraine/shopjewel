@@ -30,7 +30,7 @@ test("server-renders the finished storefront", async () => {
 
   const html = await response.text();
   assert.match(html, /<html lang="uk"/i);
-  assert.match(html, /<title>NOVERAILE — Де моменти стають спадщиною<\/title>/i);
+  assert.match(html, /<title>6 Moments — Where moments become legacy<\/title>/i);
   assert.match(html, /Де моменти стають спадщиною\./);
   assert.match(html, /Найбажаніші/);
   assert.doesNotMatch(html, /class="intro"/);
@@ -39,7 +39,7 @@ test("server-renders the finished storefront", async () => {
   assert.match(html, /Категорії товарів/);
   assert.match(html, /Спецпропозиції/);
   assert.match(html, /Онлайн-консультації/);
-  assert.match(html, /https:\/\/katya-dev\.duckdns\.org\/og-store\.png/);
+  assert.match(html, /https:\/\/6moments\.store\/og-oled\.png/);
   assert.doesNotMatch(html, /_vinext\/image/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/i);
 });

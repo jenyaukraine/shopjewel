@@ -3,12 +3,16 @@
 :root {
   --ink: #1c1b19;
   --charcoal: #272522;
-  --muted: #6d685f;
-  --line: #d8d1c8;
-  --paper: #f8f5ef;
-  --cream: #eee6db;
-  --sand: #d9cbb9;
-  --gold: #9a7445;
+  --muted: #5f5a53;
+  --line: #b9afa3;
+  --paper: #ddd7ce;
+  --cream: #d2c9bd;
+  --sand: #c7b7a4;
+  --gold: #8f6a3f;
+  --surface: #e7e1d8;
+  --surface-soft: #d4cdc3;
+  --field: #ece6de;
+  --image-ground: #d0c8bd;
   --success: #4e7658;
   --serif: "Iowan Old Style", "Baskerville", "Times New Roman", Georgia, serif;
   --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -1578,4 +1582,137 @@ body.cart-open .floating-bag { opacity: 0; visibility: hidden; pointer-events: n
 
 @media (prefers-reduced-motion: reduce) {
   * { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
+
+/* OLED-comfort art direction -------------------------------------------
+   Smoked ivory replaces pure-white fields while preserving the restrained,
+   editorial lightness of the jewellery photography. */
+body,
+#main-content { background: var(--paper); }
+
+.site-header { background: rgba(221,215,206,.94); }
+.mobile-drawer,
+.search-overlay { background: rgba(231,225,216,.98); }
+
+.editorial-products,
+.signature-section,
+.archive-section,
+.home-journal,
+.journal-preview,
+.product-reviews,
+.related-products { background: linear-gradient(180deg,var(--surface) 0%,var(--paper) 100%); }
+
+.signature-section .collection-grid,
+.archive-section .collection-grid,
+.related-products .collection-grid {
+  width: min(1680px,100%);
+  margin-inline: auto;
+  padding-inline: clamp(22px,4vw,72px);
+  gap: clamp(32px,3vw,58px) clamp(18px,1.8vw,30px);
+}
+
+.moment-art,
+.product-visual,
+.cart-product-image,
+.listing-card__image,
+.catalog-card__image {
+  background: radial-gradient(circle at 50% 38%,#ddd6cc 0%,var(--image-ground) 68%,#c4baad 100%);
+}
+.moment-art { aspect-ratio: .94; }
+.product-visual { min-height: clamp(560px,65vw,780px); }
+.product-photo,
+.product-photo--detail,
+.cart-product-image img,
+.listing-card__image img,
+.catalog-card__image img {
+  mix-blend-mode: multiply;
+  filter: brightness(.94) contrast(1.04) saturate(.8);
+}
+
+.moment-card { min-width: 0; }
+.moment-card .moment-art {
+  border: 1px solid rgba(67,57,47,.16);
+  box-shadow: 0 20px 52px rgba(54,45,37,.08), inset 0 0 0 1px rgba(255,255,255,.18);
+  transition: transform .45s cubic-bezier(.2,.8,.2,1), box-shadow .45s, background .35s;
+}
+.moment-card:hover .moment-art {
+  background: radial-gradient(circle at 50% 38%,#e1d9cf 0%,#cec4b7 68%,#bfb3a5 100%);
+  box-shadow: 0 28px 68px rgba(54,45,37,.14), inset 0 0 0 1px rgba(255,255,255,.22);
+  transform: translateY(-4px);
+}
+.moment-number {
+  color: #3e382f;
+  background: rgba(235,229,220,.86);
+  border-color: rgba(255,255,255,.38);
+}
+.product-kicker { margin-top: 20px; }
+.product-line { align-items: flex-start; }
+.product-line h3 {
+  min-width: 0;
+  line-height: 1.08;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.card-price { flex: 0 0 auto; }
+.editorial-script { color: rgba(82,72,62,.25); }
+.editorial-heading > p:not(.editorial-script) { color: #665f57; }
+
+.collections-intro,
+.moment-tiles,
+.benefits-strip,
+.brand-story,
+.diamond-intro,
+.diamond-comparison,
+.cart-page,
+.cart-page-summary,
+.cart-page-empty,
+.checkout-page,
+.account-page,
+#account-login { background: var(--cream); }
+
+.testimonial-card,
+.comparison-card,
+.account-portal,
+.checkout-success-card,
+.payment-choice,
+.product-reviews #form-review,
+.filter-panel,
+.catalog-filters { background: var(--surface); }
+
+.six-listing-page {
+  --listing-surface: var(--paper);
+  --listing-panel: var(--surface);
+  background: var(--listing-surface);
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+textarea,
+select { background-color: var(--field); }
+.site-header select,
+.site-header input,
+.mobile-drawer select { background-color: transparent; }
+
+.site-footer { color: #e4ddd4; background: #292622; }
+.site-footer .footer-kicker,
+.site-footer .footer-column h3,
+.site-footer .footer-bottom,
+.site-footer a { color: inherit; }
+.site-footer .footer-column a,
+.site-footer .footer-bottom { color: #bbb1a5; }
+.site-footer input { color: #f2ece4; background: transparent; border-color: rgba(228,221,212,.45); }
+
+@media (min-width: 1800px) {
+  .signature-section .collection-grid,
+  .archive-section .collection-grid,
+  .related-products .collection-grid { max-width: 1720px; }
+}
+
+@media (max-width: 680px) {
+  .signature-section .collection-grid,
+  .archive-section .collection-grid,
+  .related-products .collection-grid { padding-inline: 18px; }
+  .moment-art { aspect-ratio: .88; }
+  .moment-card .moment-art { box-shadow: 0 12px 30px rgba(54,45,37,.08); }
+  .product-kicker { min-height: 25px; margin-top: 14px; line-height: 1.4; }
+  .product-line h3 { font-size: clamp(17px,5vw,20px); line-height: 1.12; }
 }

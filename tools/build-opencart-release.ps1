@@ -53,7 +53,7 @@ foreach ($stage in @($stageDirectory, $installerStage)) {
 # The supplier catalog feed is this store's own assortment and pricing. It is
 # deployed with the container, never sold with the extension.
 New-Item -ItemType Directory -Force -Path $installerStage | Out-Null
-Copy-Item -LiteralPath (Join-Path $extensionRoot '*') -Destination $installerStage -Recurse -Force
+Copy-Item -Path (Join-Path $extensionRoot '*') -Destination $installerStage -Recurse -Force
 $privateData = Join-Path $installerStage 'data'
 if (Test-Path -LiteralPath $privateData) { Remove-Item -LiteralPath $privateData -Recurse -Force }
 

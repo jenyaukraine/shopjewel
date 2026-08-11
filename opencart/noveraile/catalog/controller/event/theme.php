@@ -40,10 +40,10 @@ class Theme extends \Opencart\System\Engine\Controller {
             $data['title'] = $data['six_brand_name'];
         }
 
-        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.5.1.0';
-        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.5.1.0';
+        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.6.0.0';
+        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.6.0.0';
         $data['six_favicon'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/favicon.svg?v=2';
-        $data['six_og_image'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/og-store.png';
+        $data['six_og_image'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/og-oled.png';
         $data['six_native_menu_status'] = (bool)$this->config->get('module_noveraile_native_menu_status');
         $data['six_canonical'] = '';
         foreach ((array)($data['links'] ?? []) as $link) {
@@ -150,7 +150,7 @@ class Theme extends \Opencart\System\Engine\Controller {
     public function footer(string &$route, array &$data, string &$code = '', string &$output = ''): void {
         if (!$this->enabled() || !$this->claimView($route, ['common/footer'], 'extension/noveraile/common/footer')) return;
         $this->words($data);
-        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.5.1.0';
+        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.6.0.0';
         $lang = 'language=' . $this->config->get('config_language');
         $data['six_home'] = $this->url->link('common/home', $lang);
         $data['six_about_url'] = $this->url->link('extension/noveraile/page/about', $lang);
@@ -178,7 +178,7 @@ class Theme extends \Opencart\System\Engine\Controller {
         if (!$this->enabled() || !$this->claimView($route, ['common/home'], 'extension/noveraile/common/home')) return;
         $this->words($data);
         $home_products = $this->getNoveraileProducts(false, 8);
-        $data['six_products'] = $this->productThumbs($home_products);
+        $data['six_products'] = $this->productThumbs($home_products, true);
         $data['six_special_products'] = $this->productThumbs($this->getNoveraileProducts(true, 10));
         $lang = 'language=' . $this->config->get('config_language');
         $data['six_catalog'] = $this->url->link('extension/noveraile/page/catalog', $lang);
@@ -356,7 +356,7 @@ class Theme extends \Opencart\System\Engine\Controller {
         $data['six_carat_value'] = $tag_carat !== '' ? $tag_carat . ' ct' : '—';
         $data['six_stones_value'] = $tag_stones !== '' ? $tag_stones : '—';
         $fineness_values = [];
-        foreach (['375' => '375 / 9K', '585' => '585 / 14K', '750' => '750 / 18K'] as $tag => $label) {
+        foreach (['585' => '585 / 14K', '750' => '750 / 18K'] as $tag => $label) {
             if (in_array($tag, $data['six_tags'], true)) $fineness_values[] = $label;
         }
         $data['six_fineness_value'] = $fineness_values ? implode(' · ', $fineness_values) : '—';
@@ -485,9 +485,9 @@ class Theme extends \Opencart\System\Engine\Controller {
             $data['special'] = $market_price['special'] > 0 ? $this->model_extension_noveraile_pricing->format($market_price['special'], $currency, true) : false;
         }
         $tags = array_filter(array_map('trim', explode(',', (string)($data['tag'] ?? ''))));
-        $data['six_moment'] = $this->momentFromTags($tags);
+        $data['six_moment'] = trim((string)($data['six_moment_override'] ?? '')) ?: $this->momentFromTags($tags);
         $data['six_metal_options'] = $this->metalOptions($tags);
-        $data['six_fineness_value'] = $this->tagChoice($tags, ['375','585','750']);
+        $data['six_fineness_value'] = $this->tagChoice($tags, ['585','750']);
         $data['six_sku'] = $data['model'] ?? '';
         $data['six_product_weight'] = $this->displayWeight($data);
         $carat = $this->tagPrefix($tags, 'carat-');
@@ -692,10 +692,10 @@ class Theme extends \Opencart\System\Engine\Controller {
         return $products;
     }
 
-    private function productThumbs(array $results): array {
+    private function productThumbs(array $results, bool $numbered = false): array {
         $this->load->model('tool/image');
         $cards = [];
-        foreach ($results as $result) {
+        foreach ($results as $index => $result) {
             $image = !empty($result['image']) && is_file(DIR_IMAGE . html_entity_decode($result['image'], ENT_QUOTES, 'UTF-8')) ? $result['image'] : 'placeholder.png';
             $currency = (string)($this->session->data['currency'] ?? $this->config->get('config_currency'));
             $this->load->model('extension/noveraile/pricing');
@@ -715,7 +715,10 @@ class Theme extends \Opencart\System\Engine\Controller {
                 'wishlist_add' => $this->url->link('account/wishlist.add', 'language=' . $this->config->get('config_language')),
                 'compare_add' => $this->url->link('product/compare.add', 'language=' . $this->config->get('config_language')),
                 'review_status' => false,
-                'rating' => 0
+                'rating' => 0,
+                'six_moment_override' => $numbered
+                    ? $this->language->get('six_signature_piece') . ' ' . str_pad((string)($index + 1), 2, '0', STR_PAD_LEFT)
+                    : ''
             ]);
             $cards[] = $this->load->view('product/thumb', $product);
         }

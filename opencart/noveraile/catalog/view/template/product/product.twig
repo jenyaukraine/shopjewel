@@ -52,7 +52,6 @@
       <p class="eyebrow">{{ six_moment|trim('.') }}</p><h1>{{ heading_title|trim('.') }}</h1>
       <p class="product-price">{% if special %}<del>{{ price }}</del> {{ special }}{% else %}{{ price }}{% endif %}</p>
       <div class="product-status-line"><span>{{ six_product_code }}: <strong>{{ model }}</strong></span><span>{{ six_stock }}: <strong>{{ stock }}</strong></span><span>{{ six_weight }}: <strong>{{ six_product_weight }}</strong></span></div>
-      {% if six_metal_options %}<div class="product-metal-list" aria-label="{{ six_metal }}">{% for metal in six_metal_options %}<span><i class="metal-swatch metal-swatch--{{ metal.key }}" aria-hidden="true"></i>{{ metal.name }}</span>{% endfor %}</div>{% endif %}
       <dl class="product-key-specs">{% if six_fineness_value and six_fineness_value != '—' %}<div><dt>{{ six_fineness }}</dt><dd>{{ six_fineness_value }}</dd></div>{% endif %}<div><dt>{{ six_stone }}</dt><dd>{{ six_stone_value }}</dd></div>{% if six_carat_value and six_carat_value != '—' %}<div><dt>{{ six_carat }}</dt><dd>{{ six_carat_value }}</dd></div>{% endif %}{% if six_stones_value and six_stones_value != '—' %}<div><dt>{{ six_stone_count }}</dt><dd>{{ six_stones_value }}</dd></div>{% endif %}{% if six_collections_value %}<div><dt>{{ six_collections }}</dt><dd>{{ six_collections_value }}</dd></div>{% endif %}<div><dt>{{ six_delivery }}</dt><dd>{{ six_delivery_value }}</dd></div></dl>
       <div class="product-description">{{ description|raw }}</div>
       <div class="product-purchase">

@@ -1,27 +1,32 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://katya-dev.duckdns.org"),
+  metadataBase: new URL("https://6moments.store"),
   title: {
-    default: "NOVERAILE — Де моменти стають спадщиною",
-    template: "%s | NOVERAILE",
+    default: "6 Moments — Where moments become legacy",
+    template: "%s | 6 Moments",
   },
   description:
-    "Ювелірні вироби зі змістом, створені зберігати моменти, що визначають нас.",
+    "Fine jewellery created to preserve the moments that define us.",
   openGraph: {
-    title: "NOVERAILE — Де моменти стають спадщиною",
+    title: "6 Moments — Where moments become legacy",
     description:
-      "Особливі речі, створені для людини, яка нестиме їхню історію далі.",
-    images: [{ url: "/og-store.png", width: 1728, height: 910 }],
+      "Meaningful fine jewellery for stories that deserve to live on.",
+    images: [{ url: "/og-oled.png", width: 1731, height: 909 }],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "NOVERAILE — Де моменти стають спадщиною",
-    description: "Особливі речі для моментів, які хочеться зберегти назавжди.",
-    images: ["/og-store.png"],
+    title: "6 Moments — Where moments become legacy",
+    description: "Meaningful fine jewellery for moments worth preserving.",
+    images: ["/og-oled.png"],
   },
+};
+
+export const viewport: Viewport = {
+  colorScheme: "light",
+  themeColor: "#ddd7ce",
 };
 
 export default function RootLayout({

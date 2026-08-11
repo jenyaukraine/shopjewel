@@ -17,7 +17,7 @@ class CatalogFeed extends \Opencart\System\Engine\Model {
     private const FEED_FILE = 'noveraile/data/catalog-feed.json';
     private const IMAGE_DIR = 'catalog/noveraile/feed/';
     private const LANGUAGES = ['en-gb', 'de-de', 'cs-cz', 'ru-ru', 'uk-ua'];
-    private const CATALOG_VERSION = 9;
+    private const CATALOG_VERSION = 10;
 
     private array $feed = [];
     private array $copy = [];
@@ -322,6 +322,7 @@ class CatalogFeed extends \Opencart\System\Engine\Model {
         $values = [];
         $sort = 0;
         foreach ($feed['gold'] as $gold_key => $gold) {
+            if ($gold_key === 'CT_9') continue;
             foreach ($feed['quality'] as $quality_key => $quality) {
                 $values[$gold_key . '|' . $quality_key] = ['label' => $gold['karat'] . 'K · ' . $quality['label'], 'sort_order' => $sort++];
             }
@@ -448,6 +449,16 @@ class CatalogFeed extends \Opencart\System\Engine\Model {
 
     private function productPayload(array $product, int $index, array $languages, array $attributes, array $categories, array $options_map, int $stock_status_id): array {
         $feed = $this->feed();
+        // 9K / 375 is intentionally not sold by 6 Moments. Keep it in the
+        // supplier feed for traceability, but remove it before price, copy,
+        // tags and required option values are built.
+        $product['variants'] = array_values(array_filter(
+            $product['variants'],
+            static fn(array $variant): bool => (string)($variant[0] ?? '') !== 'CT_9'
+        ));
+        if (!$product['variants']) {
+            throw new \RuntimeException(sprintf('Articul "%s" has no saleable 14K or 18K variants.', (string)$product['articul']));
+        }
         $codes = array_keys($languages);
         $brand = $this->brand();
         $kind = $feed['kinds'][(string)$product['kind']];
