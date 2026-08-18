@@ -125,8 +125,8 @@ test("mobile categories are deduplicated and use semantic jewellery icons", asyn
   assert.match(event, /\$category_names\s*=\s*\[\]/);
   assert.match(event, /mb_strtolower/);
   assert.match(event, /'icon'\s*=>\s*\$this->categoryIcon\(\$name\)/);
-  assert.match(event, /noveraile\.css\?v=2.6.5.2/);
-  assert.match(event, /noveraile\.js\?v=2.6.5.2/);
+  assert.match(event, /noveraile\.css\?v=2.7.0.0/);
+  assert.match(event, /noveraile\.js\?v=2.7.0.0/);
   assert.match(header, /class="mobile-category-icon"/);
   assert.match(header, /category\.icon == 'earring'/);
   assert.match(header, /class="mobile-main-icon"/);
@@ -191,13 +191,13 @@ test("homepage Instagram callout can never render as an empty shell", async () =
 
   assert.match(event, /public function home[\s\S]*?six_instagram_label/);
   assert.match(event, /public function home[\s\S]*?social_fallbacks/);
-  assert.match(event, /noveraile\.css\?v=2.6.5.2/);
+  assert.match(event, /noveraile\.css\?v=2.7.0.0/);
   assert.match(home, /six_follow\|default/);
   assert.match(home, /six_follow_copy\|default/);
   assert.match(home, /six_instagram_label\|default/);
 });
 
-test("storefront is light-only and ships no theme control", async () => {
+test("storefront is light-only and ships the client-approved white surfaces", async () => {
   const [header, stylesheet, script, admin, settings, adminTemplate] = await Promise.all([
     readFile(path.join(root, "catalog/view/template/common/header.twig"), "utf8"),
     readFile(path.join(root, "catalog/view/stylesheet/noveraile.css"), "utf8"),
@@ -208,6 +208,10 @@ test("storefront is light-only and ships no theme control", async () => {
   ]);
 
   assert.match(header, /name="color-scheme" content="light"/);
+  assert.match(stylesheet, /--paper:\s*#ffffff/);
+  assert.match(stylesheet, /Client-approved white storefront/);
+  assert.match(stylesheet, /\.noveraile-store \.moment-card\s*\{[\s\S]*?border:\s*1px solid #dedbd6/);
+  assert.match(stylesheet, /\.noveraile-store \.site-footer,[\s\S]*?background:\s*#fff/);
   for (const source of [header, stylesheet, script, admin, settings, adminTemplate]) {
     assert.doesNotMatch(source, /data-theme|theme-toggle|noveraile-theme|prefers-color-scheme|module_noveraile_color_mode/);
   }
@@ -442,7 +446,8 @@ test("storefront uses the 6 Moments wordmark and data-backed stone filters", asy
   ]);
 
   assert.match(header, /logo-6-moments\.svg/);
-  assert.match(footer, /logo-6-moments-light\.svg/);
+  assert.match(footer, /logo-6-moments\.svg/);
+  assert.doesNotMatch(footer, /logo-6-moments-light\.svg/);
   assert.match(theme, /\$data\['six_asset'\]\s*=\s*'\/image\/catalog\/noveraile\/'/);
   assert.match(logo, /6 MOMENTS/);
   assert.doesNotMatch(header, />Your Store</);
@@ -452,6 +457,8 @@ test("storefront uses the 6 Moments wordmark and data-backed stone filters", asy
   assert.match(catalogModel, /'круглый'/);
   assert.match(catalogModel, /'stone_shape' => 900002/);
   assert.match(catalogModel, /cached module settings still point at the removed IDs/);
+  assert.match(catalogModel, /public function getVariantPrice\(int \$product_id, array \$filter\): \?float/);
+  assert.match(catalogController, /getVariantPrice\(\(int\)\$product_id, \$filter\)/);
   assert.equal((catalogModel.match(/is_array\(\$cached\) && \$cached/g) ?? []).length, 2);
 });
 
@@ -491,11 +498,13 @@ test("client acceptance fixes stay enforced across catalog, quiz and header", as
   assert.match(quizScript, /item\.type && item\.metal && item\.stone/);
   assert.match(theme, /six_type_wedding/);
   assert.match(theme, /&moment=wedding/);
+  assert.match(theme, /\$wedding_query/);
   assert.match(header, /class="header-whatsapp"/);
   assert.match(header, /class="header-wishlist"/);
   assert.doesNotMatch(header, /href="tel:/);
   assert.match(product, /required aria-required="true"/);
   assert.doesNotMatch(logo, /M39 12v8/);
+  assert.doesNotMatch(logo, /<circle/);
   assert.match(workflow, /STRIPE_SECRET_KEY: \$\{\{ secrets\.STRIPE_SECRET_KEY \}\}/);
   assert.match(workflow, /STRIPE_WEBHOOK_SECRET: \$\{\{ secrets\.STRIPE_WEBHOOK_SECRET \}\}/);
 });

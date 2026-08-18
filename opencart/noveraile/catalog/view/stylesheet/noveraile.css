@@ -1,16 +1,16 @@
 :root {
   --ink: #1c1b19;
   --charcoal: #272522;
-  --muted: #5f5a53;
-  --line: #b9afa3;
-  --paper: #ddd7ce;
-  --cream: #d2c9bd;
-  --sand: #c7b7a4;
-  --gold: #8f6a3f;
-  --surface: #e7e1d8;
-  --surface-soft: #d4cdc3;
-  --field: #ece6de;
-  --image-ground: #d0c8bd;
+  --muted: #6d685f;
+  --line: #dedbd6;
+  --paper: #ffffff;
+  --cream: #ffffff;
+  --sand: #f5f2ed;
+  --gold: #9a7445;
+  --surface: #ffffff;
+  --surface-soft: #ffffff;
+  --field: #ffffff;
+  --image-ground: #ffffff;
   --success: #4e7658;
   --serif: "Iowan Old Style", "Baskerville", "Times New Roman", Georgia, serif;
   --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -3969,4 +3969,197 @@ body.noveraile-store,
     border-color: #c8a878;
     box-shadow: inset 0 0 0 1px rgba(200,168,120,.35);
   }
+}
+
+/* Client-approved white storefront -----------------------------------------
+   The final visual system uses true white across the storefront, cards,
+   catalog, account and checkout. Fine borders separate sections and products
+   without reintroducing tinted panels. */
+.noveraile-store,
+.noveraile-store #main-content,
+.noveraile-store .site-header,
+.noveraile-store .six-switcher .dropdown-menu,
+.noveraile-store .mobile-drawer,
+.noveraile-store .search-overlay,
+.noveraile-store .editorial-products,
+.noveraile-store .signature-section,
+.noveraile-store .archive-section,
+.noveraile-store .home-journal,
+.noveraile-store .journal-preview,
+.noveraile-store .product-reviews,
+.noveraile-store .related-products,
+.noveraile-store .collections-intro,
+.noveraile-store .moment-tiles,
+.noveraile-store .benefits-strip,
+.noveraile-store .brand-story,
+.noveraile-store .diamond-intro,
+.noveraile-store .diamond-comparison,
+.noveraile-store .cart-page,
+.noveraile-store .cart-page-summary,
+.noveraile-store .cart-page-empty,
+.noveraile-store .checkout-page,
+.noveraile-store .account-page,
+.noveraile-store #account-login,
+.noveraile-store .testimonial-card,
+.noveraile-store .comparison-card,
+.noveraile-store .account-portal,
+.noveraile-store .checkout-success-card,
+.noveraile-store .payment-choice,
+.noveraile-store .product-reviews #form-review,
+.noveraile-store .filter-panel,
+.noveraile-store .catalog-filters,
+.noveraile-store .six-listing-page {
+  background-color: #fff;
+  background-image: none;
+}
+
+.noveraile-store .site-header { background: rgba(255,255,255,.96); }
+.noveraile-store .six-switcher .dropdown-menu,
+.noveraile-store .mobile-drawer,
+.noveraile-store .search-overlay { background: rgba(255,255,255,.98); }
+
+.noveraile-store .signature-section,
+.noveraile-store .archive-section,
+.noveraile-store .benefits-strip,
+.noveraile-store .collections-intro,
+.noveraile-store .category-showcase,
+.noveraile-store .brand-story,
+.noveraile-store .journal-preview,
+.noveraile-store .home-journal,
+.noveraile-store .site-footer { border-top: 1px solid #e7e3de; }
+.noveraile-store .signature-section,
+.noveraile-store .archive-section,
+.noveraile-store .journal-preview,
+.noveraile-store .home-journal { padding-block: clamp(54px,5vw,82px); }
+
+.noveraile-store .moment-card {
+  padding: 12px;
+  border: 1px solid #dedbd6;
+  background: #fff;
+}
+.noveraile-store .moment-art,
+.noveraile-store .product-visual,
+.noveraile-store .cart-product-image,
+.noveraile-store .listing-card__image,
+.noveraile-store .catalog-card__image,
+.noveraile-store .category-showcase a,
+.noveraile-store .category-showcase img {
+  background: #fff;
+}
+.noveraile-store .moment-card .moment-art {
+  border: 1px solid #ebe8e3;
+  box-shadow: none;
+}
+.noveraile-store .moment-card:hover .moment-art {
+  background: #fff;
+  box-shadow: 0 16px 34px rgba(36,31,27,.08);
+}
+.noveraile-store .product-photo,
+.noveraile-store .product-photo--detail,
+.noveraile-store .cart-product-image img,
+.noveraile-store .listing-card__image img,
+.noveraile-store .catalog-card__image img,
+.noveraile-store .category-showcase img {
+  mix-blend-mode: normal;
+  filter: none;
+}
+.noveraile-store .category-showcase img { object-fit: contain; }
+.noveraile-store .moment-number {
+  color: #3e382f;
+  background: rgba(255,255,255,.9);
+  border-color: #dedbd6;
+}
+
+.noveraile-store .catalog-filters {
+  --filter-bg: #fff;
+  --filter-surface: #fff;
+  --filter-text: #1c1b19;
+  --filter-muted: #6d685f;
+  --filter-line: #dedbd6;
+  --filter-gold: #9a7445;
+  --field: #fff;
+  color: var(--ink);
+  border-color: var(--line);
+  background: #fff;
+  box-shadow: none;
+}
+.noveraile-store .catalog-filters .filter-heading,
+.noveraile-store .catalog-filters .filter-search,
+.noveraile-store .catalog-filters details { border-color: var(--line); }
+.noveraile-store .catalog-filters .filter-heading h2,
+.noveraile-store .catalog-filters summary,
+.noveraile-store .catalog-filters details label,
+.noveraile-store .catalog-filters .filter-size-grid label { color: var(--ink); }
+.noveraile-store .catalog-filters .filter-heading a,
+.noveraile-store .catalog-filters .filter-search,
+.noveraile-store .catalog-filters details label small { color: var(--muted); }
+.noveraile-store .catalog-filters .filter-search input,
+.noveraile-store .catalog-filters .price-range input,
+.noveraile-store .catalog-filters .filter-size-grid label,
+.noveraile-store .catalog-filters .filter-metal-option { color: var(--ink); border-color: var(--line); background: #fff; }
+.noveraile-store .catalog-filters .filter-metal-option:has(input:checked) { color: var(--ink); border-color: var(--gold); background: #faf8f5; }
+.noveraile-store .catalog-filters .filter-size-grid label:has(input:checked) { color: #fff; border-color: var(--ink); background: var(--ink); }
+.noveraile-store .catalog-filters .price-range__slider::before { background: #dedbd6; }
+.noveraile-store .catalog-filters .price-range__slider::after { background: var(--gold); }
+.noveraile-store .catalog-filters form > .button { color: #fff; border-color: var(--ink); background: var(--ink); box-shadow: none; }
+
+.noveraile-store .site-footer,
+.noveraile-store .footer-signup { color: var(--ink); background: #fff; }
+.noveraile-store .footer-signup {
+  background-image: none;
+  border: 1px solid var(--line);
+}
+.noveraile-store .footer-signup__content,
+.noveraile-store .footer-signup h2,
+.noveraile-store .footer-brand > p,
+.noveraile-store .footer-brand ul,
+.noveraile-store .footer-brand ul a,
+.noveraile-store .footer-column h3,
+.noveraile-store .footer-column a,
+.noveraile-store .footer-bottom,
+.noveraile-store .footer-bottom nav a { color: var(--ink); }
+.noveraile-store .footer-brand li > .line-icon { color: var(--gold); }
+.noveraile-store .footer-socials a { color: var(--ink); border-color: var(--line); }
+.noveraile-store .footer-socials a:hover,
+.noveraile-store .footer-socials a:focus-visible { color: #fff; border-color: var(--ink); background: var(--ink); }
+.noveraile-store .site-footer .footer-signup input:not([type="checkbox"]):not([type="radio"]):not([type="range"]) {
+  color: var(--ink);
+  border-color: var(--line);
+  background: #fff;
+}
+.noveraile-store .footer-bottom { border-top-color: var(--line); }
+
+@media (max-width: 980px) {
+  body.six-filters-open::after { background: rgba(24,21,18,.24); }
+  .six-catalog-page .catalog-filters,
+  .six-listing-page .catalog-filters {
+    color: var(--ink);
+    border-left-color: var(--line);
+    background: #fff;
+    box-shadow: -20px 0 55px rgba(34,29,25,.12);
+  }
+  .six-catalog-page .filter-heading,
+  .six-listing-page .filter-heading { border-bottom-color: var(--line); background: rgba(255,255,255,.97); }
+  .six-catalog-page .filter-heading h2,
+  .six-listing-page .filter-heading h2,
+  .catalog-filters details summary,
+  .catalog-filters details label { color: var(--ink); }
+  .six-catalog-page .filter-heading a,
+  .six-listing-page .filter-heading a,
+  .catalog-filters .filter-search { color: var(--muted); }
+  .filter-close { color: var(--ink); border-color: var(--line); background: #fff; }
+  .filter-close:hover,
+  .filter-close:focus-visible { color: #fff; border-color: var(--ink); background: var(--ink); }
+  .catalog-filters .filter-search input,
+  .catalog-filters .price-range input,
+  .catalog-filters .filter-metal-option { color: var(--ink); border-color: var(--line); background: #fff; }
+  .catalog-filters .filter-search input:focus { border-color: var(--gold); box-shadow: inset 0 0 0 1px var(--gold); }
+  .catalog-filters details { border-bottom-color: var(--line); }
+  .catalog-filters details summary::after { color: var(--gold); border-color: var(--line); }
+  .catalog-filters form > .button { color: #fff; border-color: var(--ink); background: var(--ink); box-shadow: 0 0 0 8px #fff; }
+}
+
+@media (max-width: 640px) {
+  .noveraile-store .footer-signup { background: #fff; }
+  .noveraile-store .site-footer .footer-signup input:not([type="checkbox"]):not([type="radio"]):not([type="range"]) { color: var(--ink); border-color: var(--line); background: #fff; }
 }

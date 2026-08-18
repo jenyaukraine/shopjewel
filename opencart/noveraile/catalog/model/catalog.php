@@ -34,6 +34,33 @@ class Catalog extends \Opencart\System\Engine\Model {
         return (int)($query->row['total'] ?? 0);
     }
 
+    /**
+     * Return the lowest purchasable variant price matching the active gold
+     * fineness and/or diamond quality. Imported products store combinations
+     * such as "14K · G/VS2" as option values whose price is a delta from the
+     * base product price, so the catalog can show the same amount the customer
+     * will see after choosing that combination on the product page.
+     */
+    public function getVariantPrice(int $product_id, array $filter): ?float {
+        $conditions = [];
+        $fineness = (string)($filter['fineness'] ?? '');
+        $karat = ['585' => '14K', '750' => '18K'][$fineness] ?? '';
+        if ($karat !== '') {
+            $conditions[] = "UPPER(`ovd_variant`.`name`) LIKE '" . $this->db->escape($karat) . " %'";
+        }
+
+        $quality = strtoupper(preg_replace('/[^A-Z0-9\/-]/i', '', (string)($filter['stone_quality'] ?? '')));
+        if ($quality !== '') {
+            $conditions[] = "UPPER(`ovd_variant`.`name`) LIKE '%" . $this->db->escape($quality) . "%'";
+        }
+        if (!$conditions) return null;
+
+        $adjustment = "CASE `pov_variant`.`price_prefix` WHEN '-' THEN -`pov_variant`.`price` WHEN '=' THEN `pov_variant`.`price` - `p_variant`.`price` ELSE `pov_variant`.`price` END";
+        $sql = "SELECT (`p_variant`.`price` + " . $adjustment . ") AS `variant_price` FROM `" . DB_PREFIX . "product` `p_variant` INNER JOIN `" . DB_PREFIX . "product_option_value` `pov_variant` ON (`pov_variant`.`product_id` = `p_variant`.`product_id`) INNER JOIN `" . DB_PREFIX . "option_value_description` `ovd_variant` ON (`ovd_variant`.`option_value_id` = `pov_variant`.`option_value_id` AND `ovd_variant`.`language_id` = '" . (int)$this->config->get('config_language_id') . "') WHERE `p_variant`.`product_id` = '" . $product_id . "' AND " . implode(' AND ', $conditions) . " ORDER BY `variant_price` ASC LIMIT 1";
+        $query = $this->db->query($sql);
+        return $query->num_rows ? max(0.0, (float)$query->row['variant_price']) : null;
+    }
+
     public function getPriceBounds(): array {
         $customer_group_id = (int)$this->config->get('config_customer_group_id');
         $store_id = (int)$this->config->get('config_store_id');

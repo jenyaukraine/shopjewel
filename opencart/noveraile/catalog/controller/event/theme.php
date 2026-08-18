@@ -40,8 +40,8 @@ class Theme extends \Opencart\System\Engine\Controller {
             $data['title'] = $data['six_brand_name'];
         }
 
-        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.6.5.2';
-        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.6.5.2';
+        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.7.0.0';
+        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.7.0.0';
         $data['six_favicon'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/favicon.svg?v=2';
         $data['six_og_image'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/og-oled.png';
         $data['six_native_menu_status'] = (bool)$this->config->get('module_noveraile_native_menu_status');
@@ -150,7 +150,7 @@ class Theme extends \Opencart\System\Engine\Controller {
     public function footer(string &$route, array &$data, string &$code = '', string &$output = ''): void {
         if (!$this->enabled() || !$this->claimView($route, ['common/footer'], 'extension/noveraile/common/footer')) return;
         $this->words($data);
-        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.6.5.2';
+        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.7.0.0';
         $lang = 'language=' . $this->config->get('config_language');
         $data['six_home'] = $this->url->link('common/home', $lang);
         $data['six_about_url'] = $this->url->link('extension/noveraile/page/about', $lang);
@@ -263,9 +263,14 @@ class Theme extends \Opencart\System\Engine\Controller {
             }
         }
         $data['six_category_tiles'] = array_slice($data['six_category_tiles'], 0, 4);
+        $wedding_image = $data['six_asset'] . 'products/union-band.webp';
+        if ($uses_current_catalog) {
+            $wedding_query = $this->db->query("SELECT `p`.`image` FROM `" . DB_PREFIX . "product` `p` INNER JOIN `" . DB_PREFIX . "product_description` `pd` ON (`pd`.`product_id` = `p`.`product_id` AND `pd`.`language_id` = '" . (int)$this->config->get('config_language_id') . "') WHERE `p`.`status` = '1' AND NULLIF(`p`.`image`, '') IS NOT NULL AND FIND_IN_SET('wedding', REPLACE(LOWER(`pd`.`tag`), ' ', '')) ORDER BY `p`.`sort_order`, `p`.`product_id` LIMIT 1");
+            if ($wedding_query->num_rows) $wedding_image = '/image/' . ltrim(str_replace('\\', '/', (string)$wedding_query->row['image']), '/');
+        }
         $data['six_category_tiles'][] = [
             'name' => $data['six_type_wedding'],
-            'image' => $data['six_asset'] . 'products/union-band.webp',
+            'image' => $wedding_image,
             'href' => $this->url->link('extension/noveraile/page/catalog', $lang . '&moment=wedding')
         ];
 

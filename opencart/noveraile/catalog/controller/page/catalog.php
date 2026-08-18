@@ -22,7 +22,14 @@ class Catalog extends \Opencart\System\Engine\Controller {
         $data['products'] = [];
         foreach ($this->model_extension_noveraile_catalog->getProductIds($filter) as $product_id) {
             $product = $this->model_catalog_product->getProduct($product_id);
-            if ($product) $data['products'][] = $this->productThumb($product);
+            if (!$product) continue;
+            $variant_price = $this->model_extension_noveraile_catalog->getVariantPrice((int)$product_id, $filter);
+            if ($variant_price !== null) {
+                $delta = $variant_price - (float)$product['price'];
+                $product['price'] = $variant_price;
+                if ((float)($product['special'] ?? 0) > 0) $product['special'] = max(0, (float)$product['special'] + $delta);
+            }
+            $data['products'][] = $this->productThumb($product);
         }
         $total = $this->model_extension_noveraile_catalog->getTotalProducts($filter);
         $data['total'] = $total;
