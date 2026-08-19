@@ -18,7 +18,7 @@ RUN if [ -f composer.json ]; then \
         echo "Unsupported OpenCart source: composer.json was not found" >&2; exit 1; \
     fi
 
-FROM php:8.3-apache-bookworm
+FROM php:8.5-apache-bookworm
 
 ARG OPENCART_VERSION
 
