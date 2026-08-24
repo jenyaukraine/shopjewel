@@ -203,6 +203,7 @@ class Catalog extends \Opencart\System\Engine\Controller {
         $this->load->model('extension/noveraile/pricing');
         $market_price = $this->model_extension_noveraile_pricing->resolve($result, $currency);
         $data = array_merge($result, [
+            'name' => $this->cleanProductName((string)($result['name'] ?? ''), (string)($result['model'] ?? '')),
             'thumb' => $this->model_tool_image->resize($image, 700, 700),
             'description' => trim(strip_tags(html_entity_decode((string)$result['description'], ENT_QUOTES, 'UTF-8'))),
             'price' => $this->model_extension_noveraile_pricing->format($market_price['fixed'] ? $market_price['price'] : $this->tax->calculate((float)$result['price'], (int)$result['tax_class_id'], $this->config->get('config_tax')), $currency, $market_price['fixed']),
@@ -215,6 +216,17 @@ class Catalog extends \Opencart\System\Engine\Controller {
             'review_status' => false, 'rating' => 0
         ]);
         return $this->load->view('product/thumb', $data);
+    }
+
+    private function cleanProductName(string $name, string $model): string {
+        $name = preg_replace('/[\p{Z}\s]+/u', ' ', trim($name)) ?: trim($name);
+        $model = trim($model);
+
+        if ($model !== '') {
+            $name = preg_replace('/(?:[\p{Z}\s]+)?' . preg_quote($model, '/') . '$/iu', '', $name) ?? $name;
+        }
+
+        return preg_replace('/[\p{Z}\s]+/u', ' ', trim($name)) ?: trim($name);
     }
 
     private function filterUrl(array $replace): string {

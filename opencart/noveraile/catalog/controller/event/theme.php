@@ -304,6 +304,14 @@ class Theme extends \Opencart\System\Engine\Controller {
         $product_id = (int)($data['product_id'] ?? 0);
         $this->load->model('catalog/product');
         $info = $product_id ? $this->model_catalog_product->getProduct($product_id) : [];
+        $data['heading_title'] = $this->cleanProductName(
+            (string)($data['heading_title'] ?? $info['name'] ?? ''),
+            (string)($info['model'] ?? $data['model'] ?? '')
+        );
+        if (!empty($data['breadcrumbs'])) {
+            $last_breadcrumb = array_key_last($data['breadcrumbs']);
+            if ($last_breadcrumb !== null) $data['breadcrumbs'][$last_breadcrumb]['text'] = $data['heading_title'];
+        }
         $currency = (string)($this->session->data['currency'] ?? $this->config->get('config_currency'));
         $this->load->model('extension/noveraile/pricing');
         $market_price = $this->model_extension_noveraile_pricing->resolve($info, $currency);
@@ -385,7 +393,8 @@ class Theme extends \Opencart\System\Engine\Controller {
             $main_price = (float)($main_market['special'] ?: $main_market['price']);
             $fixed_set = $candidate_market['fixed'] && $main_market['fixed'];
             $data['six_bundle_product'] = [
-                'product_id'=>(int)$candidate['product_id'], 'name'=>$candidate['name'],
+                'product_id'=>(int)$candidate['product_id'],
+                'name'=>$this->cleanProductName((string)$candidate['name'], (string)($candidate['model'] ?? '')),
                 'image'=>$this->model_tool_image->resize($candidate['image'] ?: 'placeholder.png', 520, 520),
                 'price'=>$this->model_extension_noveraile_pricing->format($pair_price, $currency, $candidate_market['fixed']),
                 'set_price'=>$this->model_extension_noveraile_pricing->format(($main_price + $pair_price) * .9, $currency, $fixed_set),
@@ -482,6 +491,7 @@ class Theme extends \Opencart\System\Engine\Controller {
     public function thumb(string &$route, array &$data, string &$code = '', string &$output = ''): void {
         if (!$this->enabled() || !$this->claimView($route, ['product/thumb'], 'extension/noveraile/product/thumb')) return;
         $this->words($data);
+        $data['name'] = $this->cleanProductName((string)($data['name'] ?? ''), (string)($data['model'] ?? ''));
         $currency = (string)($this->session->data['currency'] ?? $this->config->get('config_currency'));
         $this->load->model('extension/noveraile/pricing');
         $market_price = $this->model_extension_noveraile_pricing->resolve($data, $currency);
@@ -708,6 +718,7 @@ class Theme extends \Opencart\System\Engine\Controller {
             $price = $this->model_extension_noveraile_pricing->format($market_price['fixed'] ? $market_price['price'] : $this->tax->calculate((float)$result['price'], (int)$result['tax_class_id'], $this->config->get('config_tax')), $currency, $market_price['fixed']);
             $special = $market_price['special'] > 0 ? $this->model_extension_noveraile_pricing->format($market_price['fixed'] ? $market_price['special'] : $this->tax->calculate((float)$result['special'], (int)$result['tax_class_id'], $this->config->get('config_tax')), $currency, $market_price['fixed']) : false;
             $product = array_merge($result, [
+                'name' => $this->cleanProductName((string)($result['name'] ?? ''), (string)($result['model'] ?? '')),
                 'thumb' => $this->model_tool_image->resize($image, 900, 900),
                 'description' => trim(strip_tags(html_entity_decode(html_entity_decode((string)$result['description'], ENT_QUOTES, 'UTF-8'), ENT_QUOTES, 'UTF-8'))),
                 'price' => $price,
@@ -728,6 +739,17 @@ class Theme extends \Opencart\System\Engine\Controller {
             $cards[] = $this->load->view('product/thumb', $product);
         }
         return $cards;
+    }
+
+    private function cleanProductName(string $name, string $model): string {
+        $name = preg_replace('/[\p{Z}\s]+/u', ' ', trim($name)) ?: trim($name);
+        $model = trim($model);
+
+        if ($model !== '') {
+            $name = preg_replace('/(?:[\p{Z}\s]+)?' . preg_quote($model, '/') . '$/iu', '', $name) ?? $name;
+        }
+
+        return preg_replace('/[\p{Z}\s]+/u', ' ', trim($name)) ?: trim($name);
     }
 
     private function momentFromTags(array $tags): string {

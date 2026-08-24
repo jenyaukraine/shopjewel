@@ -1955,7 +1955,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 body.noveraile-store,
 .noveraile-store #main-content { background: var(--paper); }
 
-.noveraile-store .site-header { background: rgba(221,215,206,.94); }
+.noveraile-store .site-header { background: rgba(255,255,255,.96); }
 .noveraile-store .six-switcher .dropdown-menu,
 .noveraile-store .mobile-drawer,
 .noveraile-store .search-overlay { background: rgba(231,225,216,.98); }
@@ -2397,7 +2397,7 @@ body.noveraile-store,
 .journal-preview-grid img { width: 100%; aspect-ratio: 1.28; object-fit: cover; margin-bottom: 24px; background: #dfd7ce; }
 .journal-preview-grid h3 { margin: 10px 0 12px; font: 31px/1.05 var(--serif); }
 .journal-preview-grid > a > p:last-child { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.65; }
-.six-catalog-page { background: #f0ebe3; }
+.six-catalog-page { background: #fff; }
 .catalog-dual-nav { padding: 26px 4vw; display: grid; gap: 16px; border-bottom: 1px solid var(--line); background: var(--paper); }
 .catalog-dual-nav > div { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
 .catalog-dual-nav strong { width: 155px; font-size: 9px; letter-spacing: .14em; text-transform: uppercase; }
@@ -4063,6 +4063,13 @@ body.noveraile-store,
   mix-blend-mode: normal;
   filter: none;
 }
+
+/* Client review 21.08: product media stays on a clean white canvas and the
+   complete product remains visible while moving through the gallery. */
+.noveraile-store .product-photo--detail { object-fit: contain; }
+
+/* Journal cards form one clean row instead of the former editorial stagger. */
+.noveraile-store .journal-grid article:nth-child(2) { margin-top: 0; }
 .noveraile-store .category-showcase img { object-fit: contain; }
 .noveraile-store .moment-number {
   color: #3e382f;

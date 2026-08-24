@@ -523,7 +523,9 @@ class CatalogFeed extends \Opencart\System\Engine\Model {
         foreach ($codes as $code) {
             $position = $this->languageIndex($code);
             $language_id = $languages[$code];
-            $name = trim(((string)($kind['name'][$position] ?? $kind['name'][0])) . ' ' . (string)$product['articul']);
+            // Keep the supplier article in model/SKU fields, but do not expose it
+            // as part of the customer-facing localized product name.
+            $name = trim((string)($kind['name'][$position] ?? $kind['name'][0]));
             $descriptions[$language_id] = [
                 'name' => $name,
                 'description' => $this->describe($product, $code, $position),
