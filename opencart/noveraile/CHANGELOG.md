@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.5.2 — 2026-08-24
+- Switched the storefront, header, catalog, account and checkout base surfaces to white with subtle product-card borders.
+- Kept product photography on a white canvas, displayed the complete image and retained gallery navigation.
+- Removed supplier articles from customer-facing product names while preserving model and SKU fields.
+- Aligned journal cards into a consistent grid.
+
 ## 2.5.1 — 2026-08-11
 - Applying a refinement stays on the catalog. The filter dropped the route from the address it requested, and OpenCart answers a request without one with the store front page — which `pushState` then wrote into the address bar.
 - The quiz tells rings apart from earrings: choices were matched as substrings, and "earrings" contains "ring".
