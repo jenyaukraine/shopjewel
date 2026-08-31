@@ -6,6 +6,7 @@
   <meta name="description" content="Финальные правки 6 Moments: статус, ответы и инструкции для администратора магазина.">
   <title>6 Moments — финальные правки и инструкция</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="business.css">
 </head>
 <body>
   <header class="topbar">
@@ -19,24 +20,24 @@
   <main id="top">
     <section class="hero">
       <div class="hero__copy">
-        <p class="eyebrow">Финальная проверка · 31 августа 2026</p>
-        <h1>Правки и ответы<br><em>без белых пятен</em></h1>
-        <p class="hero__lead">Один документ для команды 6 Moments: что исправлено, где это находится и как самостоятельно управлять каталогом, ценами, оплатой, доставкой и заказами.</p>
-        <div class="hero__actions"><a class="button button--dark" href="#status">Смотреть все 8 пунктов</a><a class="button" href="#quick-start">Быстрый старт</a></div>
+        <p class="eyebrow">Правки от 21.08 · обновлено 31.08.2026</p>
+        <h1>Финальные правки<br>и инструкция</h1>
+        <p class="hero__lead">Статус восьми пунктов, ответы на вопросы и инструкции по управлению каталогом, ценами, оплатой, доставкой и заказами.</p>
+        <div class="hero__actions"><a class="button button--dark" href="#status">Статус выполнения</a><a class="button" href="#admin">Инструкции администратора</a></div>
       </div>
       <aside class="hero__summary" aria-label="Краткий статус">
-        <span class="summary-number">8/8</span><strong>пунктов разобрано</strong>
+        <span class="summary-number">8/8</span><strong>пунктов рассмотрено</strong>
         <dl><div><dt>Каталог</dt><dd>белый фон</dd></div><div><dt>Импорт</dt><dd>CSV</dd></div><div><dt>Цены</dt><dd>коэффициент</dd></div><div><dt>Навигация</dt><dd>без 404</dd></div></dl>
       </aside>
     </section>
 
     <section class="quick" id="quick-start">
-      <p>Главный маршрут администратора</p>
+      <p>Основной маршрут администратора</p>
       <ol><li>Войти в OpenCart</li><li>Extensions → Extensions</li><li>Modules → NOVERAILE Commerce Suite</li><li>Выбрать нужную вкладку</li><li>Нажать Save</li></ol>
     </section>
 
     <section class="section" id="status">
-      <div class="section-heading"><p class="eyebrow">Документ «Правки, вопросы»</p><h2>Все пункты по порядку</h2><p>Ниже — точные ответы, статус реализации и место каждой функции.</p></div>
+      <div class="section-heading"><p class="eyebrow">Документ «Правки, вопросы»</p><h2>Статус по каждому пункту</h2><p>Для каждого пункта указан результат, ответ на вопрос и расположение функции в системе.</p></div>
       <div class="status-grid">
         <article class="status-card"><span class="index">01</span><span class="badge">Готово</span><h3>Белый фон каталога и хедера</h3><p>Базовый фон магазина, шапка, каталог, карточки и область изображения приведены к чистому белому. Товар отображается без бежевой подложки.</p></article>
         <article class="status-card"><span class="index">02</span><span class="badge">Да</span><h3>Самостоятельный импорт CSV</h3><p>Администратор может скачать шаблон, экспортировать резервную копию и загрузить UTF-8 CSV. Импорт умеет создавать товары и безопасно обновлять существующие по ID или артикулу.</p><a href="#csv">Открыть инструкцию →</a></article>
@@ -96,7 +97,7 @@
     </section>
 
     <section class="final-check">
-      <p class="eyebrow">Перед публикацией</p><h2>Финальный чек-лист владельца</h2>
+      <p class="eyebrow">Контроль перед запуском</p><h2>Проверка настроек владельцем</h2>
       <div><label><input type="checkbox"> CSV экспорт скачан</label><label><input type="checkbox"> Коэффициент цены сохранён</label><label><input type="checkbox"> Тарифы трёх регионов проверены</label><label><input type="checkbox"> Тестовый платёж Stripe успешен</label><label><input type="checkbox"> Webhook вернул 2xx</label><label><input type="checkbox"> Заказ появился в Sales → Orders</label></div>
     </section>
   </main>
