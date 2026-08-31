@@ -40,8 +40,8 @@ class Theme extends \Opencart\System\Engine\Controller {
             $data['title'] = $data['six_brand_name'];
         }
 
-        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.8.0.0';
-        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.8.0.0';
+        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.8.1.0';
+        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.8.1.0';
         $data['six_favicon'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/favicon.svg?v=2';
         $data['six_og_image'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/og-oled.png';
         $data['six_native_menu_status'] = (bool)$this->config->get('module_noveraile_native_menu_status');
@@ -150,7 +150,7 @@ class Theme extends \Opencart\System\Engine\Controller {
     public function footer(string &$route, array &$data, string &$code = '', string &$output = ''): void {
         if (!$this->enabled() || !$this->claimView($route, ['common/footer'], 'extension/noveraile/common/footer')) return;
         $this->words($data);
-        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.8.0.0';
+        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.8.1.0';
         $lang = 'language=' . $this->config->get('config_language');
         $data['six_home'] = $this->url->link('common/home', $lang);
         $data['six_about_url'] = $this->url->link('extension/noveraile/page/about', $lang);
@@ -653,9 +653,38 @@ class Theme extends \Opencart\System\Engine\Controller {
     }
 
     public function notFound(string &$route, array &$data, string &$code = '', string &$output = ''): void {
+        $legacy_url = $this->legacyCategoryRedirectUrl();
+        if ($legacy_url !== '') {
+            $this->response->redirect($legacy_url, 301);
+            return;
+        }
         if (!$this->enabled() || !$this->claimView($route, ['error/not_found'], 'extension/noveraile/error/not_found')) return;
         $this->words($data);
         $data['six_catalog_url'] = $this->url->link('extension/noveraile/page/catalog', 'language=' . $this->config->get('config_language'));
+    }
+
+    /** Keep category URLs previously shared with customers out of the 404 page. */
+    private function legacyCategoryRedirectUrl(): string {
+        if (!$this->enabled()) return '';
+
+        $path = strtolower((string)(parse_url((string)($this->request->server['REQUEST_URI'] ?? ''), PHP_URL_PATH) ?? ''));
+        $legacy_filters = [
+            'noveraile-wedding-rings' => ['moment' => 'wedding'],
+            'noveraile-earrings' => ['type' => 'earrings'],
+            'noveraile-necklaces' => ['type' => 'necklaces'],
+            'noveraile-bracelets' => ['type' => 'bracelets'],
+            'noveraile-rings' => ['type' => 'rings']
+        ];
+
+        foreach ($legacy_filters as $slug => $filter) {
+            if (!str_contains($path, '/catalog/' . $slug)) continue;
+            return $this->url->link(
+                'extension/noveraile/page/catalog',
+                http_build_query(['language' => $this->config->get('config_language')] + $filter)
+            );
+        }
+
+        return '';
     }
 
     public function accountLogin(string &$route, array &$data, string &$code = '', string &$output = ''): void {
@@ -858,6 +887,22 @@ class Theme extends \Opencart\System\Engine\Controller {
         $stones = $this->tagPrefix($tags, 'stones-');
         $product_id = (int)($product['product_id'] ?? 0);
 
+        $description = trim(strip_tags(html_entity_decode(html_entity_decode((string)($product['description'] ?? ''), ENT_QUOTES, 'UTF-8'), ENT_QUOTES, 'UTF-8')));
+        if ($carat === '' && preg_match('/(?:total\s+(?:diamond|carat)\s+weight|gesamtkaratgewicht|celkov[aá]\s+kar[aá]tov[aá]\s+hmotnost|общая\s+каратность|загальна\s+каратн(?:ість|ость))\s*:?\s*([0-9]+(?:[.,][0-9]+)?)/iu', $description, $match)) {
+            $carat = str_replace(',', '.', $match[1]);
+        }
+        // A generic "carat" match can pick up 14/18K gold. Only use the ct
+        // unit as the unlabelled fallback because it denotes gemstone weight.
+        if ($carat === '' && preg_match('/([0-9]+(?:[.,][0-9]+)?)\s*ct\b/iu', $description, $match)) {
+            $carat = str_replace(',', '.', $match[1]);
+        }
+        if ($stones === '' && preg_match('/(?:stones?\s*count|number\s+of\s+stones|anzahl\s+der\s+steine|po[cč]et\s+kamen[uů]|количество\s+камней|кількість\s+каменів)\s*:?\s*([0-9]+)/iu', $description, $match)) {
+            $stones = $match[1];
+        }
+        if ($stones === '' && preg_match('/(?:·|\||,)\s*([0-9]+)\s*(?:stones?|Steine?|kamen(?:y|ů)?|кам(?:ень|ня|ней|ені|енів))/iu', $description, $match)) {
+            $stones = $match[1];
+        }
+
         if ($product_id && ($carat === '' || $stones === '')) {
             $configured = $this->config->get('module_noveraile_attribute_map');
             $map = is_array($configured) ? $configured : json_decode((string)$configured, true);
@@ -875,12 +920,21 @@ class Theme extends \Opencart\System\Engine\Controller {
             }
         }
 
-        $description = trim(strip_tags(html_entity_decode(html_entity_decode((string)($product['description'] ?? ''), ENT_QUOTES, 'UTF-8'), ENT_QUOTES, 'UTF-8')));
-        if ($carat === '' && preg_match('/([0-9]+(?:[.,][0-9]+)?)\s*(?:ct|carat|karat)/iu', $description, $match)) {
-            $carat = str_replace(',', '.', $match[1]);
-        }
-        if ($stones === '' && preg_match('/(?:·|\||,)\s*([0-9]+)\s*(?:stones?|Steine?|kamen(?:y|ů)?|кам(?:ень|ня|ней|ені|енів)|камней|камня)/iu', $description, $match)) {
-            $stones = $match[1];
+        // The standalone CSV importer creates attributes named "Carats" and
+        // "Stones Count" without configuring NOVERAILE's attribute map.
+        if ($product_id && ($carat === '' || $stones === '')) {
+            $query = $this->db->query("SELECT `ad`.`name`, `pa`.`text` FROM `" . DB_PREFIX . "product_attribute` `pa` INNER JOIN `" . DB_PREFIX . "attribute_description` `ad` ON (`ad`.`attribute_id` = `pa`.`attribute_id` AND `ad`.`language_id` = `pa`.`language_id`) WHERE `pa`.`product_id` = '" . $product_id . "' AND `pa`.`language_id` = '" . (int)$this->config->get('config_language_id') . "'");
+            foreach ($query->rows as $row) {
+                $name = trim((string)$row['name']);
+                $value = trim((string)$row['text']);
+                if ($value === '' || !preg_match('/[0-9]+(?:[.,][0-9]+)?/', $value, $number)) continue;
+                if ($carat === '' && !preg_match('/gold|fineness|золот|zlato|zlata/iu', $name) && preg_match('/carats?|karat|kar[aá]t|карат/iu', $name)) {
+                    $carat = str_replace(',', '.', $number[0]);
+                }
+                if ($stones === '' && preg_match('/(?:stones?\s*count|number\s+of\s+stones|anzahl\s+der\s+steine|po[cč]et\s+kamen|количество\s+камней|кількість\s+каменів|^stones?$)/iu', $name)) {
+                    $stones = (string)(int)$number[0];
+                }
+            }
         }
 
         return ['carat' => trim($carat), 'stones' => trim($stones)];

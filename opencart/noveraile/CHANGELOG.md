@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.6.1 — 2026-09-01
+- Restored total carat weight and stone count on catalog cards imported by the standalone CSV importer, without confusing 14K/18K gold caratage with gemstone weight.
+- Removed the “Made to order” label from product cards while retaining the positive in-stock status.
+- Redirected legacy rings, earrings, necklaces and bracelets URLs to the filtered catalog instead of rendering a 404 page.
+- Rebuilt the newsletter signup as a balanced light panel with responsive input and offer layouts.
+
 ## 2.6.0 — 2026-08-31
 - Added a merchant-friendly catalog price coefficient that updates imported prices, option surcharges, filters, cart totals and fixed market prices.
 - Restored total carat weight and stone count for the existing supplier catalog without requiring a destructive re-import; future imports persist both as structured values.

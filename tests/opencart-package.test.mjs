@@ -125,8 +125,8 @@ test("mobile categories are deduplicated and use semantic jewellery icons", asyn
   assert.match(event, /\$category_names\s*=\s*\[\]/);
   assert.match(event, /mb_strtolower/);
   assert.match(event, /'icon'\s*=>\s*\$this->categoryIcon\(\$name\)/);
-  assert.match(event, /noveraile\.css\?v=2.8.0.0/);
-  assert.match(event, /noveraile\.js\?v=2.8.0.0/);
+  assert.match(event, /noveraile\.css\?v=2.8.1.0/);
+  assert.match(event, /noveraile\.js\?v=2.8.1.0/);
   assert.match(header, /class="mobile-category-icon"/);
   assert.match(header, /category\.icon == 'earring'/);
   assert.match(header, /class="mobile-main-icon"/);
@@ -183,6 +183,22 @@ test("catalog identifies gold colors and uses a compact pagination footer", asyn
   assert.match(stylesheet, /\.pagination-shell\s*\{[^}]*display:\s*flex;[^}]*border-top:/);
 });
 
+test("catalog cards recover measurements, hide preorder copy and redirect legacy categories", async () => {
+  const [event, thumb, stylesheet] = await Promise.all([
+    readFile(path.join(root, "catalog/controller/event/theme.php"), "utf8"),
+    readFile(path.join(root, "catalog/view/template/product/thumb.twig"), "utf8"),
+    readFile(path.join(root, "catalog/view/stylesheet/noveraile.css"), "utf8"),
+  ]);
+
+  assert.match(event, /attribute_description/);
+  assert.match(event, /Stones Count/);
+  assert.match(event, /Only use the ct[\s\S]*?gemstone weight/);
+  assert.match(event, /legacyCategoryRedirectUrl[\s\S]*?noveraile-earrings/);
+  assert.doesNotMatch(thumb, /\{\{ six_preorder \}\}/);
+  assert.match(thumb, /\{% if six_stocked %\}/);
+  assert.match(stylesheet, /Client review 01\.09[\s\S]*?footer-signup-card[\s\S]*?background:\s*#fff/);
+});
+
 test("homepage Instagram callout can never render as an empty shell", async () => {
   const [event, home] = await Promise.all([
     readFile(path.join(root, "catalog/controller/event/theme.php"), "utf8"),
@@ -191,7 +207,7 @@ test("homepage Instagram callout can never render as an empty shell", async () =
 
   assert.match(event, /public function home[\s\S]*?six_instagram_label/);
   assert.match(event, /public function home[\s\S]*?social_fallbacks/);
-  assert.match(event, /noveraile\.css\?v=2.8.0.0/);
+  assert.match(event, /noveraile\.css\?v=2.8.1.0/);
   assert.match(home, /six_follow\|default/);
   assert.match(home, /six_follow_copy\|default/);
   assert.match(home, /six_instagram_label\|default/);
@@ -334,7 +350,7 @@ test("all six sales-readiness promises are implemented and release-checked", asy
   const manifest = JSON.parse(manifestSource);
   const feed = JSON.parse(feedSource);
 
-  assert.equal(manifest.version, "2.6.0");
+  assert.equal(manifest.version, "2.6.1");
   assert.equal(feed.version, manifest.version);
   assert.deepEqual(feed.opencart.tested, ["4.0.2.3", "4.1.0.3"]);
   assert.match(admin, /version_compare\(VERSION, '4\.0\.2\.3', '<'\)/);
