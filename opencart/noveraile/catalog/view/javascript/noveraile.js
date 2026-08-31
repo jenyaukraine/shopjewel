@@ -395,7 +395,10 @@
     const zoomInButton = gallery.querySelector('[data-six-zoom-in]');
     const zoomOutButton = gallery.querySelector('[data-six-zoom-out]');
     const resetButton = gallery.querySelector('[data-six-zoom-reset]');
+    const previousButton = gallery.querySelector('[data-six-zoom-previous]');
+    const nextButton = gallery.querySelector('[data-six-zoom-next]');
     const level = gallery.querySelector('[data-six-zoom-level]');
+    const sources = Array.from(gallery.querySelectorAll('[data-six-zoom-source]'));
     if (!trigger || !dialog || !stage || !image || !closeButton) return;
 
     const minScale = 1;
@@ -411,6 +414,7 @@
     let moved = false;
     let returnFocus = trigger;
     let openedAt = 0;
+    let currentSourceIndex = Math.max(0, sources.findIndex((source) => source.getAttribute('aria-current') === 'true'));
 
     function clamp(value, minimum, maximum) {
       return Math.min(maximum, Math.max(minimum, value));
@@ -451,6 +455,21 @@
       applyTransform();
     }
 
+    function selectSource(index, updatePreview) {
+      if (!sources.length) return;
+      currentSourceIndex = (index + sources.length) % sources.length;
+      const source = sources[currentSourceIndex];
+      const href = source.getAttribute('href');
+      sources.forEach((item) => item.removeAttribute('aria-current'));
+      source.setAttribute('aria-current', 'true');
+      if (href) {
+        trigger.setAttribute('href', href);
+        image.src = href;
+        if (updatePreview && preview) preview.src = href;
+      }
+      resetZoom();
+    }
+
     function openZoom(event) {
       if (event) event.preventDefault();
       returnFocus = document.activeElement || trigger;
@@ -482,6 +501,8 @@
     if (zoomInButton) zoomInButton.addEventListener('click', () => setScale(scale + zoomStep));
     if (zoomOutButton) zoomOutButton.addEventListener('click', () => setScale(scale - zoomStep));
     if (resetButton) resetButton.addEventListener('click', resetZoom);
+    if (previousButton) previousButton.addEventListener('click', () => selectSource(currentSourceIndex - 1, true));
+    if (nextButton) nextButton.addEventListener('click', () => selectSource(currentSourceIndex + 1, true));
 
     stage.addEventListener('wheel', (event) => {
       event.preventDefault();
@@ -523,12 +544,9 @@
     stage.addEventListener('pointerup', endDrag);
     stage.addEventListener('pointercancel', endDrag);
 
-    gallery.querySelectorAll('[data-six-zoom-source]').forEach((source) => source.addEventListener('click', (event) => {
+    sources.forEach((source, index) => source.addEventListener('click', (event) => {
       event.preventDefault();
-      gallery.querySelectorAll('[data-six-zoom-source]').forEach((item) => item.removeAttribute('aria-current'));
-      source.setAttribute('aria-current', 'true');
-      trigger.setAttribute('href', source.getAttribute('href') || trigger.getAttribute('href'));
-      if (preview && source.getAttribute('href')) preview.src = source.getAttribute('href');
+      selectSource(index, true);
     }));
 
     document.addEventListener('keydown', (event) => {
@@ -537,8 +555,8 @@
       if (event.key === '+' || event.key === '=') { event.preventDefault(); setScale(scale + zoomStep); }
       if (event.key === '-') { event.preventDefault(); setScale(scale - zoomStep); }
       if (event.key === '0') { event.preventDefault(); resetZoom(); }
-      if (event.key === 'ArrowLeft') { event.preventDefault(); panX += 40; applyTransform(); }
-      if (event.key === 'ArrowRight') { event.preventDefault(); panX -= 40; applyTransform(); }
+      if (event.key === 'ArrowLeft') { event.preventDefault(); selectSource(currentSourceIndex - 1, true); }
+      if (event.key === 'ArrowRight') { event.preventDefault(); selectSource(currentSourceIndex + 1, true); }
       if (event.key === 'ArrowUp') { event.preventDefault(); panY += 40; applyTransform(); }
       if (event.key === 'ArrowDown') { event.preventDefault(); panY -= 40; applyTransform(); }
       if (event.key === 'Tab') {

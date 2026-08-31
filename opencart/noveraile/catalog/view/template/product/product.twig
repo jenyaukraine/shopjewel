@@ -14,13 +14,14 @@
           <div class="product-zoom-stage" data-six-zoom-stage>
             <img class="product-zoom-image" data-six-zoom-image src="{{ popup }}" loading="lazy" decoding="async" alt="{{ heading_title }}" draggable="false">
           </div>
+          {% if images %}<button class="product-zoom-nav product-zoom-nav--previous" type="button" data-six-zoom-previous aria-label="{{ six_previous_image }}"><span aria-hidden="true">←</span></button><button class="product-zoom-nav product-zoom-nav--next" type="button" data-six-zoom-next aria-label="{{ six_next_image }}"><span aria-hidden="true">→</span></button>{% endif %}
           <div class="product-zoom-toolbar" aria-label="{{ six_zoom_controls }}">
             <button type="button" data-six-zoom-out aria-label="{{ six_zoom_out }}">−</button>
             <output data-six-zoom-level aria-live="polite">100%</output>
             <button type="button" data-six-zoom-in aria-label="{{ six_zoom_in }}">＋</button>
             <button class="product-zoom-reset" type="button" data-six-zoom-reset>Fit</button>
           </div>
-          <p class="product-zoom-help">Scroll or use ＋/− to zoom · drag to move · Esc to close</p>
+          <p class="product-zoom-help">{{ six_zoom_help }}</p>
         </div>
       {% endif %}
       {% for video in six_videos %}

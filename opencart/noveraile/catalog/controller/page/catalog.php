@@ -129,9 +129,11 @@ class Catalog extends \Opencart\System\Engine\Controller {
         $filter['category_id'] = max(0, (int)($this->request->get['category_id'] ?? 0));
         $filter['sale'] = !empty($this->request->get['sale']);
         $selected_currency = $this->session->data['currency'] ?? $this->config->get('config_currency');
+        $configured_multiplier = $this->config->get('module_noveraile_price_multiplier');
+        $price_multiplier = is_numeric($configured_multiplier) ? min(100.0, max(0.01, (float)$configured_multiplier)) : 1.0;
         foreach (['price_min', 'price_max'] as $key) {
             $display_value = isset($this->request->get[$key]) && is_numeric($this->request->get[$key]) ? max(0, (float)$this->request->get[$key]) : '';
-            $filter[$key] = $display_value === '' ? '' : $this->currency->convert($display_value, $selected_currency, $this->config->get('config_currency'));
+            $filter[$key] = $display_value === '' ? '' : $this->currency->convert($display_value, $selected_currency, $this->config->get('config_currency')) / $price_multiplier;
             $data[$key] = $display_value;
         }
 
@@ -145,8 +147,8 @@ class Catalog extends \Opencart\System\Engine\Controller {
 
         $this->load->model('extension/noveraile/catalog');
         $price_bounds = $this->model_extension_noveraile_catalog->getPriceBounds();
-        $data['price_floor'] = max(0, (int)floor($this->currency->convert($price_bounds['min'], $this->config->get('config_currency'), $selected_currency)));
-        $data['price_ceiling'] = max($data['price_floor'] + 1, (int)ceil($this->currency->convert($price_bounds['max'], $this->config->get('config_currency'), $selected_currency)));
+        $data['price_floor'] = max(0, (int)floor($this->currency->convert($price_bounds['min'] * $price_multiplier, $this->config->get('config_currency'), $selected_currency)));
+        $data['price_ceiling'] = max($data['price_floor'] + 1, (int)ceil($this->currency->convert($price_bounds['max'] * $price_multiplier, $this->config->get('config_currency'), $selected_currency)));
         $data['price_slider_min'] = $data['price_min'] === '' ? $data['price_floor'] : min($data['price_ceiling'], max($data['price_floor'], (float)$data['price_min']));
         $data['price_slider_max'] = $data['price_max'] === '' ? $data['price_ceiling'] : min($data['price_ceiling'], max($data['price_floor'], (float)$data['price_max']));
         if ($data['price_slider_min'] > $data['price_slider_max']) {
@@ -206,8 +208,8 @@ class Catalog extends \Opencart\System\Engine\Controller {
             'name' => $this->cleanProductName((string)($result['name'] ?? ''), (string)($result['model'] ?? '')),
             'thumb' => $this->model_tool_image->resize($image, 700, 700),
             'description' => trim(strip_tags(html_entity_decode((string)$result['description'], ENT_QUOTES, 'UTF-8'))),
-            'price' => $this->model_extension_noveraile_pricing->format($market_price['fixed'] ? $market_price['price'] : $this->tax->calculate((float)$result['price'], (int)$result['tax_class_id'], $this->config->get('config_tax')), $currency, $market_price['fixed']),
-            'special' => $market_price['special'] > 0 ? $this->model_extension_noveraile_pricing->format($market_price['fixed'] ? $market_price['special'] : $this->tax->calculate((float)$result['special'], (int)$result['tax_class_id'], $this->config->get('config_tax')), $currency, $market_price['fixed']) : false,
+            'price' => $this->model_extension_noveraile_pricing->format($market_price['fixed'] ? $market_price['price'] : $this->tax->calculate($market_price['price'], (int)$result['tax_class_id'], $this->config->get('config_tax')), $currency, $market_price['fixed']),
+            'special' => $market_price['special'] > 0 ? $this->model_extension_noveraile_pricing->format($market_price['fixed'] ? $market_price['special'] : $this->tax->calculate($market_price['special'], (int)$result['tax_class_id'], $this->config->get('config_tax')), $currency, $market_price['fixed']) : false,
             'tax' => false, 'minimum' => max(1, (int)$result['minimum']),
             'href' => $this->url->link('product/product', 'language=' . $this->config->get('config_language') . '&product_id=' . (int)$result['product_id']),
             'cart_add' => $this->url->link('checkout/cart.add', 'language=' . $this->config->get('config_language')),

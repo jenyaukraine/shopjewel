@@ -608,6 +608,7 @@ class CatalogFeed extends \Opencart\System\Engine\Model {
             'style' => $style,
             'stone_shape' => $shape,
             'carat' => array_fill(0, count($codes), $this->number((float)$product['caratsTotal'], 2)),
+            'stone_count' => array_fill(0, count($codes), (string)(int)$product['stones']),
             'fineness' => array_fill(0, count($codes), $fineness)
         ];
         $texts['metal'] = $metals[0];
@@ -669,7 +670,9 @@ class CatalogFeed extends \Opencart\System\Engine\Model {
             (string)$kind['moment'],
             'delivery-' . (int)$product['shippingDays'],
             'diamond',
-            (string)$kind['style']
+            (string)$kind['style'],
+            'carat-' . str_replace('.', '-', $this->number((float)$product['caratsTotal'], 2)),
+            'stones-' . (int)$product['stones']
         ];
 
         if ((string)$product['shape'] !== '') $tags[] = (string)$feed['shapes'][(string)$product['shape']]['slug'];

@@ -18,12 +18,12 @@ class Quiz extends \Opencart\System\Engine\Controller {
         $currency = $this->session->data['currency'] ?? $this->config->get('config_currency');
         $this->load->model('extension/noveraile/pricing');
         $market_price = $this->model_extension_noveraile_pricing->resolve($result, $currency);
-        $effective_price = $market_price['fixed'] ? (float)($market_price['special'] ?: $market_price['price']) : (float)($result['special'] ?: $result['price']);
+        $effective_price = (float)($market_price['special'] ?: $market_price['price']);
         $data = array_merge($result, [
             'thumb' => $this->model_tool_image->resize($image, 700, 700),
             'description' => trim(strip_tags(html_entity_decode((string)$result['description'], ENT_QUOTES, 'UTF-8'))),
-            'price' => $this->model_extension_noveraile_pricing->format($market_price['fixed'] ? $market_price['price'] : $this->tax->calculate((float)$result['price'], (int)$result['tax_class_id'], $this->config->get('config_tax')), $currency, $market_price['fixed']),
-            'special' => $market_price['special'] > 0 ? $this->model_extension_noveraile_pricing->format($market_price['fixed'] ? $market_price['special'] : $this->tax->calculate((float)$result['special'], (int)$result['tax_class_id'], $this->config->get('config_tax')), $currency, $market_price['fixed']) : false,
+            'price' => $this->model_extension_noveraile_pricing->format($market_price['fixed'] ? $market_price['price'] : $this->tax->calculate($market_price['price'], (int)$result['tax_class_id'], $this->config->get('config_tax')), $currency, $market_price['fixed']),
+            'special' => $market_price['special'] > 0 ? $this->model_extension_noveraile_pricing->format($market_price['fixed'] ? $market_price['special'] : $this->tax->calculate($market_price['special'], (int)$result['tax_class_id'], $this->config->get('config_tax')), $currency, $market_price['fixed']) : false,
             'tax' => false,
             'minimum' => max(1, (int)$result['minimum']),
             'href' => $this->url->link('product/product', 'language=' . $this->config->get('config_language') . '&product_id=' . (int)$result['product_id']),

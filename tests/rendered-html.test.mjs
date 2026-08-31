@@ -161,6 +161,8 @@ test("OpenCart product zoom fills the preview and provides an interactive lightb
   assert.match(template, /class="product-photo product-photo--detail"/);
   assert.match(template, /data-six-zoom-stage/);
   assert.match(template, /data-six-zoom-(?:in|out|reset)/);
+  assert.match(template, /data-six-zoom-previous/);
+  assert.match(template, /data-six-zoom-next/);
   assert.match(stylesheet, /\.product-photo--detail\s*\{[^}]*width:\s*100%[^}]*height:\s*100%[^}]*object-fit:\s*cover/s);
   assert.match(script, /function setupProductZoom\b/);
   assert.match(script, /addEventListener\('wheel'/);
@@ -169,6 +171,9 @@ test("OpenCart product zoom fills the preview and provides an interactive lightb
   assert.match(script, /touchViewport \? 2 : 4/);
   assert.match(script, /touchViewport \|\| Date\.now\(\) - openedAt < 400/);
   assert.match(script, /openedAt = Date\.now\(\)/);
+  assert.match(script, /function selectSource\b/);
+  assert.match(script, /currentSourceIndex - 1/);
+  assert.match(stylesheet, /\.noveraile-store \.product-zoom-stage\s*\{\s*background:\s*#fff/);
 });
 
 test("server-renders product attributes and story routes", async () => {

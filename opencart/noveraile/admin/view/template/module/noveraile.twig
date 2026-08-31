@@ -65,6 +65,9 @@
                 <div class="col-4"><div class="catalog-stat"><strong>{{ catalog_summary.active }}</strong><span>{{ text_catalog_active }}</span></div></div>
                 <div class="col-4"><div class="catalog-stat"><strong>{{ catalog_summary.languages }}</strong><span>{{ text_catalog_languages }}</span></div></div>
               </div>
+              <div class="card border-primary mb-4"><div class="card-body">
+                <div class="row align-items-center g-3"><div class="col-lg-4"><h4 class="mb-1">{{ entry_price_multiplier }}</h4><p class="text-muted mb-0">{{ help_price_multiplier }}</p></div><div class="col-lg-8"><div class="input-group input-group-lg"><span class="input-group-text">×</span><input class="form-control" type="number" min="0.01" max="100" step="0.01" name="module_noveraile_price_multiplier" value="{{ module_noveraile_price_multiplier }}" required></div></div></div>
+              </div></div>
               <div class="row g-3">
                 <div class="col-lg-5"><div class="catalog-action-card d-flex flex-column">
                   <span class="badge text-bg-success align-self-start mb-3"><i class="fa-solid fa-shield-halved"></i> CSV UTF-8</span>

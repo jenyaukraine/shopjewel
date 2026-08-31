@@ -10,10 +10,18 @@ class Pricing extends \Opencart\System\Engine\Model {
         $product_id = (string)(int)($product['product_id'] ?? 0);
         $entry = $this->book()[$currency][$model] ?? $this->book()[$currency][$product_id] ?? null;
         $fixed = is_array($entry) && isset($entry['price']) && is_numeric($entry['price']);
+        $multiplier = $this->multiplier();
+        $price = $fixed ? (float)$entry['price'] : (float)($product['price'] ?? 0);
+        $special = $fixed && isset($entry['special']) && is_numeric($entry['special'])
+            ? (float)$entry['special']
+            : (float)($product['special'] ?? 0);
+
         return [
-            'price' => $fixed ? (float)$entry['price'] : (float)($product['price'] ?? 0),
-            'special' => $fixed && isset($entry['special']) && is_numeric($entry['special']) ? (float)$entry['special'] : (float)($product['special'] ?? 0),
+            'price' => $price * $multiplier,
+            'special' => $special > 0 ? $special * $multiplier : 0.0,
             'fixed' => $fixed,
+            'adjusted' => $fixed || abs($multiplier - 1.0) >= 0.0001,
+            'multiplier' => $multiplier,
             'currency' => $currency
         ];
     }
@@ -28,11 +36,26 @@ class Pricing extends \Opencart\System\Engine\Model {
         $adjustment = 0.0;
         foreach ($products as $product) {
             $price = $this->resolve($product, $currency);
-            if (!$price['fixed']) continue;
-            $target = ($price['special'] > 0 ? $price['special'] : $price['price']) / $rate;
-            $adjustment += $target * max(1, (int)($product['quantity'] ?? 1)) - (float)($product['total'] ?? 0);
+            if (!$price['adjusted']) continue;
+
+            if ($price['fixed']) {
+                $target = ($price['special'] > 0 ? $price['special'] : $price['price']) / $rate;
+                $adjustment += $target * max(1, (int)($product['quantity'] ?? 1)) - (float)($product['total'] ?? 0);
+            } else {
+                // The cart's raw total already includes option surcharges and
+                // product discounts. Scaling that value keeps every selected
+                // variant in step with the catalog-wide merchant coefficient.
+                $adjustment += (float)($product['total'] ?? 0) * ($price['multiplier'] - 1.0);
+            }
         }
         return $adjustment;
+    }
+
+    public function multiplier(): float {
+        $value = $this->config->get('module_noveraile_price_multiplier');
+        if (!is_numeric($value)) return 1.0;
+
+        return min(100.0, max(0.01, (float)$value));
     }
 
     private function book(): array {

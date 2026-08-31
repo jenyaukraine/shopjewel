@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.6.0 — 2026-08-31
+- Added a merchant-friendly catalog price coefficient that updates imported prices, option surcharges, filters, cart totals and fixed market prices.
+- Restored total carat weight and stone count for the existing supplier catalog without requiring a destructive re-import; future imports persist both as structured values.
+- Routed category cards, menu entries and product breadcrumbs through the stable filtered catalog to eliminate broken category SEO links.
+- Added previous/next controls and keyboard image browsing to the full-screen white product gallery.
+
 ## 2.5.2 — 2026-08-24
 - Switched the storefront, header, catalog, account and checkout base surfaces to white with subtle product-card borders.
 - Kept product photography on a white canvas, displayed the complete image and retained gallery navigation.

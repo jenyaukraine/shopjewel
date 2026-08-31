@@ -125,8 +125,8 @@ test("mobile categories are deduplicated and use semantic jewellery icons", asyn
   assert.match(event, /\$category_names\s*=\s*\[\]/);
   assert.match(event, /mb_strtolower/);
   assert.match(event, /'icon'\s*=>\s*\$this->categoryIcon\(\$name\)/);
-  assert.match(event, /noveraile\.css\?v=2.7.0.0/);
-  assert.match(event, /noveraile\.js\?v=2.7.0.0/);
+  assert.match(event, /noveraile\.css\?v=2.8.0.0/);
+  assert.match(event, /noveraile\.js\?v=2.8.0.0/);
   assert.match(header, /class="mobile-category-icon"/);
   assert.match(header, /category\.icon == 'earring'/);
   assert.match(header, /class="mobile-main-icon"/);
@@ -191,7 +191,7 @@ test("homepage Instagram callout can never render as an empty shell", async () =
 
   assert.match(event, /public function home[\s\S]*?six_instagram_label/);
   assert.match(event, /public function home[\s\S]*?social_fallbacks/);
-  assert.match(event, /noveraile\.css\?v=2.7.0.0/);
+  assert.match(event, /noveraile\.css\?v=2.8.0.0/);
   assert.match(home, /six_follow\|default/);
   assert.match(home, /six_follow_copy\|default/);
   assert.match(home, /six_instagram_label\|default/);
@@ -334,7 +334,7 @@ test("all six sales-readiness promises are implemented and release-checked", asy
   const manifest = JSON.parse(manifestSource);
   const feed = JSON.parse(feedSource);
 
-  assert.equal(manifest.version, "2.4.0");
+  assert.equal(manifest.version, "2.6.0");
   assert.equal(feed.version, manifest.version);
   assert.deepEqual(feed.opencart.tested, ["4.0.2.3", "4.1.0.3"]);
   assert.match(admin, /version_compare\(VERSION, '4\.0\.2\.3', '<'\)/);
@@ -576,7 +576,10 @@ test("6 Moments storefront requirements remain wired into the package", async ()
   assert.match(coupon, /session->data\['coupon'\]/);
   assert.match(quiz, /data-rules="\{\{ quiz_rules \}\}"/);
   assert.match(installer, /module_noveraile_price_book/);
+  assert.match(installer, /module_noveraile_price_multiplier/);
   assert.match(pricing, /cartAdjustment/);
+  assert.match(pricing, /public function multiplier\(\): float/);
+  assert.match(pricing, /\$product\['total'\].*\$price\['multiplier'\]/s);
   assert.match(total, /market_adjustment/);
   assert.match(theme, /open\.er-api\.com\/v6\/latest\/USD/);
   assert.match(success, /six_order_id/);
@@ -584,6 +587,8 @@ test("6 Moments storefront requirements remain wired into the package", async ()
   assert.match(installer, /https:\/\/wa\.me\/491707647729/);
   assert.match(installer, /'stone_quality'\s*=>/);
   assert.match(theme, /\$uses_current_catalog && \$id === 'collections'/);
+  assert.match(theme, /function catalogCategoryUrl\b/);
+  assert.match(theme, /function productMeasurements\b/);
   assert.match(theme, /\$grams >= 500 && \$weight > 0 && \$weight <= 50/);
   assert.doesNotMatch(catalogController, /'metal'\s*=>\s*\[[^\]]*'platinum'/);
   assert.doesNotMatch(catalogController, /'fineness'\s*=>\s*\[[^\]]*'950'/);

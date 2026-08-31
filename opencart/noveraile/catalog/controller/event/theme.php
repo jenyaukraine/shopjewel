@@ -40,8 +40,8 @@ class Theme extends \Opencart\System\Engine\Controller {
             $data['title'] = $data['six_brand_name'];
         }
 
-        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.7.0.0';
-        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.7.0.0';
+        $data['six_stylesheet'] = 'extension/noveraile/catalog/view/stylesheet/noveraile.css?v=2.8.0.0';
+        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.8.0.0';
         $data['six_favicon'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/favicon.svg?v=2';
         $data['six_og_image'] = rtrim(HTTP_SERVER, '/') . '/image/catalog/noveraile/og-oled.png';
         $data['six_native_menu_status'] = (bool)$this->config->get('module_noveraile_native_menu_status');
@@ -84,7 +84,7 @@ class Theme extends \Opencart\System\Engine\Controller {
                 'name' => $name,
                 'icon' => $this->categoryIcon($name),
                 'total' => (int)($category['product_total'] ?? 0),
-                'href' => $this->url->link('product/category', 'language=' . $this->config->get('config_language') . '&path=' . (int)$category['category_id'])
+                'href' => $this->catalogCategoryUrl((int)$category['category_id'])
             ];
             if (count($data['six_categories']) >= 12) break;
         }
@@ -150,7 +150,7 @@ class Theme extends \Opencart\System\Engine\Controller {
     public function footer(string &$route, array &$data, string &$code = '', string &$output = ''): void {
         if (!$this->enabled() || !$this->claimView($route, ['common/footer'], 'extension/noveraile/common/footer')) return;
         $this->words($data);
-        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.7.0.0';
+        $data['six_script'] = 'extension/noveraile/catalog/view/javascript/noveraile.js?v=2.8.0.0';
         $lang = 'language=' . $this->config->get('config_language');
         $data['six_home'] = $this->url->link('common/home', $lang);
         $data['six_about_url'] = $this->url->link('extension/noveraile/page/about', $lang);
@@ -253,7 +253,7 @@ class Theme extends \Opencart\System\Engine\Controller {
                 $data['six_category_tiles'][] = [
                     'name' => (string)$category['name'],
                     'image' => '/image/' . ltrim(str_replace('\\', '/', $image), '/'),
-                    'href' => $this->url->link('product/category', $lang . '&path=' . (int)$category['category_id'])
+                    'href' => $this->catalogCategoryUrl((int)$category['category_id'])
                 ];
             }
         }
@@ -315,9 +315,15 @@ class Theme extends \Opencart\System\Engine\Controller {
         $currency = (string)($this->session->data['currency'] ?? $this->config->get('config_currency'));
         $this->load->model('extension/noveraile/pricing');
         $market_price = $this->model_extension_noveraile_pricing->resolve($info, $currency);
-        if ($market_price['fixed']) {
-            $data['price'] = $this->model_extension_noveraile_pricing->format($market_price['price'], $currency, true);
-            $data['special'] = $market_price['special'] > 0 ? $this->model_extension_noveraile_pricing->format($market_price['special'], $currency, true) : false;
+        if ($market_price['adjusted']) {
+            $tax_class_id = (int)($info['tax_class_id'] ?? 0);
+            $display_price = $market_price['fixed'] ? $market_price['price'] : $this->tax->calculate($market_price['price'], $tax_class_id, $this->config->get('config_tax'));
+            $display_special = $market_price['fixed'] ? $market_price['special'] : $this->tax->calculate($market_price['special'], $tax_class_id, $this->config->get('config_tax'));
+            $data['price'] = $this->model_extension_noveraile_pricing->format($display_price, $currency, $market_price['fixed']);
+            $data['special'] = $market_price['special'] > 0 ? $this->model_extension_noveraile_pricing->format($display_special, $currency, $market_price['fixed']) : false;
+        }
+        if (!$market_price['fixed'] && abs($market_price['multiplier'] - 1.0) >= 0.0001) {
+            $this->multiplyOptionPrices($data, $market_price['multiplier'], $currency, (int)($info['tax_class_id'] ?? 0));
         }
         $image = html_entity_decode((string)($info['image'] ?? ''), ENT_QUOTES, 'UTF-8');
 
@@ -364,10 +370,9 @@ class Theme extends \Opencart\System\Engine\Controller {
         if (in_array('lab-grown', $data['six_tags'], true)) $stone_values[] = $this->language->get('six_lab_grown');
         if (in_array('no-stones', $data['six_tags'], true)) $stone_values[] = $this->language->get('six_no_stones');
         $data['six_stone_value'] = $stone_values ? implode(' · ', $stone_values) : '—';
-        $tag_carat = $this->tagPrefix($data['six_tags'], 'carat-');
-        $tag_stones = $this->tagPrefix($data['six_tags'], 'stones-');
-        $data['six_carat_value'] = $tag_carat !== '' ? $tag_carat . ' ct' : '—';
-        $data['six_stones_value'] = $tag_stones !== '' ? $tag_stones : '—';
+        $measurements = $this->productMeasurements($info, $data['six_tags']);
+        $data['six_carat_value'] = $measurements['carat'] !== '' ? $measurements['carat'] . ' ct' : '—';
+        $data['six_stones_value'] = $measurements['stones'] !== '' ? $measurements['stones'] : '—';
         $fineness_values = [];
         foreach (['585' => '585 / 14K', '750' => '750 / 18K'] as $tag => $label) {
             if (in_array($tag, $data['six_tags'], true)) $fineness_values[] = $label;
@@ -428,7 +433,7 @@ class Theme extends \Opencart\System\Engine\Controller {
             $path[] = (int)$step['path_id'];
             $crumbs[] = [
                 'text' => $step['name'],
-                'href' => $this->url->link('product/category', 'language=' . $this->config->get('config_language') . '&path=' . implode('_', $path))
+                'href' => $this->catalogCategoryUrl((int)$step['path_id'])
             ];
         }
         if (!$crumbs) return;
@@ -494,10 +499,15 @@ class Theme extends \Opencart\System\Engine\Controller {
         $data['name'] = $this->cleanProductName((string)($data['name'] ?? ''), (string)($data['model'] ?? ''));
         $currency = (string)($this->session->data['currency'] ?? $this->config->get('config_currency'));
         $this->load->model('extension/noveraile/pricing');
-        $market_price = $this->model_extension_noveraile_pricing->resolve($data, $currency);
-        if ($market_price['fixed']) {
-            $data['price'] = $this->model_extension_noveraile_pricing->format($market_price['price'], $currency, true);
-            $data['special'] = $market_price['special'] > 0 ? $this->model_extension_noveraile_pricing->format($market_price['special'], $currency, true) : false;
+        $this->load->model('catalog/product');
+        $product_info = !empty($data['product_id']) ? $this->model_catalog_product->getProduct((int)$data['product_id']) : [];
+        $market_price = $this->model_extension_noveraile_pricing->resolve($product_info ?: $data, $currency);
+        if ($market_price['adjusted']) {
+            $tax_class_id = (int)($product_info['tax_class_id'] ?? $data['tax_class_id'] ?? 0);
+            $display_price = $market_price['fixed'] ? $market_price['price'] : $this->tax->calculate($market_price['price'], $tax_class_id, $this->config->get('config_tax'));
+            $display_special = $market_price['fixed'] ? $market_price['special'] : $this->tax->calculate($market_price['special'], $tax_class_id, $this->config->get('config_tax'));
+            $data['price'] = $this->model_extension_noveraile_pricing->format($display_price, $currency, $market_price['fixed']);
+            $data['special'] = $market_price['special'] > 0 ? $this->model_extension_noveraile_pricing->format($display_special, $currency, $market_price['fixed']) : false;
         }
         $tags = array_filter(array_map('trim', explode(',', (string)($data['tag'] ?? ''))));
         $data['six_moment'] = trim((string)($data['six_moment_override'] ?? '')) ?: $this->momentFromTags($tags);
@@ -505,10 +515,9 @@ class Theme extends \Opencart\System\Engine\Controller {
         $data['six_fineness_value'] = $this->tagChoice($tags, ['585','750']);
         $data['six_sku'] = $data['model'] ?? '';
         $data['six_product_weight'] = $this->displayWeight($data);
-        $carat = $this->tagPrefix($tags, 'carat-');
-        $stones = $this->tagPrefix($tags, 'stones-');
-        $data['six_product_carat'] = $carat !== '' ? $carat . ' ct' : '—';
-        $data['six_product_stones'] = $stones !== '' ? $stones : '—';
+        $measurements = $this->productMeasurements($product_info ?: $data, $tags);
+        $data['six_product_carat'] = $measurements['carat'] !== '' ? $measurements['carat'] . ' ct' : '—';
+        $data['six_product_stones'] = $measurements['stones'] !== '' ? $measurements['stones'] : '—';
         $data['six_stocked'] = (int)($data['quantity'] ?? 0) > 0;
         // OpenCart's bundled demo descriptions are entity encoded in SQL.
         // Normalise card copy to plain text so markup can never leak visibly.
@@ -532,7 +541,7 @@ class Theme extends \Opencart\System\Engine\Controller {
         $data['six_filter_panel'] = $this->load->controller(
             'extension/noveraile/page/catalog.panel',
             $category_id,
-            $category_id ? $this->url->link('product/category', $lang . '&path=' . $path) : ''
+            $category_id ? $this->catalogCategoryUrl($category_id) : ''
         );
 
         $category_query = $this->db->query("SELECT c.category_id, cd.name, c.sort_order, c.image AS category_image, (SELECT p_rep.image FROM `" . DB_PREFIX . "product_to_category` p2c_rep INNER JOIN `" . DB_PREFIX . "product` p_rep ON (p_rep.product_id = p2c_rep.product_id) WHERE p2c_rep.category_id = c.category_id AND p_rep.status = '1' AND NULLIF(p_rep.image, '') IS NOT NULL ORDER BY p_rep.sort_order ASC, p_rep.product_id ASC LIMIT 1) AS product_image FROM `" . DB_PREFIX . "category` c INNER JOIN `" . DB_PREFIX . "category_description` cd ON (cd.category_id = c.category_id) WHERE c.status = '1' AND cd.language_id = '" . (int)$this->config->get('config_language_id') . "' AND EXISTS (SELECT 1 FROM `" . DB_PREFIX . "product_to_category` p2c_exists INNER JOIN `" . DB_PREFIX . "product` p_exists ON (p_exists.product_id = p2c_exists.product_id) WHERE p2c_exists.category_id = c.category_id AND p_exists.status = '1') ORDER BY c.sort_order ASC, cd.name ASC, c.category_id ASC LIMIT 60");
@@ -546,7 +555,7 @@ class Theme extends \Opencart\System\Engine\Controller {
             $data['six_listing_categories'][] = [
                 'name' => $name,
                 'image' => $image !== '' ? '/image/' . ltrim(str_replace('\\', '/', $image), '/') : '',
-                'href' => $this->url->link('product/category', $lang . '&path=' . (int)$category['category_id'])
+                'href' => $this->catalogCategoryUrl((int)$category['category_id'])
             ];
             if (count($data['six_listing_categories']) >= 6) break;
         }
@@ -593,10 +602,13 @@ class Theme extends \Opencart\System\Engine\Controller {
             }
             if (!$raw) continue;
             $market_price = $this->model_extension_noveraile_pricing->resolve($raw, $currency);
-            if (!$market_price['fixed']) continue;
+            if (!$market_price['adjusted']) continue;
             $unit = $market_price['special'] > 0 ? $market_price['special'] : $market_price['price'];
-            $display_product['price'] = $this->model_extension_noveraile_pricing->format($unit, $currency, true);
-            $display_product['total'] = $this->model_extension_noveraile_pricing->format($unit * max(1, (int)($raw['quantity'] ?? 1)), $currency, true);
+            if (!$market_price['fixed']) {
+                $unit = (float)($raw['price'] ?? 0) * $market_price['multiplier'];
+            }
+            $display_product['price'] = $this->model_extension_noveraile_pricing->format($unit, $currency, $market_price['fixed']);
+            $display_product['total'] = $this->model_extension_noveraile_pricing->format($unit * max(1, (int)($raw['quantity'] ?? 1)), $currency, $market_price['fixed']);
         }
         unset($display_product);
     }
@@ -715,8 +727,8 @@ class Theme extends \Opencart\System\Engine\Controller {
             $currency = (string)($this->session->data['currency'] ?? $this->config->get('config_currency'));
             $this->load->model('extension/noveraile/pricing');
             $market_price = $this->model_extension_noveraile_pricing->resolve($result, $currency);
-            $price = $this->model_extension_noveraile_pricing->format($market_price['fixed'] ? $market_price['price'] : $this->tax->calculate((float)$result['price'], (int)$result['tax_class_id'], $this->config->get('config_tax')), $currency, $market_price['fixed']);
-            $special = $market_price['special'] > 0 ? $this->model_extension_noveraile_pricing->format($market_price['fixed'] ? $market_price['special'] : $this->tax->calculate((float)$result['special'], (int)$result['tax_class_id'], $this->config->get('config_tax')), $currency, $market_price['fixed']) : false;
+            $price = $this->model_extension_noveraile_pricing->format($market_price['fixed'] ? $market_price['price'] : $this->tax->calculate($market_price['price'], (int)$result['tax_class_id'], $this->config->get('config_tax')), $currency, $market_price['fixed']);
+            $special = $market_price['special'] > 0 ? $this->model_extension_noveraile_pricing->format($market_price['fixed'] ? $market_price['special'] : $this->tax->calculate($market_price['special'], (int)$result['tax_class_id'], $this->config->get('config_tax')), $currency, $market_price['fixed']) : false;
             $product = array_merge($result, [
                 'name' => $this->cleanProductName((string)($result['name'] ?? ''), (string)($result['model'] ?? '')),
                 'thumb' => $this->model_tool_image->resize($image, 900, 900),
@@ -826,5 +838,77 @@ class Theme extends \Opencart\System\Engine\Controller {
     private function tagPrefix(array $tags, string $prefix): string {
         foreach ($tags as $tag) if (str_starts_with($tag, $prefix)) return str_replace('-', '.', substr($tag, strlen($prefix)));
         return '';
+    }
+
+    private function catalogCategoryUrl(int $category_id): string {
+        return $this->url->link(
+            'extension/noveraile/page/catalog',
+            'language=' . $this->config->get('config_language') . '&category_id=' . $category_id
+        );
+    }
+
+    /**
+     * Supplier products already carry these values in their specification
+     * copy. Prefer structured tags/attributes, then fall back to that copy so
+     * existing live imports become complete without forcing a destructive
+     * re-import of thousands of products.
+     */
+    private function productMeasurements(array $product, array $tags): array {
+        $carat = $this->tagPrefix($tags, 'carat-');
+        $stones = $this->tagPrefix($tags, 'stones-');
+        $product_id = (int)($product['product_id'] ?? 0);
+
+        if ($product_id && ($carat === '' || $stones === '')) {
+            $configured = $this->config->get('module_noveraile_attribute_map');
+            $map = is_array($configured) ? $configured : json_decode((string)$configured, true);
+            $map = is_array($map) ? $map : [];
+            $wanted = array_filter([
+                'carat' => (int)($map['carat'] ?? 0),
+                'stones' => (int)($map['stone_count'] ?? 0)
+            ]);
+            if ($wanted) {
+                $query = $this->db->query("SELECT `attribute_id`, `text` FROM `" . DB_PREFIX . "product_attribute` WHERE `product_id` = '" . $product_id . "' AND `language_id` = '" . (int)$this->config->get('config_language_id') . "' AND `attribute_id` IN (" . implode(',', array_map('intval', array_values($wanted))) . ")");
+                $by_id = [];
+                foreach ($query->rows as $row) $by_id[(int)$row['attribute_id']] = trim((string)$row['text']);
+                if ($carat === '' && !empty($wanted['carat'])) $carat = $by_id[$wanted['carat']] ?? '';
+                if ($stones === '' && !empty($wanted['stones'])) $stones = $by_id[$wanted['stones']] ?? '';
+            }
+        }
+
+        $description = trim(strip_tags(html_entity_decode(html_entity_decode((string)($product['description'] ?? ''), ENT_QUOTES, 'UTF-8'), ENT_QUOTES, 'UTF-8')));
+        if ($carat === '' && preg_match('/([0-9]+(?:[.,][0-9]+)?)\s*(?:ct|carat|karat)/iu', $description, $match)) {
+            $carat = str_replace(',', '.', $match[1]);
+        }
+        if ($stones === '' && preg_match('/(?:·|\||,)\s*([0-9]+)\s*(?:stones?|Steine?|kamen(?:y|ů)?|кам(?:ень|ня|ней|ені|енів)|камней|камня)/iu', $description, $match)) {
+            $stones = $match[1];
+        }
+
+        return ['carat' => trim($carat), 'stones' => trim($stones)];
+    }
+
+    private function multiplyOptionPrices(array &$data, float $multiplier, string $currency, int $tax_class_id): void {
+        $ids = [];
+        foreach ((array)($data['options'] ?? []) as $option) {
+            foreach ((array)($option['product_option_value'] ?? []) as $value) {
+                $id = (int)($value['product_option_value_id'] ?? 0);
+                if ($id) $ids[$id] = true;
+            }
+        }
+        if (!$ids) return;
+
+        $rows = $this->db->query("SELECT `product_option_value_id`, `price` FROM `" . DB_PREFIX . "product_option_value` WHERE `product_option_value_id` IN (" . implode(',', array_keys($ids)) . ")")->rows;
+        $prices = [];
+        foreach ($rows as $row) $prices[(int)$row['product_option_value_id']] = (float)$row['price'];
+        foreach ($data['options'] as &$option) {
+            foreach ($option['product_option_value'] as &$value) {
+                $id = (int)($value['product_option_value_id'] ?? 0);
+                $raw = $prices[$id] ?? 0.0;
+                if (abs($raw) < 0.0001) continue;
+                $adjusted = $this->tax->calculate($raw * $multiplier, $tax_class_id, $this->config->get('config_tax'));
+                $value['price'] = $this->model_extension_noveraile_pricing->format($adjusted, $currency, false);
+            }
+            unset($value);
+        }
+        unset($option);
     }
 }

@@ -44,9 +44,9 @@ class Noveraile extends \Opencart\System\Engine\Model {
         $installed = $this->db->query("SELECT `extension_install_id` FROM `" . DB_PREFIX . "extension_install` WHERE `code` = 'noveraile' LIMIT 1");
 
         if (!$installed->num_rows) {
-            $this->db->query("INSERT INTO `" . DB_PREFIX . "extension_install` SET `extension_id` = '0', `extension_download_id` = '0', `name` = 'NOVERAILE Commerce Suite', `description` = 'OpenCart 4 storefront suite with Page Builder, catalog import/export, Mega Menu, progressive filters, checkout and reviewed AI tools', `code` = 'noveraile', `version` = '2.3.0', `author` = 'NOVERAILE', `link` = '', `status` = '1', `date_added` = NOW()");
+            $this->db->query("INSERT INTO `" . DB_PREFIX . "extension_install` SET `extension_id` = '0', `extension_download_id` = '0', `name` = 'NOVERAILE Commerce Suite', `description` = 'OpenCart 4 storefront suite with Page Builder, catalog import/export, Mega Menu, progressive filters, checkout and reviewed AI tools', `code` = 'noveraile', `version` = '2.6.0', `author` = 'NOVERAILE', `link` = '', `status` = '1', `date_added` = NOW()");
         } else {
-            $this->db->query("UPDATE `" . DB_PREFIX . "extension_install` SET `name` = 'NOVERAILE Commerce Suite', `version` = '2.3.0', `status` = '1' WHERE `extension_install_id` = '" . (int)$installed->row['extension_install_id'] . "'");
+            $this->db->query("UPDATE `" . DB_PREFIX . "extension_install` SET `name` = 'NOVERAILE Commerce Suite', `version` = '2.6.0', `status` = '1' WHERE `extension_install_id` = '" . (int)$installed->row['extension_install_id'] . "'");
         }
     }
 
@@ -182,7 +182,8 @@ class Noveraile extends \Opencart\System\Engine\Model {
                 'self' => ['moment' => 'deserve', 'tags' => ['self-purchase']],
                 'milestone' => ['moment' => 'with-me', 'tags' => ['milestone']]
             ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),
-            'module_noveraile_price_book' => $this->defaultPriceBook()
+            'module_noveraile_price_book' => $this->defaultPriceBook(),
+            'module_noveraile_price_multiplier' => '1'
         ];
         $this->installDefaultSettings('module_noveraile', $defaults);
         $current_brand = trim((string)$this->config->get('module_noveraile_brand_name'));
@@ -586,6 +587,7 @@ class Noveraile extends \Opencart\System\Engine\Model {
             'gemstone' => ['Gemstone', 'Edelstein', 'Drahokam', 'Камень', 'Камінь'],
             'stone_origin' => ['Stone origin', 'Steinherkunft', 'Původ kamene', 'Происхождение камня', 'Походження каменю'],
             'carat' => ['Total carat weight', 'Gesamtkaratgewicht', 'Celková karátová hmotnost', 'Общая каратность', 'Загальна каратність'],
+            'stone_count' => ['Number of stones', 'Anzahl der Steine', 'Počet kamenů', 'Количество камней', 'Кількість каменів'],
             'stone_shape' => ['Stone shape', 'Steinform', 'Tvar kamene', 'Форма огранки', 'Форма огранювання'],
             'stone_quality' => ['Stone quality', 'Steinqualität', 'Kvalita kamene', 'Качество камня', 'Якість каменю'],
             'style' => ['Jewelry style', 'Schmuckstil', 'Styl šperku', 'Стиль украшения', 'Стиль прикраси']
@@ -659,7 +661,7 @@ class Noveraile extends \Opencart\System\Engine\Model {
                 $attribute_id = (int)$attribute_ids[$key];
                 $this->model_catalog_product->deleteAttributes($product_id, $attribute_id);
                 foreach ($codes as $index => $code) {
-                    $text = in_array($key, ['fineness', 'carat'], true) ? $value : ($translations[$value][$index] ?? $value);
+                    $text = in_array($key, ['fineness', 'carat', 'stone_count'], true) ? $value : ($translations[$value][$index] ?? $value);
                     $this->model_catalog_product->addAttribute($product_id, $attribute_id, $language_ids[$code], ['text' => $text]);
                 }
             }
