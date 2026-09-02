@@ -2,7 +2,7 @@
 namespace Opencart\Admin\Controller\Extension\Noveraile\Module;
 
 class Noveraile extends \Opencart\System\Engine\Controller {
-    private const VERSION = '2.6.1';
+    private const VERSION = '2.6.2';
     private const CATALOG_HEADERS = [
         'product_id', 'model', 'sku', 'language_code', 'name', 'description', 'meta_title',
         'meta_description', 'meta_keyword', 'tag', 'price', 'quantity', 'status',

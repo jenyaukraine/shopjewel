@@ -1,5 +1,21 @@
 # Changelog
 
+## 2.6.2 — 2026-09-03
+- Republished the complete reviewed storefront and administration bundle for the production Hostinger installation.
+- Bumped storefront asset URLs so browsers and hosting caches load the final light backgrounds and controls immediately.
+
+## 2.6.1 — 2026-09-01
+- Restored total carat weight and stone count on catalog cards imported by the standalone CSV importer.
+- Removed the “Made to order” label and redirected legacy category URLs to the filtered catalog.
+- Rebuilt the newsletter signup as a balanced light panel.
+
+## 2.6.0 — 2026-08-31
+- Added a catalog price coefficient and fixed market price books.
+- Restored catalog measurements, stable category routes and full-screen gallery navigation.
+
+## 2.5.2 — 2026-08-24
+- Switched the storefront surfaces and product photography canvas to the approved light presentation.
+
 ## 2.4.0 — 2026-08-06
 - Supplier catalog import: the assortment arrives as products with images and exact per-combination pricing.
 - Filter panels are built from the catalog, so options nobody stocks disappear on their own — and category and search pages now carry them too.

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.6.2 — 2026-09-03
+- Republished the complete reviewed storefront and administration bundle for the production Hostinger installation.
+- Bumped storefront asset URLs so browsers and hosting caches load the final light backgrounds and controls immediately.
+
 ## 2.6.1 — 2026-09-01
 - Restored total carat weight and stone count on catalog cards imported by the standalone CSV importer, without confusing 14K/18K gold caratage with gemstone weight.
 - Removed the “Made to order” label from product cards while retaining the positive in-stock status.

@@ -44,9 +44,9 @@ class Noveraile extends \Opencart\System\Engine\Model {
         $installed = $this->db->query("SELECT `extension_install_id` FROM `" . DB_PREFIX . "extension_install` WHERE `code` = 'noveraile' LIMIT 1");
 
         if (!$installed->num_rows) {
-            $this->db->query("INSERT INTO `" . DB_PREFIX . "extension_install` SET `extension_id` = '0', `extension_download_id` = '0', `name` = 'NOVERAILE Commerce Suite', `description` = 'OpenCart 4 storefront suite with Page Builder, catalog import/export, Mega Menu, progressive filters, checkout and reviewed AI tools', `code` = 'noveraile', `version` = '2.6.1', `author` = 'NOVERAILE', `link` = '', `status` = '1', `date_added` = NOW()");
+            $this->db->query("INSERT INTO `" . DB_PREFIX . "extension_install` SET `extension_id` = '0', `extension_download_id` = '0', `name` = 'NOVERAILE Commerce Suite', `description` = 'OpenCart 4 storefront suite with Page Builder, catalog import/export, Mega Menu, progressive filters, checkout and reviewed AI tools', `code` = 'noveraile', `version` = '2.6.2', `author` = 'NOVERAILE', `link` = '', `status` = '1', `date_added` = NOW()");
         } else {
-            $this->db->query("UPDATE `" . DB_PREFIX . "extension_install` SET `name` = 'NOVERAILE Commerce Suite', `version` = '2.6.1', `status` = '1' WHERE `extension_install_id` = '" . (int)$installed->row['extension_install_id'] . "'");
+            $this->db->query("UPDATE `" . DB_PREFIX . "extension_install` SET `name` = 'NOVERAILE Commerce Suite', `version` = '2.6.2', `status` = '1' WHERE `extension_install_id` = '" . (int)$installed->row['extension_install_id'] . "'");
         }
     }
 
