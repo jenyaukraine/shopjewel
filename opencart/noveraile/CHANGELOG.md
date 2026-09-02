@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.6.3 — 2026-09-03
+- Removed the remaining beige catalog and standard product-listing backgrounds so the final approved white storefront applies to the complete shopping surface.
+- Bumped storefront asset URLs to ensure the corrected catalog background replaces cached styles immediately.
+
 ## 2.6.2 — 2026-09-03
 - Republished the complete reviewed storefront and administration bundle for the production Hostinger installation.
 - Bumped storefront asset URLs so browsers and hosting caches load the final light backgrounds and controls immediately.

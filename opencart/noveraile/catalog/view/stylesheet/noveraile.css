@@ -4024,6 +4024,13 @@ body.noveraile-store,
 .noveraile-store .mobile-drawer,
 .noveraile-store .search-overlay { background: rgba(255,255,255,.98); }
 
+.noveraile-store .six-listing-page {
+  --listing-surface: #fff;
+  --listing-panel: #fff;
+}
+.noveraile-store .six-catalog-page .catalog-shell,
+.noveraile-store .six-listing-page .listing-shell { background: #fff; }
+
 .noveraile-store .signature-section,
 .noveraile-store .archive-section,
 .noveraile-store .benefits-strip,

@@ -125,8 +125,8 @@ test("mobile categories are deduplicated and use semantic jewellery icons", asyn
   assert.match(event, /\$category_names\s*=\s*\[\]/);
   assert.match(event, /mb_strtolower/);
   assert.match(event, /'icon'\s*=>\s*\$this->categoryIcon\(\$name\)/);
-  assert.match(event, /noveraile\.css\?v=2.8.2.0/);
-  assert.match(event, /noveraile\.js\?v=2.8.2.0/);
+  assert.match(event, /noveraile\.css\?v=2.8.3.0/);
+  assert.match(event, /noveraile\.js\?v=2.8.3.0/);
   assert.match(header, /class="mobile-category-icon"/);
   assert.match(header, /category\.icon == 'earring'/);
   assert.match(header, /class="mobile-main-icon"/);
@@ -207,7 +207,7 @@ test("homepage Instagram callout can never render as an empty shell", async () =
 
   assert.match(event, /public function home[\s\S]*?six_instagram_label/);
   assert.match(event, /public function home[\s\S]*?social_fallbacks/);
-  assert.match(event, /noveraile\.css\?v=2.8.2.0/);
+  assert.match(event, /noveraile\.css\?v=2.8.3.0/);
   assert.match(home, /six_follow\|default/);
   assert.match(home, /six_follow_copy\|default/);
   assert.match(home, /six_instagram_label\|default/);
@@ -227,6 +227,8 @@ test("storefront is light-only and ships the client-approved white surfaces", as
   assert.match(stylesheet, /--paper:\s*#ffffff/);
   assert.match(stylesheet, /Client-approved white storefront/);
   assert.match(stylesheet, /\.noveraile-store \.moment-card\s*\{[\s\S]*?border:\s*1px solid #dedbd6/);
+  assert.match(stylesheet, /\.noveraile-store \.six-catalog-page \.catalog-shell,[\s\S]*?background:\s*#fff/);
+  assert.match(stylesheet, /\.noveraile-store \.six-listing-page \.listing-shell[\s\S]*?background:\s*#fff/);
   assert.match(stylesheet, /\.noveraile-store \.site-footer,[\s\S]*?background:\s*#fff/);
   for (const source of [header, stylesheet, script, admin, settings, adminTemplate]) {
     assert.doesNotMatch(source, /data-theme|theme-toggle|noveraile-theme|prefers-color-scheme|module_noveraile_color_mode/);
@@ -350,7 +352,7 @@ test("all six sales-readiness promises are implemented and release-checked", asy
   const manifest = JSON.parse(manifestSource);
   const feed = JSON.parse(feedSource);
 
-  assert.equal(manifest.version, "2.6.2");
+  assert.equal(manifest.version, "2.6.3");
   assert.equal(feed.version, manifest.version);
   assert.deepEqual(feed.opencart.tested, ["4.0.2.3", "4.1.0.3"]);
   assert.match(admin, /version_compare\(VERSION, '4\.0\.2\.3', '<'\)/);

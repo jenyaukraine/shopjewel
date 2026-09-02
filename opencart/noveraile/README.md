@@ -1,6 +1,6 @@
 # NOVERAILE Commerce Suite for OpenCart
 
-Installable storefront extension for OpenCart 4.0.2.3 and 4.1.x. It uses OpenCart events and does not replace core files. Version 2.6.2 works with an existing merchant catalog, includes transactional multilingual CSV import/export, catalog-wide price coefficients, fixed market price books, and keeps the jewelry sample catalog optional.
+Installable storefront extension for OpenCart 4.0.2.3 and 4.1.x. It uses OpenCart events and does not replace core files. Version 2.6.3 works with an existing merchant catalog, includes transactional multilingual CSV import/export, catalog-wide price coefficients, fixed market price books, and keeps the jewelry sample catalog optional.
 
 ## Product import and export
 

@@ -1,7 +1,7 @@
 {
   "package": "noveraile",
   "channel": "stable",
-  "version": "2.6.2",
+  "version": "2.6.3",
   "released_at": "2026-09-03",
   "opencart": {
     "minimum": "4.0.2.3",
